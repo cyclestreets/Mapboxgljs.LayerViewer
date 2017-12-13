@@ -43,6 +43,9 @@ var layerviewer = (function ($) {
 		// Google API key for Street View images
 		gmapApiKey: 'YOUR_API_KEY',
 		
+		// Sending zoom as default for all layers
+		sendZoom: false,
+		
 		// Explicit styling as default for all layers
 		style: {},
 			
@@ -990,8 +993,15 @@ var layerviewer = (function ($) {
 			}
 			
 			// Send zoom if required
-			if (_layerConfig[layerId].sendZoom) {
-				apiData.zoom = _map.getZoom();
+			var sendZoom = false;
+			if (_settings.hasOwnProperty('sendZoom')) {
+				sendZoom = _settings.sendZoom;
+			}
+			if (_layerConfig[layerId].hasOwnProperty('sendZoom')) {	// Layer-specific sendZoom can override global
+				sendZoom = _layerConfig[layerId].sendZoom;
+			}
+			if (sendZoom) {
+				apiData.zoom = _map.getZoom ();
 			}
 			
 			// Add in the parameters from the form
