@@ -1374,13 +1374,20 @@ var layerviewer = (function ($) {
 						iconSize = _layerConfig[layerId].iconSize;
 					}
 					
-					var icon = L.marker (latlng, {
-						// Icon properties as per: http://leafletjs.com/reference.html#icon and http://leafletjs.com/examples/custom-icons/
-						icon: L.icon({
-							iconUrl: iconUrl,
-							iconSize: iconSize
-						})
-					});
+					// Compile marker properties
+					var markerProperties = {};
+					if (iconUrl) {
+						markerProperties = {
+							// Icon properties as per: http://leafletjs.com/reference.html#icon and http://leafletjs.com/examples/custom-icons/
+							icon: L.icon({
+								iconUrl: iconUrl,
+								iconSize: iconSize
+							})
+						};
+					}
+					
+					// Construct the icon
+					var icon = L.marker (latlng, markerProperties);
 					
 					// Set the icon zIndexOffset if required
 					if (_layerConfig[layerId].markerImportance) {
