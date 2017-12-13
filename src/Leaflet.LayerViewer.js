@@ -93,6 +93,11 @@ var layerviewer = (function ($) {
 				{maxZoom: 16, attribution: '&copy; <a href="http://maps.nls.uk/copyright.html">National Library of Scotland</a>'},
 				'NLS - OS 1-inch 7th Series 1955-1961'
 			]
+		},
+		
+		// Popup pages, defined as content div and trigger link
+		pages: {
+			// '#about': 'a.about'
 		}
 	};
 	
@@ -321,6 +326,13 @@ var layerviewer = (function ($) {
 					layerviewer.setStateCookie ();	// Update to catch deletion of cache entry
 				}
 			});
+			
+			// Enable general page handlers
+			if (_settings.pages) {
+				$.each (_settings.pages, function (contentDivPath, triggerPath) {
+					layerviewer.pageDialog (contentDivPath, triggerPath);
+				});
+			}
 		},
 		
 		
@@ -1728,6 +1740,20 @@ var layerviewer = (function ($) {
 				});
 				
 				// Prevent following link to contact page
+				return false;
+			});
+		},
+		
+		
+		// Page dialog handler
+		pageDialog: function (contentDivPath, triggerPath)
+		{
+			// Read in the HTML
+			var html = $(contentDivPath).html();
+			
+			// Create the handler to launch a dialog box
+			$('a.about').click (function (event) {
+				vex.dialog.alert ({unsafeMessage: html, showCloseButton: true, showCloseButton: true, className: 'vex vex-theme-plain page'});
 				return false;
 			});
 		}
