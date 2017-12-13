@@ -43,6 +43,9 @@ var layerviewer = (function ($) {
 		// Google API key for Street View images
 		gmapApiKey: 'YOUR_API_KEY',
 		
+		// Explicit styling as default for all layers
+		style: {},
+			
 		// Tileserver URLs, each as [path, options, label]
 		tileUrls: {
 			opencyclemap: [
@@ -1377,7 +1380,12 @@ var layerviewer = (function ($) {
 				style: function (feature) {
 					var styles = {};
 					
-					// Start from default style if supplied
+					// Start from global style if supplied
+					if (_settings.style) {
+						styles = _settings.style;
+					}
+					
+					// Start from default layer style if supplied
 					if (_layerConfig[layerId].style) {
 						styles = _layerConfig[layerId].style;
 					}
