@@ -34,6 +34,9 @@ var layerviewer = (function ($) {
 		// Feedback API URL; re-use of settings values represented as placeholders {%apiBaseUrl}, {%apiKey}, are supported
 		feedbackApiUrl: '{%apiBaseUrl}/v2/feedback.add?key={%apiKey}',
 		
+		// Enable/disabled drawing feature
+		enableDrawing: true,
+		
 		// First-run welcome message
 		firstRunMessageHtml: false,
 		
@@ -690,8 +693,10 @@ var layerviewer = (function ($) {
 			// Add geocoder control
 			layerviewer.geocoder ();
 			
-			// Add drawing support
-			layerviewer.drawing ('#geometry', true, '');
+			// Add drawing support if enabled
+			if (_settings.enableDrawing) {
+				layerviewer.drawing ('#geometry', true, '');
+			}
 			
 			// Add hash support
 			// #!# Note that this causes a map move, causing a second data request
@@ -775,10 +780,12 @@ var layerviewer = (function ($) {
 			}
 			
 			// Reload the data, using a rescan of the form parameters when any change is made
-			$('form#data #sections :input, form#data #drawing :input').change (function () {
-				_parameters[layerId] = layerviewer.parseFormValues (layerId);
-				layerviewer.getData (layerId, _parameters[layerId]);
-			});
+			if (_settings.enableDrawing) {
+				$('form#data #sections :input, form#data #drawing :input').change (function () {
+					_parameters[layerId] = layerviewer.parseFormValues (layerId);
+					layerviewer.getData (layerId, _parameters[layerId]);
+				});
+			}
 			$('form#data #sections :text').on ('input', function() {	// Also include text input changes as-you-type; see: https://gist.github.com/brandonaaskov/1596867
 				_parameters[layerId] = layerviewer.parseFormValues (layerId);
 				layerviewer.getData (layerId, _parameters[layerId]);
@@ -875,9 +882,11 @@ var layerviewer = (function ($) {
 			}
 			
 			// Add in boundary data if drawn; this will override bbox (added later)
-			var boundary = $('form#data #drawing :input').val();
-			if (boundary) {
-				parameters.boundary = boundary;
+			if (_settings.enableDrawing) {
+				var boundary = $('form#data #drawing :input').val();
+				if (boundary) {
+					parameters.boundary = boundary;
+				}
 			}
 			
 			// Return the parameters
