@@ -52,6 +52,9 @@ var layerviewer = (function ($) {
 		// Explicit styling as default for all layers
 		style: {},
 			
+		// Default icon size
+		iconSize: null,
+		
 		// Tileserver URLs, each as [path, options, label]
 		tileUrls: {
 			opencyclemap: [
@@ -121,6 +124,7 @@ var layerviewer = (function ($) {
 			
 			// Specific icon to use for all markers in this layer
 			iconUrl: '/images/icon.svg',
+			iconSize: [38, 42],
 			
 			// Field in GeoJSON data where the icon value can be looked up
 			iconField: 'type',
@@ -1363,11 +1367,17 @@ var layerviewer = (function ($) {
 						iconUrl = feature.properties[iconField];
 					}
 					
+					// Determine icon size
+					var iconSize = _settings.iconSize;
+					if (_layerConfig[layerId].iconSize) {
+						iconSize = _layerConfig[layerId].iconSize;
+					}
+					
 					var icon = L.marker (latlng, {
 						// Icon properties as per: http://leafletjs.com/reference.html#icon and http://leafletjs.com/examples/custom-icons/
 						icon: L.icon({
 							iconUrl: iconUrl,
-							iconSize: [38, 42]
+							iconSize: iconSize
 						})
 					});
 					
