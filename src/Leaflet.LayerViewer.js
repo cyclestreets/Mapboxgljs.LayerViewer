@@ -52,7 +52,8 @@ var layerviewer = (function ($) {
 		// Explicit styling as default for all layers
 		style: {},
 			
-		// Default icon size
+		// Default icon and size
+		iconUrl: null,
 		iconSize: null,
 		
 		// Tileserver URLs, each as [path, options, label]
@@ -1358,7 +1359,7 @@ var layerviewer = (function ($) {
 				pointToLayer: function (feature, latlng) {
 					
 					// Determine whether to use a local fixed icon, a local icon set, or an icon field in the data
-					var iconUrl;
+					var iconUrl = _settings.iconUrl;
 					if (_layerConfig[layerId].iconUrl) {
 						iconUrl = _layerConfig[layerId].iconUrl;
 					} else if (_layerConfig[layerId].icons) {
