@@ -22,6 +22,9 @@ var layerviewer = (function ($) {
 		},
 		defaultTileLayer: 'mapnik',
 		
+		// Application baseUrl
+		baseUrl: '/',
+		
 		// Default layers ticked
 		defaultLayers: [],
 		
@@ -428,9 +431,6 @@ var layerviewer = (function ($) {
 				$('nav').tabs('option', 'active', index);
 			}
 			
-			// Determine the baseUrl
-			var baseUrl = window.location.pathname;
-			
 			// Handle selection/deselection of section checkboxes
 			$('nav #selector input').change (function() {
 				
@@ -442,7 +442,7 @@ var layerviewer = (function ($) {
 				$('nav #selector input:checked').map (function () {
 					enabledLayers.push (this.id.replace('show_', ''));
 				});
-				layerviewer.updateUrl (enabledLayers, baseUrl);
+				layerviewer.updateUrl (enabledLayers);
 				
 				// If enabling, switch to its tab contents (controls)
 				if (this.checked) {
@@ -492,13 +492,13 @@ var layerviewer = (function ($) {
 		
 		
 		// Function to update the URL, to provide persistency when a link is circulated
-		updateUrl: function (enabledLayers, baseUrl)
+		updateUrl: function (enabledLayers)
 		{
 			// End if not supported, e.g. IE9
 			if (!history.pushState) {return;}
 			
 			// Construct the URL
-			var url = baseUrl;	// Absolute URL
+			var url = _settings.baseUrl;	// Absolute URL
 			url += enabledLayers.join(',') + (enabledLayers.length ? '/' : '');
 			url += window.location.hash;
 			
