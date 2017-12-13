@@ -126,6 +126,11 @@ var layerviewer = (function ($) {
 			// Order of marker appearance, in order from least to most important
 			markerImportance: ['foo', 'bar', 'qux'],
 			
+			// Explicit styling
+			style: {
+				weight: 5
+			},
+			
 			// If drawing lines, the field that contains the value used to determine the colour, and the colour stops for this
 			lineColourField: 'value',
 			lineColourStops: [
@@ -1371,6 +1376,11 @@ var layerviewer = (function ($) {
 				// Rendering style
 				style: function (feature) {
 					var styles = {};
+					
+					// Start from default style if supplied
+					if (_layerConfig[layerId].style) {
+						styles = _layerConfig[layerId].style;
+					}
 					
 					// Set polygon style if required
 					if (_layerConfig[layerId].polygonStyle) {
