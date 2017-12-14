@@ -95,10 +95,10 @@ var layerviewer = (function ($) {
 			]
 		},
 		
-		// Popup pages, defined as content div and trigger link
-		pages: {
-			// '#about': 'a.about'
-		}
+		// Popup pages, defined as content div ID
+		pages: [
+			// 'about'
+		]
 	};
 	
 	// Layer definitions, which should be overriden by being supplied as an argument by the calling application
@@ -329,8 +329,8 @@ var layerviewer = (function ($) {
 			
 			// Enable general page handlers
 			if (_settings.pages) {
-				$.each (_settings.pages, function (contentDivPath, triggerPath) {
-					layerviewer.pageDialog (contentDivPath, triggerPath);
+				$.each (_settings.pages, function (index, contentDivId) {
+					layerviewer.pageDialog (contentDivId);
 				});
 			}
 		},
@@ -1746,13 +1746,13 @@ var layerviewer = (function ($) {
 		
 		
 		// Page dialog handler
-		pageDialog: function (contentDivPath, triggerPath)
+		pageDialog: function (contentDivId)
 		{
 			// Read in the HTML
-			var html = $(contentDivPath).html();
+			var html = $('#' + contentDivId).html();
 			
 			// Create the handler to launch a dialog box
-			$('a.about').click (function (event) {
+			$('a[href="#' + contentDivId + '"]').click (function (event) {
 				vex.dialog.alert ({unsafeMessage: html, showCloseButton: true, showCloseButton: true, className: 'vex vex-theme-plain page'});
 				return false;
 			});
