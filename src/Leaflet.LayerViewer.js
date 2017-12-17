@@ -98,7 +98,11 @@ var layerviewer = (function ($) {
 		// Popup pages, defined as content div ID
 		pages: [
 			// 'about'
-		]
+		],
+		
+		// Region switcher, with areas defined as a GeoJSON file
+		regionsFile: false,
+		regionsField: false
 	};
 	
 	// Layer definitions, which should be overriden by being supplied as an argument by the calling application
@@ -297,6 +301,9 @@ var layerviewer = (function ($) {
 			
 			// Create a message area, and provide methods to manipulate it
 			layerviewer.messageArea ();
+			
+			// Region switcher
+			layerviewer.regionSwitcher ();
 			
 			// Enable feedback handler
 			layerviewer.feedbackHandler ();
@@ -1691,6 +1698,99 @@ var layerviewer = (function ($) {
 			$('.edit-undo').click(function() {
 				drawnItems.revertLayers();
 			});
+		},
+		
+		
+		// Region switcher
+		regionSwitcher: function ()
+		{
+			// End if not enabled
+			if (!_settings.regionsFile) {return;}
+			
+			// Load the GeoJSON file
+			$.ajax({
+				url: _settings.regionsFile,
+				dataType: (layerviewer.browserSupportsCors () ? 'json' : 'jsonp'),		// Fall back to JSON-P for IE9
+				error: function (jqXHR, error, exception) {
+					vex.dialog.alert ('Error: could not load regions list file.');
+				},
+				success: function (data, textStatus, jqXHR) {
+					
+					// Parse the areas to centre-points
+					var regions = layerviewer.regionsToList (data);
+					
+					// Order list
+					var names = [];
+					$.each (regions, function (name, bounds) {
+						names.push (name);
+					});
+					names.sort();
+					
+					// Create a droplist
+					var html = '<select>';
+					html += '<option value="">Switch region:</option>';
+					$.each (names, function (index, name) {
+						html += '<option value="' + layerviewer.htmlspecialchars (name) + '">' + name + '</option>';
+					});
+					html += '</select>';
+					
+					// Add to the map
+					var regionswitcher = L.control({position: 'bottomleft'});
+					regionswitcher.onAdd = function () {
+						return L.DomUtil.create ('div', 'regionswitcher');
+					}
+					regionswitcher.addTo(_map);
+					$('.regionswitcher').html (html);
+					
+					// Add a handler
+					$('.regionswitcher select').change (function () {
+						if (this.value) {
+							var selectedRegion = this.value;
+							_map.fitBounds (regions[selectedRegion]);
+						}
+					});
+				}
+			});
+		},
+		
+		
+		/* private */ regionsToList: function (data)
+		{
+			// Start a list of regions
+			var regions = {};
+			
+			// Ensure basic GeoJSON structure
+			if (!data.type) {return regions;}
+			if (data.type != 'FeatureCollection') {return regions;}
+			if (!data.features) {return regions;}
+			
+			// Parse each feature for name and location
+			var name;
+			var bounds;
+			var geojson = L.geoJSON(data, {
+				onEachFeature: function (feature, layer) {
+					
+					// Get the name, or skip if not present
+					if (!feature.properties[_settings.regionsField]) {return false;}
+					name = feature.properties[_settings.regionsField];
+					
+					// Get location; see: https://gis.stackexchange.com/a/167425/58752
+					bounds = layer.getBounds();
+					
+					// Register function
+					regions[name] = bounds;
+				}
+			});
+			
+			// Return the list
+			return regions;
+		},
+		
+		
+		// Function to make data entity-safe
+		htmlspecialchars: function (string)
+		{
+			return string.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 		},
 		
 		
