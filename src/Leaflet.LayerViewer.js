@@ -700,6 +700,24 @@ var layerviewer = (function ($) {
 				intervals = _layerConfig[layerId].lineColourStops;
 			}
 			
+			// If intervals is 'range', and lineColourStops is defined, generate range labels from these
+			if ((intervals == 'range') && _layerConfig[layerId].lineColourStops) {
+				intervals = [];
+				var label;
+				var colour;
+				var value;
+				$.each (_layerConfig[layerId].lineColourStops, function (index, interval) {
+					colour = interval[1];
+					value = interval[0];
+					if (index == 0) {
+						label = value + '+';
+					} else {
+						label = value + '-' + _layerConfig[layerId].lineColourStops[index - 1][0];
+					}
+					intervals.push ([label, colour]);
+				});
+			}
+			
 			// Support either an array of pairs, or a list of intervals
 			var labels = [];
 			if (intervals[0] && intervals[0][0]) {		// Simple, quick check for an array of pairs
