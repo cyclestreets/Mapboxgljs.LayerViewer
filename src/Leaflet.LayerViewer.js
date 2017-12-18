@@ -1730,7 +1730,7 @@ var layerviewer = (function ($) {
 					var html = '<select>';
 					html += '<option value="">Switch region:</option>';
 					$.each (names, function (index, name) {
-						html += '<option value="' + layerviewer.htmlspecialchars (name) + '">' + name + '</option>';
+						html += '<option value="' + layerviewer.htmlspecialchars (name) + '">' + layerviewer.htmlspecialchars (layerviewer.ucfirst (name)) + '</option>';
 					});
 					html += '</select>';
 					
@@ -1791,6 +1791,13 @@ var layerviewer = (function ($) {
 		htmlspecialchars: function (string)
 		{
 			return string.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+		},
+		
+		
+		// Function to make first character upper-case; see: https://stackoverflow.com/a/1026087/180733
+		ucfirst: function (string)
+		{
+			return string.charAt(0).toUpperCase() + string.slice(1);
 		},
 		
 		
