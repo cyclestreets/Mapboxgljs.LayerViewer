@@ -680,6 +680,9 @@ var layerviewer = (function ($) {
 			
 			// Add to the map
 			legend.addTo (_map);
+			
+			// Hide initially
+			layerviewer.clearLegend ();
 		},
 		
 		
