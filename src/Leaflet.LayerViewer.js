@@ -109,7 +109,7 @@ var layerviewer = (function ($) {
 	var _layerConfig = {
 		
 		/* Example, showing all available options:
-		layername: {
+		layerid: {
 			
 			// Path or full URL to the API endpoint
 			apiCall: '/path/to/api',
@@ -122,6 +122,9 @@ var layerviewer = (function ($) {
 				key: 'value',
 				foo: 'bar'
 			},
+			
+			// Name
+			name: '',
 			
 			// Show a message if the zoom level is below this level (i.e. too zoomed out)
 			fullZoom: 17,
@@ -1103,7 +1106,7 @@ var layerviewer = (function ($) {
 					// #!# This is done here because the API still returns Status code 200
 					if (data.error) {
 						layerviewer.removeLayer (layerId, false);
-						vex.dialog.alert ('Error from ' + layerId + ' layer: ' + data.error);
+						vex.dialog.alert ('Error from ' + (_layerConfig[layerId].name ? _layerConfig[layerId].name : layerId) + ' layer: ' + data.error);
 						return {};
 					}
 					
