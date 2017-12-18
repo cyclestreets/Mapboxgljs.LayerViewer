@@ -91,6 +91,11 @@ table.fullimage > tbody > tr > td {vertical-align: top; padding: 20px;}
 .message {display: none; width: 200px; _height: 40px; padding: 12px; font-size: 1.2em; background: white; background: rgba(255,255,255,0.9); box-shadow: 0 0 15px rgba(0,0,0,0.2); border-radius: 5px; color: red;}
 .message p {margin: 0; padding: 0;}
 
+/* Password-protection */
+#home {display: none;}
+#protection {padding: 50px 15px;}
+p#loginprompt {margin-top: 3em;}
+
 /* Feedback handling */
 #feedback {display: none;}
 .feedback.vex.vex-theme-plain .vex-content {width: 550px; max-width: 90%;}

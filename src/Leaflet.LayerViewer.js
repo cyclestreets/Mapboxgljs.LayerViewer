@@ -102,7 +102,10 @@ var layerviewer = (function ($) {
 		
 		// Region switcher, with areas defined as a GeoJSON file
 		regionsFile: false,
-		regionsField: false
+		regionsField: false,
+		
+		// Password protection, as an SHA-256 hash
+		password: false
 	};
 	
 	// Layer definitions, which should be overriden by being supplied as an argument by the calling application
@@ -244,6 +247,20 @@ var layerviewer = (function ($) {
 				}
 			});
 			
+			// Enable general page handlers
+			if (_settings.pages) {
+				$.each (_settings.pages, function (index, contentDivId) {
+					layerviewer.pageDialog (contentDivId);
+				});
+			}
+			
+			// Require password if enabled
+			if (_settings.password) {
+				if (!layerviewer.passwordProtection ()) {
+					return false;
+				}
+			}
+			
 			// Obtain the layers
 			_layerConfig = layerConfig;
 			
@@ -344,13 +361,82 @@ var layerviewer = (function ($) {
 					layerviewer.setStateCookie ();	// Update to catch deletion of cache entry
 				}
 			});
+		},
+		
+		
+		// Password protection; this is intended to provide a simple, basic level of protection only
+		passwordProtection: function ()
+		{
+			// Obtain the cookie if present
+			var cookieName = 'login';
+			var value = Cookies.get(cookieName);
 			
-			// Enable general page handlers
-			if (_settings.pages) {
-				$.each (_settings.pages, function (index, contentDivId) {
-					layerviewer.pageDialog (contentDivId);
-				});
+			// Validate if value supplied from cookie
+			if (value) {
+				if (layerviewer.validatePassword (value)) {
+					return true;
+				}
 			}
+			
+			// Get the home page HTML and overwrite the content
+			var html = $('#home').html();
+			html = '<div id="protection">' + html + '</div>';
+			$('main').html (html);
+			
+			// Add a password form
+			$('#protection').append ('<p id="loginprompt">If you have been given a login password, please enter it below.</p>');
+			var form = $('<form id="password" method="post"></form>');
+			form.append('<input name="password" type="password" required="required" placeholder="Password" size="20" />');
+			form.append('<input type="submit" />');
+			$('#protection').append (form);
+			
+			// If the form is submitted, validate the value
+			$('#password').submit (function(event) {
+				
+				// Prevent page reload
+				event.preventDefault();
+				
+				// Obtain the value and validate the password
+				var values = $(this).serializeArray ();
+				var password = values[0].value;
+				if (layerviewer.validatePassword (password)) {
+					
+					// Set the cookie, storing the (low-security) entered value
+					Cookies.set(cookieName, password, {expires: 7});
+					
+					// Reload the page and end
+					location.reload ();
+				} else {
+					
+					// Show message
+					var message = 'The password you gave is not correct. Please check and try again.';
+					vex.dialog.alert ({message: message, showCloseButton: true, showCloseButton: true, className: 'vex vex-theme-plain'});
+					
+					// Reset the form content
+					$('#password')[0].reset();
+				}
+			});
+			
+			// Not validated
+			return false;
+		},
+		
+		
+		// Helper function to validate the password
+		validatePassword: function (value)
+		{
+			// Hash the value
+			var shaObj = new jsSHA ('SHA-256', 'TEXT');
+			shaObj.update (value);
+			var hash = shaObj.getHash ('HEX');
+			
+			// Compare against the correct password hash
+			if (hash === _settings.password) {
+				return true;
+			}
+			
+			// Failure
+			return false;
 		},
 		
 		
