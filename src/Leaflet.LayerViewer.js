@@ -123,8 +123,9 @@ var layerviewer = (function ($) {
 				foo: 'bar'
 			},
 			
-			// Name
+			// Name and description
 			name: '',
+			description: '',
 			
 			// Show a message if the zoom level is below this level (i.e. too zoomed out)
 			fullZoom: 17,
@@ -172,6 +173,9 @@ var layerviewer = (function ($) {
 				[100, 5],
 				[0, 1],
 			],
+			
+			// Legend, either array of values (as same format as lineColourStops), or boolean true to use lineColourStops if that exists
+			legend: true,
 			
 			// Polygon style; currently supported values are 'grid' (blue boxes with dashed lines, intended for tessellating data), 'green', 'red'
 			polygonStyle: 'grid',
@@ -302,6 +306,9 @@ var layerviewer = (function ($) {
 			// Show first-run welcome message if the user is new to the site
 			layerviewer.welcomeFirstRun ();
 			
+			// Create the legend for the current field, and update on changes
+			layerviewer.createLegend ();
+			
 			// Create a message area, and provide methods to manipulate it
 			layerviewer.messageArea ();
 			
@@ -333,6 +340,7 @@ var layerviewer = (function ($) {
 						_xhrRequests[layerId].abort();
 					}
 					layerviewer.removeLayer (layerId, false);
+					layerviewer.clearLegend ();
 					layerviewer.setStateCookie ();	// Update to catch deletion of cache entry
 				}
 			});
@@ -659,6 +667,81 @@ var layerviewer = (function ($) {
 		},
 		
 		
+		// Function to create and update the legend
+		createLegend: function ()
+		{
+			// Affix the legend
+			var legend = L.control({position: 'bottomleft'});
+			
+			// Define its contents
+			legend.onAdd = function () {
+				return L.DomUtil.create ('div', 'info legend');
+			};
+			
+			// Add to the map
+			legend.addTo (_map);
+		},
+		
+		
+		// Function to set the legend contents
+		setLegend: function (layerId)
+		{
+			// Determine the intervals for the current layer
+			var intervals = _layerConfig[layerId].intervals;
+			
+			// End if intervals not required for this layer
+			if (!intervals) {return;}
+			
+			// If intervals is bool true, and lineColourStops is defined, use these as the intervals
+			if ((intervals === true) && _layerConfig[layerId].lineColourStops) {
+				intervals = _layerConfig[layerId].lineColourStops;
+			}
+			
+			// Support either an array of pairs, or a list of intervals
+			var labels = [];
+			if (intervals[0] && intervals[0][0]) {		// Simple, quick check for an array of pairs
+				$.each (intervals, function (index, interval) {
+					labels.push (['<i style="background: ' + interval[1] + '"></i>', layerviewer.htmlspecialchars (layerviewer.ucfirst (interval[0]))]);
+				});
+			} else {
+				$.each (intervals, function (i, label) {
+					labels.push (['<i style="background: ' + _settings.colourStops[i] + '"></i>', layerviewer.htmlspecialchars (label.replace('-', ' - '))]);
+				});
+				labels.push (['<i style="background: ' + _settings.colourUnknown + '"></i>', 'Unknown']);
+				labels = labels.reverse();	// Legends should be shown highest first
+			}
+			
+			// Compile the labels table
+			var labelsTable = '<table>';
+			$.each (labels, function (index, label) {
+				labelsTable += '<tr><td>' + label[0] + '</td><td>' + label[1] + '</td></tr>';
+			});
+			labelsTable += '</table>';
+			
+			// Compile the HTML
+			var html = '';
+			if (_layerConfig[layerId].name) {
+				html += '<h4>' + layerviewer.htmlspecialchars (_layerConfig[layerId].name) + '</h4>';
+			}
+			if (_layerConfig[layerId].description) {
+				html += '<p>' + layerviewer.htmlspecialchars (_layerConfig[layerId].description) + '</p>';
+			}
+			html += labelsTable;
+			
+			// Set the HTML
+			$('.legend').show ();
+			$('.legend').html (html);
+		},
+		
+		
+		// Function to clear the legend
+		clearLegend: function ()
+		{
+			$('.legend').hide ();
+			$('.legend').html ('');
+		},
+		
+		
 		// Function to create a message area, and provide methods to manipulate it
 		messageArea: function ()
 		{
@@ -801,6 +884,9 @@ var layerviewer = (function ($) {
 			if (_layerConfig[layerId].detailsOverlay) {
 				layerviewer.detailsOverlayHandler ('#details', layerId);
 			}
+			
+			// Set the legend
+			layerviewer.setLegend (layerId);
 			
 			// Fetch the data
 			layerviewer.getData (layerId, _parameters[layerId]);
@@ -1738,7 +1824,7 @@ var layerviewer = (function ($) {
 					html += '</select>';
 					
 					// Add to the map
-					var regionswitcher = L.control({position: 'bottomleft'});
+					var regionswitcher = L.control({position: 'topright'});
 					regionswitcher.onAdd = function () {
 						return L.DomUtil.create ('div', 'regionswitcher');
 					}
@@ -1793,6 +1879,7 @@ var layerviewer = (function ($) {
 		// Function to make data entity-safe
 		htmlspecialchars: function (string)
 		{
+			if (typeof string !== 'string') {return string;}
 			return string.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 		},
 		
@@ -1800,6 +1887,7 @@ var layerviewer = (function ($) {
 		// Function to make first character upper-case; see: https://stackoverflow.com/a/1026087/180733
 		ucfirst: function (string)
 		{
+			if (typeof string !== 'string') {return string;}
 			return string.charAt(0).toUpperCase() + string.slice(1);
 		},
 		
