@@ -22,6 +22,10 @@ Layers and settings are defined using a simple, high-level, declarative structur
 - Multiple bitmap background layers
 - HTML5 pushstate URL support
 - Mobile support
+- Region switcher, using a GeoJSON file
+- Page popup support
+- Basic password-protection
+- Automatic legend generation
 
 
 ## Forthcoming features
