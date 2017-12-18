@@ -157,7 +157,7 @@ var layerviewer = (function ($) {
 				weight: 5
 			},
 			
-			// If drawing lines, the field that contains the value used to determine the colour, and the colour stops for this
+			// If drawing lines, the field that contains the value used to determine the colour, and the colour stops for this, as an array of pairs of upper limit value and colour
 			lineColourField: 'value',
 			lineColourStops: [
 				[200, '#ff0000'],
