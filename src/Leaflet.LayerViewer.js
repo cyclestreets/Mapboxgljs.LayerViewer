@@ -1696,21 +1696,19 @@ var layerviewer = (function ($) {
 		// Assign style from lookup table
 		lookupStyleValue: function (value, lookupTable)
 		{
-			// If the intervals is an array, i.e. standard list of colour stops, loop until found
-			if (lookupTable[0]) {	// Simple, quick check
-				
-				// Loop through each style stop until found
-				var styleStop;
-				for (var i = 0; i < lookupTable.length; i++) {	// NB $.each doesn't seem to work - it doesn't seem to reset the array pointer for each iteration
-					styleStop = lookupTable[i];
+			// Loop through each style stop until found
+			var styleStop;
+			for (var i = 0; i < lookupTable.length; i++) {
+				styleStop = lookupTable[i];
+				if (typeof lookupTable[0][0] === 'string') {	// Fixed string values
+					if (value == styleStop[0]) {
+						return styleStop[1];
+					}
+				} else {					// Range values
 					if (value >= styleStop[0]) {
 						return styleStop[1];
 					}
 				}
-				
-			// For pure key-value pair definition objects, read the value off
-			} else {
-				return lookupTable[value];
 			}
 			
 			// Fallback to final colour in the list
