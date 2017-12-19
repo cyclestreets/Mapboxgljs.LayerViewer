@@ -804,19 +804,11 @@ var layerviewer = (function ($) {
 				});
 			}
 			
-			// Support either an array of pairs, or a list of intervals
+			// Create the labels
 			var labels = [];
-			if (intervals[0] && intervals[0][0]) {		// Simple, quick check for an array of pairs
-				$.each (intervals, function (index, interval) {
-					labels.push (['<i style="background: ' + interval[1] + '"></i>', layerviewer.htmlspecialchars (layerviewer.ucfirst (interval[0]))]);
-				});
-			} else {
-				$.each (intervals, function (i, label) {
-					labels.push (['<i style="background: ' + _settings.colourStops[i] + '"></i>', layerviewer.htmlspecialchars (label.replace('-', ' - '))]);
-				});
-				labels.push (['<i style="background: ' + _settings.colourUnknown + '"></i>', 'Unknown']);
-				labels = labels.reverse();	// Legends should be shown highest first
-			}
+			$.each (intervals, function (index, interval) {
+				labels.push (['<i style="background: ' + interval[1] + '"></i>', layerviewer.htmlspecialchars (layerviewer.ucfirst (interval[0]))]);
+			});
 			
 			// Compile the labels table
 			var labelsTable = '<table>';
