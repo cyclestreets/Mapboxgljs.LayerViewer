@@ -346,7 +346,7 @@ var layerviewer = (function ($) {
 			});
 			
 			// Toggle map data layers on/off when checkboxes changed
-			$('nav #selector input').change (function() {
+			$('nav #selector input[type="checkbox"]').change (function() {
 				var layerId = this.id.replace('show_', '');
 				if (this.checked) {
 					_layers[layerId] = true;
