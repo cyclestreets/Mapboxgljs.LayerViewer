@@ -387,7 +387,7 @@ var layerviewer = (function ($) {
 			$('#protection').append ('<p id="loginprompt">If you have been given a login password, please enter it below.</p>');
 			var form = $('<form id="password" method="post"></form>');
 			form.append('<input name="password" type="password" required="required" placeholder="Password" size="20" />');
-			form.append('<input type="submit" />');
+			form.append('<input type="submit" value="Submit" />');
 			$('#protection').append (form);
 			
 			// If the form is submitted, validate the value
