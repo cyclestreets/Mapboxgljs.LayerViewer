@@ -410,7 +410,7 @@ var layerviewer = (function ($) {
 					
 					// Show message
 					var message = 'The password you gave is not correct. Please check and try again.';
-					vex.dialog.alert ({message: message, showCloseButton: true, showCloseButton: true, className: 'vex vex-theme-plain'});
+					vex.dialog.alert ({message: message, showCloseButton: true, className: 'vex vex-theme-plain'});
 					
 					// Reset the form content
 					$('#password')[0].reset();
@@ -1999,7 +1999,7 @@ var layerviewer = (function ($) {
 			
 			$('a.feedback').click (function (e) {
 				html = '<div id="feedbackbox">' + html + '</div>';
-				vex.dialog.alert ({unsafeMessage: html, showCloseButton: true, showCloseButton: true, className: 'vex vex-theme-plain feedback'});
+				vex.dialog.alert ({unsafeMessage: html, showCloseButton: true, className: 'vex vex-theme-plain feedback'});
 				
 				// Create the form handler, which submits to the API
 				$('#feedbackbox form').submit (function(event) {	// #feedbackbox form used as #feedbackform doesn't seem to exist in the DOM properly in this context
@@ -2050,7 +2050,7 @@ var layerviewer = (function ($) {
 			
 			// Create the handler to launch a dialog box
 			$('a[href="#' + contentDivId + '"]').click (function (event) {
-				vex.dialog.alert ({unsafeMessage: html, showCloseButton: true, showCloseButton: true, className: 'vex vex-theme-plain page'});
+				vex.dialog.alert ({unsafeMessage: html, showCloseButton: true, className: 'vex vex-theme-plain page'});
 				return false;
 			});
 		}
