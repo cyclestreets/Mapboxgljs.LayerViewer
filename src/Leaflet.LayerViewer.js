@@ -1936,6 +1936,11 @@ var layerviewer = (function ($) {
 							var selectedRegion = this.value;
 							_map.fitBounds (regions[selectedRegion]);
 						}
+						
+						// #!# IE bug workaround: need to move the focus to something else, otherwise change works first time but not after that
+						if (navigator.appVersion.indexOf('Trident/') !== -1) {
+							$('.regionswitcher select').focus();
+						}
 					});
 				}
 			});
