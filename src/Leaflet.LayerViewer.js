@@ -320,6 +320,9 @@ var layerviewer = (function ($) {
 			// Set dialog style
 			vex.defaultOptions.className = 'vex-theme-plain';
 			
+			// Register a more details dialog box handler, giving a link to more information
+			layerviewer.moreDetails ();
+			
 			// Show first-run welcome message if the user is new to the site
 			layerviewer.welcomeFirstRun ();
 			
@@ -732,6 +735,46 @@ var layerviewer = (function ($) {
 			$('nav').tooltip ({
 				track: true
 			});
+		},
+		
+		
+		// Handler for a more details popup layer
+		moreDetails: function ()
+		{
+			// End if no definitions present
+			if ($('#aboutfields').length == 0) {return;}
+			
+			// Create popup when link clicked on
+			$('.moredetails').click (function (e) {
+				
+				// Obtain the field
+				var field = $(this).attr('data-field');
+				
+				// Obtain the content; see: https://stackoverflow.com/a/14744011/180733 and https://stackoverflow.com/a/25183183/180733
+				var dialogBoxContentHtml = $('#aboutfields').find('h3.' + field).nextUntil('h3').addBack().map(function() {
+					return this.outerHTML;
+				}).get().join('');
+				if (!dialogBoxContentHtml) {
+					dialogBoxContentHtml = '<p><em>Sorry, no further details for this field available yet.</em></p>';
+				}
+				
+				// Wrap in a div
+				dialogBoxContentHtml = '<div id="moredetailsboxcontent">' + dialogBoxContentHtml + '</div>';
+				
+				// Create the dialog box
+				layerviewer.dialogBox ('#moredetails', field, dialogBoxContentHtml);
+				
+				// Prevent link
+				e.preventDefault ();
+			});
+		},
+		
+		
+		// Dialog box
+		dialogBox: function (triggerElement, name, html)
+		{
+			vex.dialog.buttons.YES.text = 'Close';
+			vex.dialog.alert ({unsafeMessage: html, showCloseButton: true, className: 'vex vex-theme-plain wider'});
 		},
 		
 		
