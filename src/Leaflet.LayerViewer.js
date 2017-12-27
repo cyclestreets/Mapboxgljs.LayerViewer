@@ -1368,7 +1368,7 @@ var layerviewer = (function ($) {
 					
 					// Render the data into the overlay template
 					var template = (_layerConfig[layerId].overlayHtml ? _layerConfig[layerId].overlayHtml : false);
-					var html = layerviewer.renderDetails (feature, template);
+					var html = layerviewer.renderDetails (template, feature, false);
 					
 					// Create the dialog box and its contents
 					var divId = layerId + 'details';
@@ -1448,7 +1448,7 @@ var layerviewer = (function ($) {
 		
 		
 		// Function to construct the popup/overlay content
-		renderDetails: function (feature, template)
+		renderDetails: function (template, feature, layer)
 		{
 			// Use a template if this has been defined in the layer config
 			var html;
@@ -1464,6 +1464,17 @@ var layerviewer = (function ($) {
 				// Convert Street View macro
 				if (template.indexOf ('{%streetview}') >= 0) {
 					template = template.replace ('{%streetview}', layerviewer.streetViewTemplate (feature));
+				}
+				
+				// Convert OSM edit link macro
+				if (template.indexOf ('{%osmeditlink}') >= 0) {
+					if (layer) {	// Layer is not always supported by callers of this function
+						var bounds = layer.getBounds();
+						var centrePoint = bounds.getCenter();
+						var zoom = _map.getBoundsZoom (bounds) - 1;	// -1 to zoom out a level
+						var osmEditUrl = 'https://www.openstreetmap.org/edit#map=' + zoom + '/' + centrePoint.lat + '/' + centrePoint.lng;
+						template = template.replace ('{%osmeditlink}', '<a class="edit" target="_blank" href="' + osmEditUrl + '">Edit in OSM</a>');
+					}
 				}
 				
 				// If any property is null, show '?' instead
@@ -1661,7 +1672,7 @@ var layerviewer = (function ($) {
 				onEachFeature: function (feature, layer) {
 					totalItems++;
 					var template = (_layerConfig[layerId].popupHtml ? _layerConfig[layerId].popupHtml : false);
-					var popupContent = layerviewer.renderDetails (feature, template);
+					var popupContent = layerviewer.renderDetails (template, feature, layer);
 					layer.bindPopup(popupContent, {autoPan: false, className: layerId});
 					
 					// Add hover style if enabled
