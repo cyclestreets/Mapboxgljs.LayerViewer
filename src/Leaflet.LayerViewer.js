@@ -1754,9 +1754,9 @@ var layerviewer = (function ($) {
 			if (totalItems) {
 				if ( $('#sections #' + layerId + ' div.export p a').length == 0) {	// i.e. currently unlinked
 					var exportUrl = (_layerConfig[layerId].apiCall.match (/^https?:\/\//) ? '' : _settings.apiBaseUrl) + _layerConfig[layerId].apiCall + '?' + requestSerialised + '&format=csv';
+					$('#sections #' + layerId + ' div.export p').append(' <span>(' + totalItems + ')</span>');
 					$('#sections #' + layerId + ' div.export p').contents().wrap('<a href="' + exportUrl + '"></a>');
 					$('#sections #' + layerId + ' div.export p').addClass('enabled');
-					$('#sections #' + layerId + ' div.export p').append(' <span>(' + totalItems + ')</span>');
 				}
 			}
 			
