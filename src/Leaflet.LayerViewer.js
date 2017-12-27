@@ -306,7 +306,7 @@ var layerviewer = (function ($) {
 			}
 			
 			// Determine layers to use, checking for data in order of precedence
-			var initialLayers = initialLayersPopstate || urlParameters.sections || initialLayersCookies || _settings.defaultLayers;
+			var initialLayers = initialLayersPopstate || (urlParameters.sections.length ? urlParameters.sections : false) || (initialLayersCookies.length ? initialLayersCookies : false) || _settings.defaultLayers;
 			
 			// Load the tabs
 			layerviewer.loadTabs (initialLayers);
