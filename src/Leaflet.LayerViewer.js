@@ -548,8 +548,8 @@ var layerviewer = (function ($) {
 				// Add background highlight to this tab
 				$('nav li.' + layerId).addClass('selected');
 				
-				// Enable tab
-				$('nav li.' + layerId + ' input').click();
+				// Enable checkbox
+				$('nav input#show_' + layerId).click();
 			});
 			
 			// Enable tabbing of main menu
