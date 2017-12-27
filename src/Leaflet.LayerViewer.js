@@ -51,7 +51,10 @@ var layerviewer = (function ($) {
 		
 		// Explicit styling as default for all layers
 		style: {},
-			
+		
+		// Enable hover for all (line-based) layers
+		hover: true,
+		
 		// Default icon and size
 		iconUrl: null,
 		iconSize: null,
@@ -176,6 +179,9 @@ var layerviewer = (function ($) {
 				[100, 5],
 				[0, 1],
 			],
+			
+			// Enable hover for this layer (for line-based layers)
+			hover: true,
 			
 			// Legend, either array of values (as same format as lineColourStops), or boolean true to use lineColourStops if that exists
 			legend: true,
@@ -1657,6 +1663,18 @@ var layerviewer = (function ($) {
 					var template = (_layerConfig[layerId].popupHtml ? _layerConfig[layerId].popupHtml : false);
 					var popupContent = layerviewer.renderDetails (feature, template);
 					layer.bindPopup(popupContent, {autoPan: false, className: layerId});
+					
+					// Add hover style if enabled
+					if (_settings.hover || _layerConfig[layerId].hover) {
+						layer.on('mouseover', function () {
+							this.setStyle ({
+								weight: 12
+							});
+						});
+						layer.on('mouseout', function () {
+							_currentDataLayer[layerId].resetStyle(this);
+						});
+					}
 				},
 				
 				// Rendering style
