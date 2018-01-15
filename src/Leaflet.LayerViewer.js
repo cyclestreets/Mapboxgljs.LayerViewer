@@ -40,6 +40,9 @@ var layerviewer = (function ($) {
 		// Enable/disabled drawing feature
 		enableDrawing: true,
 		
+		// Map scale
+		enableScale: false,
+		
 		// First-run welcome message
 		firstRunMessageHtml: false,
 		
@@ -979,6 +982,11 @@ var layerviewer = (function ($) {
 				icon: 'fa fa-location-arrow',
 				locateOptions: {maxZoom: 17}
 			}));
+			
+			// Add map scale if required
+			if (_settings.enableScale) {
+				L.control.scale({maxWidth: 300, position: 'bottomright'}).addTo(_map);
+			}
 		},
 		
 		
