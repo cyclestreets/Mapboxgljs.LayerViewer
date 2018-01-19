@@ -107,6 +107,9 @@ var layerviewer = (function ($) {
 		regionsFile: false,
 		regionsField: false,
 		
+		// Beta switch
+		enableBetaSwitch: false,
+		
 		// Password protection, as an SHA-256 hash
 		password: false
 	};
@@ -237,6 +240,7 @@ var layerviewer = (function ($) {
 	var _title = false;
 	var _embedMode = false;
 	var _message = null;
+	var _betaMode = false;
 	
 	
 	return {
@@ -334,6 +338,9 @@ var layerviewer = (function ($) {
 			
 			// Create the legend for the current field, and update on changes
 			layerviewer.createLegend ();
+			
+			// Create a beta switch if required
+			layerviewer.createBetaSwitch ();
 			
 			// Create a message area, and provide methods to manipulate it
 			layerviewer.messageArea ();
@@ -890,6 +897,30 @@ var layerviewer = (function ($) {
 		},
 		
 		
+		// Function to create a beta switch
+		createBetaSwitch: function ()
+		{
+			// End if not required
+			if (!_settings.enableBetaSwitch) {return;}
+			
+			// Affix the control
+			var betaSwitch = L.control({position: 'bottomright'});
+			
+			// Define the HTML
+			var html = '<form id="beta"><input type="checkbox" id="betabutton" name="betabutton" value="true" /><label for="betabutton"> Beta</label></form>';
+			
+			// Add the content
+			betaSwitch.onAdd = function () {
+				this._betaSwitchContents = L.DomUtil.create ('div', 'info betaswitch');
+				this._betaSwitchContents.innerHTML = html;
+				return this._betaSwitchContents;
+			};
+			
+			// Add to the map
+			betaSwitch.addTo (_map);
+		},
+		
+		
 		// Function to create a message area, and provide methods to manipulate it
 		messageArea: function ()
 		{
@@ -1067,6 +1098,14 @@ var layerviewer = (function ($) {
 				_parameters[layerId] = layerviewer.parseFormValues (layerId);
 				layerviewer.getData (layerId, _parameters[layerId]);
 			});
+			
+			// Register to reload on beta change
+			if (_settings.enableBetaSwitch) {
+				$('html').on('change', '#beta :checkbox', function () {
+					_betaMode = (this.checked);
+					layerviewer.getData (layerId, _parameters[layerId]);
+				});
+			}
 		},
 		
 		
@@ -1274,6 +1313,11 @@ var layerviewer = (function ($) {
 			$.each(parameters, function (field, value) {
 				apiData[field] = value;
 			});
+			
+			// Add beta flag if enabled
+			if (_betaMode) {
+				apiData['beta'] = 1;
+			}
 			
 			// If no change (e.g. map move while boundary set, and no other changes), avoid re-requesting data
 			var requestSerialised = $.param(apiData);
