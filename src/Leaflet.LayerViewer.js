@@ -909,8 +909,11 @@ var layerviewer = (function ($) {
 			// Affix the control
 			var betaSwitch = L.control({position: 'bottomright'});
 			
+			// Determine the label
+			var label = (_settings.enableBetaSwitch === true ? 'Beta' : _settings.enableBetaSwitch);
+			
 			// Define the HTML
-			var html = '<form id="beta"><input type="checkbox" id="betabutton" name="betabutton" value="true" /><label for="betabutton"> Beta</label></form>';
+			var html = '<form id="beta"><input type="checkbox" id="betabutton" name="betabutton" value="true" /><label for="betabutton"> ' + label + '</label></form>';
 			
 			// Add the content
 			betaSwitch.onAdd = function () {
