@@ -198,10 +198,13 @@ var layerviewer = (function ($) {
 			// Polygon style; currently supported values are 'grid' (blue boxes with dashed lines, intended for tessellating data), 'green', 'red'
 			polygonStyle: 'grid',
 			
-			// Code for poups; placeholders can be used to reference data in the GeoJSON
+			// Code for popups; placeholders can be used to reference data in the GeoJSON
 			popupHtml:
 				+ '<p>Reference: <strong>{properties.id}</strong></p>'
 				+ '<p>Date and time: {properties.datetime}</p>',
+			
+			// Labels for auto-popups
+			popupLabels: {},
 			
 			// Field that contains a follow-on API URL where more details of the feature can be requested
 			detailsOverlay: 'apiUrl',
@@ -1468,7 +1471,7 @@ var layerviewer = (function ($) {
 					
 					// Render the data into the overlay template
 					var template = (_layerConfig[layerId].overlayHtml ? _layerConfig[layerId].overlayHtml : false);
-					var html = layerviewer.renderDetails (template, feature, false);
+					var html = layerviewer.renderDetails (template, feature, false, layerId);
 					
 					// Create the dialog box and its contents
 					var divId = layerId + 'details';
@@ -1548,7 +1551,7 @@ var layerviewer = (function ($) {
 		
 		
 		// Function to construct the popup/overlay content
-		renderDetails: function (template, feature, layer)
+		renderDetails: function (template, feature, layer, layerId)
 		{
 			// Use a template if this has been defined in the layer config
 			var html;
@@ -1599,7 +1602,18 @@ var layerviewer = (function ($) {
 			} else {
 				
 				html = '<table>';
+				var fieldLabel;
 				$.each (feature.properties, function (key, value) {
+					
+					// Key
+					fieldLabel = key;
+					if (_layerConfig[layerId].popupLabels) {
+						if (_layerConfig[layerId].popupLabels[key]) {
+							fieldLabel = _layerConfig[layerId].popupLabels[key];
+						}
+					}
+					
+					// Value
 					if (key == 'thumbnailUrl') {
 						if (feature.properties.hasPhoto) {
 							html += '<p><img src="' + value + '" /></p>';
@@ -1611,7 +1625,9 @@ var layerviewer = (function ($) {
 					if (typeof value == 'string') {
 						value = value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 					}
-					html += '<tr><td>' + key + ':</td><td><strong>' + value + '</strong></td></tr>';
+					
+					// Compile the HTML
+					html += '<tr><td>' + fieldLabel + ':</td><td><strong>' + value + '</strong></td></tr>';
 				});
 				html += '</table>';
 			}
@@ -1772,7 +1788,7 @@ var layerviewer = (function ($) {
 				onEachFeature: function (feature, layer) {
 					totalItems++;
 					var template = (_layerConfig[layerId].popupHtml ? _layerConfig[layerId].popupHtml : false);
-					var popupContent = layerviewer.renderDetails (template, feature, layer);
+					var popupContent = layerviewer.renderDetails (template, feature, layer, layerId);
 					layer.bindPopup(popupContent, {autoPan: false, className: layerId});
 					
 					// Add hover style if enabled
