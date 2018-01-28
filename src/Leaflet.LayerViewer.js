@@ -1851,12 +1851,14 @@ var layerviewer = (function ($) {
 			// Update the total count
 			$('nav #selector li.' + layerId + ' p.total').html(totalItems);
 			
-			// Enable/update CSV export link, if there are items, and show its count
+			// Enable/update CSV/GeoJSON export link(s), if there are items, and show the count
 			if (totalItems) {
-				if ( $('#sections #' + layerId + ' div.export p a').length == 0) {	// i.e. currently unlinked
-					var exportUrl = (_layerConfig[layerId].apiCall.match (/^https?:\/\//) ? '' : _settings.apiBaseUrl) + _layerConfig[layerId].apiCall + '?' + requestSerialised + '&format=csv';
+				if ( $('#sections #' + layerId + ' div.export a').length == 0) {	// i.e. currently unlinked
+					var exportUrlCsv = (_layerConfig[layerId].apiCall.match (/^https?:\/\//) ? '' : _settings.apiBaseUrl) + _layerConfig[layerId].apiCall + '?' + requestSerialised + '&format=csv';
+					var exportUrlGeojson = (_layerConfig[layerId].apiCall.match (/^https?:\/\//) ? '' : _settings.apiBaseUrl) + _layerConfig[layerId].apiCall + '?' + requestSerialised;
 					$('#sections #' + layerId + ' div.export p').append(' <span>(' + totalItems + ')</span>');
-					$('#sections #' + layerId + ' div.export p').contents().wrap('<a href="' + exportUrl + '"></a>');
+					$('#sections #' + layerId + ' div.export .csv').wrap('<a href="' + exportUrlCsv + '"></a>');
+					$('#sections #' + layerId + ' div.export .geojson').wrap('<a href="' + exportUrlGeojson + '" target="_blank"></a>');
 					$('#sections #' + layerId + ' div.export p').addClass('enabled');
 				}
 			}
