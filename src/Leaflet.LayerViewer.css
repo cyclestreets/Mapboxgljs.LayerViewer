@@ -10,6 +10,7 @@ a img {border: 0;}
 
 /* Popups */
 #map .leaflet-popup {min-width: 350px;}
+#map .leaflet-popup.autowidth {min-width: 0;}
 #map .leaflet-popup .scrollable {max-height: 200px; overflow-y: auto; margin-top: 0;}
 #map .leaflet-popup .scrollable p:first-child {margin-top: 0;}
 #map .leaflet-popup p {margin: 0.5em 0; padding: 0;}

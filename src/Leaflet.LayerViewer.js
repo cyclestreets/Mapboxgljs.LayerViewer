@@ -110,6 +110,9 @@ var layerviewer = (function ($) {
 		regionsFile: false,
 		regionsField: false,
 		
+		// Initial view of all regions; will use regionsFile
+		initialRegionsView: false,
+		
 		// Beta switch
 		enableBetaSwitch: false,
 		
@@ -279,6 +282,48 @@ var layerviewer = (function ($) {
 			
 			// Parse the URL
 			var urlParameters = layerviewer.getUrlParameters ();
+			
+			// Show intial regions view if required
+			if (_settings.initialRegionsView && _settings.regionsFile && _settings.regionsField) {
+				if (!urlParameters.defaultLocation) {
+					
+					// Load the GeoJSON file
+					$.ajax({
+						url: _settings.regionsFile,
+						dataType: (layerviewer.browserSupportsCors () ? 'json' : 'jsonp'),		// Fall back to JSON-P for IE9
+						error: function (jqXHR, error, exception) {
+							vex.dialog.alert ('Error: could not load regions list file.');
+						},
+						success: function (data, textStatus, jqXHR) {
+							var regionsOverlay = L.geoJson(data, {
+								
+								onEachFeature: function (feature, layer) {
+									
+									// Add the region name as the popup content
+									var regionName = feature.properties[_settings.regionsField];
+									regionName = layerviewer.htmlspecialchars (layerviewer.ucfirst (regionName));
+									layer.bindPopup (regionName, {className: 'autowidth'});
+									
+									// Add mouseover hover
+									layer.on('mouseover', function (eventn) {
+										this.openPopup();
+									});
+									layer.on('mouseout', function (event) {
+										this.closePopup();
+									});
+									
+									// Zoom to area and remove layer when clicked
+									layer.on('click', function (event) {
+										_map.fitBounds(layer.getBounds());
+										_map.removeLayer (regionsOverlay);
+									})
+								}
+								
+							}).addTo(_map);
+						}
+					});
+				}
+			}
 			
 			// Set the initial location and tile layer
 			var defaultLocation = (urlParameters.defaultLocation || _settings.defaultLocation);
