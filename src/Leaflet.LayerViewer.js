@@ -323,6 +323,14 @@ var layerviewer = (function ($) {
 								}
 								
 							}).addTo(_map);
+							
+							// Create a handler to remove the overlay automatically when zoomed in (but not explicitly clicked through)
+							_map.on ('zoomend', function (e) {
+								var currentZoom = _map.getZoom ();
+								if (currentZoom >= 10) {	// Roughly size of a UK County
+									_map.removeLayer (regionsOverlay);
+								}
+							});
 						}
 					});
 				}
