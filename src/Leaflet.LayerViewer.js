@@ -1453,7 +1453,8 @@ var layerviewer = (function ($) {
 					// #!# This is done here because the API still returns Status code 200
 					if (data.error) {
 						layerviewer.removeLayer (layerId, false);
-						vex.dialog.alert ('Error from ' + (_layerConfig[layerId].name ? _layerConfig[layerId].name : layerId) + ' layer: ' + data.error);
+						console.log ('Error from ' + (_layerConfig[layerId].name ? _layerConfig[layerId].name : layerId) + ' layer: ' + data.error);
+						// vex.dialog.alert ('Error from ' + (_layerConfig[layerId].name ? _layerConfig[layerId].name : layerId) + ' layer: ' + data.error);
 						return {};
 					}
 					
