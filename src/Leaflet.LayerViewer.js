@@ -2116,7 +2116,7 @@ var layerviewer = (function ($) {
 					
 					// Create a droplist
 					var html = '<select>';
-					html += '<option value="">Switch region:</option>';
+					html += '<option value="">Move to area:</option>';
 					$.each (names, function (index, name) {
 						html += '<option value="' + layerviewer.htmlspecialchars (name) + '">' + layerviewer.htmlspecialchars (layerviewer.ucfirst (name)) + '</option>';
 					});
