@@ -1365,13 +1365,7 @@ var layerviewer = (function ($) {
 			}
 			
 			// Send zoom if required
-			var sendZoom = false;
-			if (_settings.hasOwnProperty('sendZoom')) {
-				sendZoom = _settings.sendZoom;
-			}
-			if (_layerConfig[layerId].hasOwnProperty('sendZoom')) {	// Layer-specific sendZoom can override global
-				sendZoom = _layerConfig[layerId].sendZoom;
-			}
+			var sendZoom = layerviewer.glocalVariable ('sendZoom', layerId);
 			if (sendZoom) {
 				apiData.zoom = _map.getZoom ();
 			}
@@ -1462,6 +1456,22 @@ var layerviewer = (function ($) {
 					return layerviewer.showCurrentData(layerId, data, requestSerialised);
 				}
 			});
+		},
+		
+		
+		// Function to determine the value of a variable settable globally and/or locally
+		glocalVariable: function (variableName, layerId)
+		{
+			// Default to global value
+			value = _settings[variableName];
+			
+			// Layer-specific setting can override global
+			if (_layerConfig[layerId].hasOwnProperty(variableName)) {
+				value = _layerConfig[layerId][variableName];
+			}
+			
+			// Return the value
+			return value;
 		},
 		
 		
