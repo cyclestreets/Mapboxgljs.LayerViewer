@@ -113,6 +113,9 @@ var layerviewer = (function ($) {
 		// Initial view of all regions; will use regionsFile
 		initialRegionsView: false,
 		
+		// Whether to show layer errors in a (non-modal) corner dialog, rather than as a modal popup
+		errorNonModalDialog: false,
+		
 		// Beta switch
 		enableBetaSwitch: false,
 		
@@ -1443,13 +1446,24 @@ var layerviewer = (function ($) {
 					// Stop data loading spinner for this layer
 					$('#selector li.' + layerId + ' img.loading').hide();
 					
+					// Determine error handling UI mode
+					var errorNonModalDialog = layerviewer.glocalVariable ('errorNonModalDialog', layerId);
+					
 					// Show API-level error if one occured
 					// #!# This is done here because the API still returns Status code 200
 					if (data.error) {
 						layerviewer.removeLayer (layerId, false);
-						console.log ('Error from ' + (_layerConfig[layerId].name ? _layerConfig[layerId].name : layerId) + ' layer: ' + data.error);
-						// vex.dialog.alert ('Error from ' + (_layerConfig[layerId].name ? _layerConfig[layerId].name : layerId) + ' layer: ' + data.error);
+						var errorMessage = (_layerConfig[layerId].name ? _layerConfig[layerId].name : layerId) + ' layer: ' + data.error;
+						if (errorNonModalDialog) {
+							_message.show (errorMessage);
+						} else {
+							vex.dialog.alert (errorMessage);
+						}
 						return {};
+					} else {
+						if (errorNonModalDialog) {
+							_message.hide ();
+						}
 					}
 					
 					// Return the data successfully
@@ -1463,7 +1477,7 @@ var layerviewer = (function ($) {
 		glocalVariable: function (variableName, layerId)
 		{
 			// Default to global value
-			value = _settings[variableName];
+			var value = _settings[variableName];
 			
 			// Layer-specific setting can override global
 			if (_layerConfig[layerId].hasOwnProperty(variableName)) {
