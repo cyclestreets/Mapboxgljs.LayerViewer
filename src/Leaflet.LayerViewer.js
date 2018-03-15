@@ -1659,6 +1659,9 @@ var layerviewer = (function ($) {
 						value = value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 					}
 					
+					// Apply number_format (if numeric)
+					value = layerviewer.number_format (value);
+					
 					// Compile the HTML
 					html += '<tr><td>' + fieldLabel + ':</td><td><strong>' + value + '</strong></td></tr>';
 				});
@@ -2282,6 +2285,38 @@ var layerviewer = (function ($) {
 				vex.dialog.alert ({unsafeMessage: html, showCloseButton: true, className: 'vex vex-theme-plain page'});
 				return false;
 			});
+		},
+		
+		
+		// Number formatting; see: http://phpjs.org/functions/number_format/
+		number_format: function (number, decimals, dec_point, thousands_sep)
+		{
+			// End if not actually numeric
+			if (number == null || !isFinite (number)) {
+				return number;
+			}
+			
+			// Strip all characters but numerical ones
+			number = (number + '').replace(/[^0-9+\-Ee.]/g, '');
+			var n = !isFinite(+number) ? 0 : +number;
+			var prec = !isFinite(+decimals) ? 0 : Math.abs(decimals);
+			var sep = (typeof thousands_sep === 'undefined') ? ',' : thousands_sep;
+			var dec = (typeof dec_point === 'undefined') ? '.' : dec_point;
+			var s = '';
+			var toFixedFix = function (n, prec) {
+				var k = Math.pow(10, prec);
+				return '' + Math.round(n * k) / k;
+			};
+			// Fix for IE parseFloat(0.55).toFixed(0) = 0;
+			s = (prec ? toFixedFix(n, prec) : '' + Math.round(n)).split('.');
+			if (s[0].length > 3) {
+				s[0] = s[0].replace(/\B(?=(?:\d{3})+(?!\d))/g, sep);
+			}
+			if ((s[1] || '').length < prec) {
+				s[1] = s[1] || '';
+				s[1] += new Array(prec - s[1].length + 1).join('0');
+			}
+			return s.join(dec);
 		}
 	};
 	
