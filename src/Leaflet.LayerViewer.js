@@ -201,10 +201,13 @@ var layerviewer = (function ($) {
 			// Polygon style; currently supported values are 'grid' (blue boxes with dashed lines, intended for tessellating data), 'green', 'red'
 			polygonStyle: 'grid',
 			
-			// Code for popups; placeholders can be used to reference data in the GeoJSON
+			// Code for popups; placeholders can be used to reference data in the GeoJSON; if using popupSublayerParameter, this is specified as a hashmap
 			popupHtml:
 				+ '<p>Reference: <strong>{properties.id}</strong></p>'
 				+ '<p>Date and time: {properties.datetime}</p>',
+			
+			// Popup dependent on the value of a specified request parameter
+			popupSublayerParameter: false,
 			
 			// Labels for auto-popups
 			popupLabels: {},
@@ -1467,7 +1470,7 @@ var layerviewer = (function ($) {
 					}
 					
 					// Return the data successfully
-					return layerviewer.showCurrentData(layerId, data, requestSerialised);
+					return layerviewer.showCurrentData (layerId, data, apiData, requestSerialised);
 				}
 			});
 		},
@@ -1744,7 +1747,7 @@ var layerviewer = (function ($) {
 		
 		
 		// Function to show the data for a layer
-		showCurrentData: function (layerId, data, requestSerialised)
+		showCurrentData: function (layerId, data, requestData, requestSerialised)
 		{
 			// If a heatmap, divert to this
 			if (_layerConfig[layerId].heatmap) {
@@ -1823,7 +1826,24 @@ var layerviewer = (function ($) {
 				// Set popup
 				onEachFeature: function (feature, layer) {
 					totalItems++;
-					var template = (_layerConfig[layerId].popupHtml ? _layerConfig[layerId].popupHtml : false);
+					
+					// Determine the template
+					var template = false;
+					var popupSublayerValue;
+					if (_layerConfig[layerId].popupHtml) {
+						
+						// If the selection of popup template depends on the value of a parameter in the request
+						if (_layerConfig[layerId].popupSublayerParameter) {
+							if (requestData[_layerConfig[layerId].popupSublayerParameter]) {
+								popupSublayerValue = requestData[_layerConfig[layerId].popupSublayerParameter];
+								template = _layerConfig[layerId].popupHtml[popupSublayerValue];
+							}
+						} else {
+							template = _layerConfig[layerId].popupHtml;
+						}
+					}
+					
+					// Determine the popup content
 					var popupContent = layerviewer.renderDetails (template, feature, layer, layerId);
 					layer.bindPopup(popupContent, {autoPan: false, className: layerId});
 					
