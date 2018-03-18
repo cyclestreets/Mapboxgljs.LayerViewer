@@ -1776,19 +1776,7 @@ var layerviewer = (function ($) {
 			}
 			
 			// Determine the template
-			var template = false;
-			if (_layerConfig[layerId].popupHtml) {
-				
-				// If the selection of popup template depends on the value of a parameter in the request
-				if (_layerConfig[layerId].sublayerParameter) {
-					if (requestData[_layerConfig[layerId].sublayerParameter]) {
-						var popupSublayerValue = requestData[_layerConfig[layerId].sublayerParameter];
-						template = _layerConfig[layerId].popupHtml[popupSublayerValue];
-					}
-				} else {
-					template = _layerConfig[layerId].popupHtml;
-				}
-			}
+			var template = layerviewer.sublayerableConfig ('template', layerId, requestData);
 			
 			// Define the data layer
 			var totalItems = 0;
@@ -1936,6 +1924,30 @@ var layerviewer = (function ($) {
 			
 			// Add to the map
 			_currentDataLayer[layerId].addTo(_map);
+		},
+		
+		
+		// Function to obtain a value from a sublayerable configuration parameter
+		sublayerableConfig: function (field, layerId, requestData)
+		{
+			var value = false;
+			if (_layerConfig[layerId][field]) {
+				
+				// If enabled, select settings dependent on the value of a parameter in the request
+				if (_layerConfig[layerId].sublayerParameter) {
+					if (requestData[_layerConfig[layerId].sublayerParameter]) {
+						var sublayerValue = requestData[_layerConfig[layerId].sublayerParameter];
+						
+						// Allocate the values
+						value = _layerConfig[layerId][field][sublayerValue];
+					}
+				} else {
+					value = _layerConfig[layerId][field];
+				}
+			}
+			
+			// Return the value
+			return value;
 		},
 		
 		
