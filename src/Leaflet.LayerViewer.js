@@ -1775,6 +1775,21 @@ var layerviewer = (function ($) {
 				});
 			}
 			
+			// Determine the template
+			var template = false;
+			if (_layerConfig[layerId].popupHtml) {
+				
+				// If the selection of popup template depends on the value of a parameter in the request
+				if (_layerConfig[layerId].popupSublayerParameter) {
+					if (requestData[_layerConfig[layerId].popupSublayerParameter]) {
+						var popupSublayerValue = requestData[_layerConfig[layerId].popupSublayerParameter];
+						template = _layerConfig[layerId].popupHtml[popupSublayerValue];
+					}
+				} else {
+					template = _layerConfig[layerId].popupHtml;
+				}
+			}
+			
 			// Define the data layer
 			var totalItems = 0;
 			_currentDataLayer[layerId] = L.geoJson(data, {
@@ -1826,22 +1841,6 @@ var layerviewer = (function ($) {
 				// Set popup
 				onEachFeature: function (feature, layer) {
 					totalItems++;
-					
-					// Determine the template
-					var template = false;
-					var popupSublayerValue;
-					if (_layerConfig[layerId].popupHtml) {
-						
-						// If the selection of popup template depends on the value of a parameter in the request
-						if (_layerConfig[layerId].popupSublayerParameter) {
-							if (requestData[_layerConfig[layerId].popupSublayerParameter]) {
-								popupSublayerValue = requestData[_layerConfig[layerId].popupSublayerParameter];
-								template = _layerConfig[layerId].popupHtml[popupSublayerValue];
-							}
-						} else {
-							template = _layerConfig[layerId].popupHtml;
-						}
-					}
 					
 					// Determine the popup content
 					var popupContent = layerviewer.renderDetails (template, feature, layer, layerId);
