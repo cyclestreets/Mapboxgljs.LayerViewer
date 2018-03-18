@@ -1935,7 +1935,7 @@ var layerviewer = (function ($) {
 			if (totalItems) {
 				if ( $('#sections #' + layerId + ' div.export a').length == 0) {	// i.e. currently unlinked
 					var exportUrlCsv = (_layerConfig[layerId].apiCall.match (/^https?:\/\//) ? '' : _settings.apiBaseUrl) + _layerConfig[layerId].apiCall + '?' + requestSerialised + '&format=csv';
-					var exportUrlGeojson = (_layerConfig[layerId].apiCall.match (/^https?:\/\//) ? '' : _settings.apiBaseUrl) + _layerConfig[layerId].apiCall + '?' + requestSerialised;
+					var exportUrlGeojson = (_layerConfig[layerId].apiCall.match (/^https?:\/\//) ? '' : _settings.apiBaseUrl) + _layerConfig[layerId].apiCall.replace(/.json$/, '.geojson') + '?' + requestSerialised;
 					$('#sections #' + layerId + ' div.export p').append(' <span>(' + totalItems + ')</span>');
 					$('#sections #' + layerId + ' div.export .csv').wrap('<a href="' + exportUrlCsv + '"></a>');
 					$('#sections #' + layerId + ' div.export .geojson').wrap('<a href="' + exportUrlGeojson + '" target="_blank"></a>');
