@@ -201,13 +201,13 @@ var layerviewer = (function ($) {
 			// Polygon style; currently supported values are 'grid' (blue boxes with dashed lines, intended for tessellating data), 'green', 'red'
 			polygonStyle: 'grid',
 			
-			// Code for popups; placeholders can be used to reference data in the GeoJSON; if using popupSublayerParameter, this is specified as a hashmap
+			// Code for popups; placeholders can be used to reference data in the GeoJSON; if using sublayerParameter, this is specified as a hashmap
 			popupHtml:
 				+ '<p>Reference: <strong>{properties.id}</strong></p>'
 				+ '<p>Date and time: {properties.datetime}</p>',
 			
-			// Popup dependent on the value of a specified request parameter
-			popupSublayerParameter: false,
+			// Make lookups (Popups / line colour stops) dependent on the value of a specified request parameter
+			sublayerParameter: false,
 			
 			// Labels for auto-popups
 			popupLabels: {},
@@ -1780,9 +1780,9 @@ var layerviewer = (function ($) {
 			if (_layerConfig[layerId].popupHtml) {
 				
 				// If the selection of popup template depends on the value of a parameter in the request
-				if (_layerConfig[layerId].popupSublayerParameter) {
-					if (requestData[_layerConfig[layerId].popupSublayerParameter]) {
-						var popupSublayerValue = requestData[_layerConfig[layerId].popupSublayerParameter];
+				if (_layerConfig[layerId].sublayerParameter) {
+					if (requestData[_layerConfig[layerId].sublayerParameter]) {
+						var popupSublayerValue = requestData[_layerConfig[layerId].sublayerParameter];
 						template = _layerConfig[layerId].popupHtml[popupSublayerValue];
 					}
 				} else {
