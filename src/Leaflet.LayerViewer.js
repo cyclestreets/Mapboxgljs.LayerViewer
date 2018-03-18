@@ -1938,7 +1938,7 @@ var layerviewer = (function ($) {
 					var exportUrlGeojson = (_layerConfig[layerId].apiCall.match (/^https?:\/\//) ? '' : _settings.apiBaseUrl) + _layerConfig[layerId].apiCall.replace(/.json$/, '.geojson') + '?' + requestSerialised;
 					$('#sections #' + layerId + ' div.export p').append(' <span>(' + totalItems + ')</span>');
 					$('#sections #' + layerId + ' div.export .csv').wrap('<a href="' + exportUrlCsv + '"></a>');
-					$('#sections #' + layerId + ' div.export .geojson').wrap('<a href="' + exportUrlGeojson + '" target="_blank"></a>');
+					$('#sections #' + layerId + ' div.export .geojson').wrap('<a href="' + exportUrlGeojson + '"></a>');
 					$('#sections #' + layerId + ' div.export p').addClass('enabled');
 				}
 			}
