@@ -1777,6 +1777,8 @@ var layerviewer = (function ($) {
 			
 			// Determine the template
 			var template = layerviewer.sublayerableConfig ('template', layerId, requestData);
+			var lineColourField = layerviewer.sublayerableConfig ('lineColourField', layerId, requestData);
+			var lineColourStops = layerviewer.sublayerableConfig ('lineColourStops', layerId, requestData);
 			
 			// Define the data layer
 			var totalItems = 0;
@@ -1888,8 +1890,8 @@ var layerviewer = (function ($) {
 					}
 					
 					// Set line colour if required
-					if (_layerConfig[layerId].lineColourField && _layerConfig[layerId].lineColourStops) {
-						styles.color = layerviewer.lookupStyleValue (feature.properties[_layerConfig[layerId].lineColourField], _layerConfig[layerId].lineColourStops);
+					if (lineColourField && lineColourStops) {
+						styles.color = layerviewer.lookupStyleValue (feature.properties[lineColourField], lineColourStops);
 					}
 					
 					// Set line width if required
