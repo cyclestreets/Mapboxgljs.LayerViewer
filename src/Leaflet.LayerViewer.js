@@ -894,32 +894,47 @@ var layerviewer = (function ($) {
 		
 		
 		// Function to set the legend contents
-		setLegend: function (layerId)
+		setLegend: function (layerId, sublayerIntervals, sublayerLineColourStops)
 		{
-			// Determine the intervals for the current layer
+			// Determine the intervalsand line colour stops for the current layer
 			var intervals = _layerConfig[layerId].intervals;
+			var lineColourStops = _layerConfig[layerId].lineColourStops;
+			
+			// In sublayer mode, do not display unless a sublayer is specified
+			if (_layerConfig[layerId].sublayerParameter) {
+				
+				// If sublayer support is enabled, end if no sublayer specified, clearing the legend if present
+				if (!sublayerIntervals) {
+					layerviewer.clearLegend ();
+					return;
+				}
+				
+				// Allocate sublayer intervals and line colour stops
+				intervals = sublayerIntervals;
+				lineColourStops = sublayerLineColourStops;
+			}
 			
 			// End if intervals not required for this layer
 			if (!intervals) {return;}
 			
 			// If intervals is bool true, and lineColourStops is defined, use these as the intervals
-			if ((intervals === true) && _layerConfig[layerId].lineColourStops) {
-				intervals = _layerConfig[layerId].lineColourStops;
+			if ((intervals === true) && lineColourStops) {
+				intervals = lineColourStops;
 			}
 			
 			// If intervals is 'range', and lineColourStops is defined, generate range labels from these
-			if ((intervals == 'range') && _layerConfig[layerId].lineColourStops) {
+			if ((intervals == 'range') && lineColourStops) {
 				intervals = [];
 				var label;
 				var colour;
 				var value;
-				$.each (_layerConfig[layerId].lineColourStops, function (index, interval) {
+				$.each (lineColourStops, function (index, interval) {
 					colour = interval[1];
 					value = interval[0];
 					if (index == 0) {
 						label = value + '+';
 					} else {
-						label = value + '-' + _layerConfig[layerId].lineColourStops[index - 1][0];
+						label = value + '-' + lineColourStops[index - 1][0];
 					}
 					intervals.push ([label, colour]);
 				});
@@ -1138,7 +1153,7 @@ var layerviewer = (function ($) {
 			}
 			
 			// Set the legend
-			layerviewer.setLegend (layerId);
+			layerviewer.setLegend (layerId, false, false);
 			
 			// Fetch the data
 			layerviewer.getData (layerId, _parameters[layerId]);
@@ -1775,10 +1790,14 @@ var layerviewer = (function ($) {
 				});
 			}
 			
-			// Determine the template
+			// Determine the parameters
 			var template = layerviewer.sublayerableConfig ('template', layerId, requestData);
 			var lineColourField = layerviewer.sublayerableConfig ('lineColourField', layerId, requestData);
 			var lineColourStops = layerviewer.sublayerableConfig ('lineColourStops', layerId, requestData);
+			var intervals = layerviewer.sublayerableConfig ('intervals', layerId, requestData);
+			
+			// Set the legend
+			layerviewer.setLegend (layerId, intervals, lineColourStops);
 			
 			// Define the data layer
 			var totalItems = 0;
