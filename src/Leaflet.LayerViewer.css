@@ -94,6 +94,15 @@ table.fullimage {width: 100%;}
 table.fullimage > tbody > tr > td {vertical-align: top; padding: 20px;}
 #streetview {margin-top: 30px; width: 100%; height: 300px;}
 
+/* Range sliders */
+form#data div.slider {position: relative;}
+form#data div.slider input {width: 100%; margin-top: 10px;}
+form#data div.slider ul {width: 100%; padding: 0; margin: 0; background: none; border: 0; position: relative; top: -9px;}
+form#data div.slider ul li {display: inline; padding: 0; margin: 0; font-weight: normal;}
+form#data div.slider ul li:first-child {float: left;}
+form#data div.slider ul li:last-child {float: right;}
+form#data div.slider p {position: absolute; top: -30px; right: 0; color: #603; font-weight: bold;}
+
 /* Tooltips */
 .ui-tooltip {padding: 3px 5px; position: absolute; z-index: 9999; max-width: 300px; border-width: 2px; background-color: white; font-size: 0.74em; border-radius: 3px; box-shadow: 0 0 10px rgba(0,0,0,1);}
 

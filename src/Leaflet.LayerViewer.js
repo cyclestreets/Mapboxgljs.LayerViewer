@@ -386,6 +386,9 @@ var layerviewer = (function ($) {
 			// Populate dynamic form controls
 			layerviewer.populateDynamicFormControls ();
 			
+			// Add slider value display support
+			layerviewer.sliderValueDisplayHandler ();
+			
 			// Set form values specified in the URL
 			layerviewer.setFormValues (urlParameters.queryString);
 			
@@ -769,6 +772,22 @@ var layerviewer = (function ($) {
 					html += '<option value="' + unixtime + '">' + year + '</option>';
 				}
 				$(this).append(html);
+			});
+		},
+		
+		
+		// Slider value display handler, to show the current slider value
+		sliderValueDisplayHandler: function ()
+		{
+			// For each slider, show the input's value (at start, and on change), in the associated paragraph tag
+			var sliderDivs = $('form#data .slider');
+			$.each (sliderDivs, function (index, sliderDiv) {
+				var datalistLabel = $('datalist option[value="' + $('input', sliderDiv).val() + '"]', sliderDiv).text();
+				$('p', sliderDiv).text (datalistLabel);
+				$('input', sliderDiv).on ('change', function (event) {
+					var datalistLabel = $('datalist option[value="' + event.target.value + '"]', sliderDiv).text();
+					$('p', sliderDiv).text (datalistLabel);
+				});
 			});
 		},
 		
