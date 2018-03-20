@@ -1259,6 +1259,17 @@ var layerviewer = (function ($) {
 					return;	// Continue to next input
 				}
 				
+				// For range, look for an associated datalist and look up the data values in that
+				if (tagName == 'input' && type == 'range') {
+					if (this.list) {
+						var datalistValue = $('option[value="' + value + '"]', this.list).attr('data-value');
+						if (datalistValue) {
+							parameters[name] = datalistValue;
+							return;	// Continue to next input
+						}
+					}
+				}
+				
 				// For all other input types, if there is a value, register it
 				if (value.length > 0) {
 					parameters[name] = value;	// Set value
