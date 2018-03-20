@@ -1821,7 +1821,7 @@ var layerviewer = (function ($) {
 			}
 			
 			// Determine the parameters
-			var template = layerviewer.sublayerableConfig ('template', layerId, requestData);
+			var popupHtml = layerviewer.sublayerableConfig ('popupHtml', layerId, requestData);
 			var lineColourField = layerviewer.sublayerableConfig ('lineColourField', layerId, requestData);
 			var lineColourStops = layerviewer.sublayerableConfig ('lineColourStops', layerId, requestData);
 			var intervals = layerviewer.sublayerableConfig ('intervals', layerId, requestData);
@@ -1882,7 +1882,7 @@ var layerviewer = (function ($) {
 					totalItems++;
 					
 					// Determine the popup content
-					var popupContent = layerviewer.renderDetails (template, feature, layer, layerId);
+					var popupContent = layerviewer.renderDetails (popupHtml, feature, layer, layerId);
 					layer.bindPopup(popupContent, {autoPan: false, className: layerId});
 					
 					// Add hover style if enabled
