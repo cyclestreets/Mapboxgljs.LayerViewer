@@ -1886,16 +1886,17 @@ var layerviewer = (function ($) {
 					layer.bindPopup(popupContent, {autoPan: false, className: layerId});
 					
 					// Add hover style if enabled
-					// #!# setStyle should be applied to lines only
-					if (_settings.hover || _layerConfig[layerId].hover) {
-						layer.on('mouseover', function () {
-							this.setStyle ({
-								weight: 12
+					if (layer instanceof L.Path) {		// Do not apply to markers; see: https://stackoverflow.com/a/30852790/180733
+						if (_settings.hover || _layerConfig[layerId].hover) {
+							layer.on('mouseover', function () {
+								this.setStyle ({
+									weight: 12
+								});
 							});
-						});
-						layer.on('mouseout', function () {
-							_currentDataLayer[layerId].resetStyle(this);
-						});
+							layer.on('mouseout', function () {
+								_currentDataLayer[layerId].resetStyle(this);
+							});
+						}
 					}
 				},
 				
