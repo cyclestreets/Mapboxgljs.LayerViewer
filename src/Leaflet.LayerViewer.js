@@ -718,6 +718,7 @@ var layerviewer = (function ($) {
 			
 			// Push the URL state
 			history.pushState (enabledLayers, title, url);
+			document.title = title;		// Workaround for poor browser support; see: https://stackoverflow.com/questions/13955520/
 		},
 		
 		
