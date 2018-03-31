@@ -643,11 +643,7 @@ var layerviewer = (function ($) {
 				$(this).parent('li').toggleClass('selected', this.checked);
 				
 				// Update the URL using HTML5 History pushState
-				var enabledLayers = [];
-				$('nav #selector input:checked').map (function () {
-					enabledLayers.push (this.id.replace('show_', ''));
-				});
-				layerviewer.updateUrl (enabledLayers);
+				layerviewer.updateUrl ();
 				
 				// If enabling, switch to its tab contents (controls)
 				if (this.checked) {
@@ -697,8 +693,14 @@ var layerviewer = (function ($) {
 		
 		
 		// Function to update the URL, to provide persistency when a link is circulated
-		updateUrl: function (enabledLayers)
+		updateUrl: function ()
 		{
+			// Determine the enabled layers
+			var enabledLayers = [];
+			$('nav #selector input:checked').map (function () {
+				enabledLayers.push (this.id.replace('show_', ''));
+			});
+			
 			// End if not supported, e.g. IE9
 			if (!history.pushState) {return;}
 			
