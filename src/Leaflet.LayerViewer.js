@@ -714,18 +714,30 @@ var layerviewer = (function ($) {
 			url += window.location.hash;
 			
 			// Construct the page title
+			var title = layerviewer.pageTitle ();
+			
+			// Push the URL state
+			history.pushState (enabledLayers, title, url);
+		},
+		
+		
+		// Function to construct the browser page title
+		pageTitle: function ()
+		{
 			if (!_title) {_title = document.title;}		// Obtain and cache the original page title
 			var title = _title;
 			var layerTitles = [];
-			$.each (enabledLayers, function (index, layerId) {
-				layerTitles.push (layerviewer.layerNameFromId (layerId).toLowerCase());
+			$.each (_layers, function (layerId, isEnabled) {
+				if (isEnabled) {
+					layerTitles.push (layerviewer.layerNameFromId (layerId).toLowerCase());
+				}
 			});
 			if (layerTitles) {
 				title += ': ' + layerTitles.join(', ');
 			}
 			
-			// Push the URL state
-			history.pushState (enabledLayers, title, url);
+			// Return the title
+			return title;
 		},
 		
 		
