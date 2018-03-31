@@ -1201,7 +1201,7 @@ var layerviewer = (function ($) {
 				_parameters[layerId] = layerviewer.parseFormValues (layerId);
 				layerviewer.getData (layerId, _parameters[layerId]);
 			});
-			$('form#data #sections :text').on ('input', function() {	// Also include text input changes as-you-type; see: https://gist.github.com/brandonaaskov/1596867
+			$('form#data #sections :text, form#data #sections input[type="search"]').on ('input', function() {	// Also include text input changes as-you-type; see: https://gist.github.com/brandonaaskov/1596867
 				_parameters[layerId] = layerviewer.parseFormValues (layerId);
 				layerviewer.getData (layerId, _parameters[layerId]);
 			});
