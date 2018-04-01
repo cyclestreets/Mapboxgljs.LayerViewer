@@ -779,6 +779,29 @@ var layerviewer = (function ($) {
 		},
 		
 		
+		// Function to convert a URL to form parameters; this is the reverse of formParametersToUrlSlug()
+		urlSlugToFormParameters: function (parameters)
+		{
+			// Loop through each parameter; valid matches are in the form 'layerId:inputId', e.g. layername:formwidget=value
+			var formParameters = {};
+			$.each (parameters, function (identifier, value) {
+				var identifierParts;
+				var layerId;
+				var inputName;
+				if (identifier.match (/^(.+):(.+)$/)) {
+					identifierParts = identifier.split (':', 2);
+					layerId = identifierParts[0];
+					inputName = identifierParts[1];
+					if (!formParameters[layerId]) {formParameters[layerId] = {};}	// Initialise nested array if not already present
+					formParameters[layerId][inputName] = value;
+				}
+			});
+			
+			// Return the form parameters
+			return formParameters;
+		},
+		
+		
 		// Function to construct the browser page title
 		pageTitle: function ()
 		{
@@ -871,20 +894,8 @@ var layerviewer = (function ($) {
 		// Function to set form values specified in the URL
 		setFormValues: function (parameters)
 		{
-			// Loop through each parameter; valid matches are in the form 'layerId:inputId', e.g. layername:formwidget=value
-			var formParameters = {};
-			$.each (parameters, function (identifier, value) {
-				var identifierParts;
-				var layerId;
-				var inputName;
-				if (identifier.match (/^(.+):(.+)$/)) {
-					identifierParts = identifier.split (':', 2);
-					layerId = identifierParts[0];
-					inputName = identifierParts[1];
-					if (!formParameters[layerId]) {formParameters[layerId] = {};}	// Initialise nested array if not already present
-					formParameters[layerId][inputName] = value;
-				}
-			});
+			// Obtain the form parameters from the URL slug
+			var formParameters = this.urlSlugToFormParameters (parameters);
 			
 			// Set form values, where they exist
 			var elementPath;
