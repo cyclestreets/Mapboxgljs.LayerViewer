@@ -668,6 +668,24 @@ var layerviewer = (function ($) {
 			$('nav #selector li a').dblclick(function() {
 				$(this).parent().find('input').click();
 			});
+			
+			// Allow any form change within a layer as implicit selection of its checkbox
+			$('form#data .filters :input').change (function () {
+				layerviewer.formChangeImplicitCheckbox (this);
+			});
+			$('form#data #sections div :text, form#data #sections div input[type="search"]').on ('input', function() {
+				layerviewer.formChangeImplicitCheckbox (this);
+                        });
+		},
+		
+		
+		// Function for handlers of implicit selection of checkbox on form change
+		formChangeImplicitCheckbox: function (changedInputPath)
+		{
+			var layerId = $(changedInputPath).closest('#sections > div').attr('id');	// Assumes #sections contains layer DIVs directly
+			if ($('nav input#show_' + layerId).prop ('checked') != true) {
+				$('nav input#show_' + layerId).click();
+			}
 		},
 		
 		
