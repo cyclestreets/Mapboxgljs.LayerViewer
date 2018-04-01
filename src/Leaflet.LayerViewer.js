@@ -291,7 +291,7 @@ var layerviewer = (function ($) {
 			_layerConfig = layerConfig;
 			
 			// Parse the URL
-			var urlParameters = layerviewer.getUrlParameters ();
+			var urlParameters = layerviewer.parseUrl ();
 			
 			// Show intial regions view if required
 			if (_settings.initialRegionsView && _settings.regionsFile && _settings.regionsField) {
@@ -531,7 +531,7 @@ var layerviewer = (function ($) {
 		
 		
 		// Function to parse the URL
-		getUrlParameters: function ()
+		parseUrl: function ()
 		{
 			// Start a list of parameters
 			var urlParameters = {};
