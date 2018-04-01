@@ -249,6 +249,7 @@ var layerviewer = (function ($) {
 	var _currentDataLayer = {};
 	var _tileOverlayLayers = {};
 	var _heatmapOverlayLayers = {};
+	var _virginFormState = {};
 	var _parameters = {};
 	var _xhrRequests = {};
 	var _requestCache = {};
@@ -421,6 +422,11 @@ var layerviewer = (function ($) {
 			
 			// Determine the enabled layers
 			layerviewer.determineLayerStatus ();
+			
+			// Determine the initial form state as specified in the fixed HTML, for all layers
+			$.each (_layers, function (layerId, layerEnabled) {
+				_virginFormState[layerId] = layerviewer.parseFormValues (layerId);
+			});
 			
 			// Load the data, and add map interactions and form interactions
 			$.each (_layers, function (layerId, layerEnabled) {
@@ -694,31 +700,82 @@ var layerviewer = (function ($) {
 		
 		
 		// Function to update the URL, to provide persistency when a link is circulated
+		// Format is /<baseUrl>/<layerId1>:<param1key>=<param1value>&[...],<layerId2>[...]/#<mapHashWithStyle>
 		updateUrl: function ()
 		{
-			
 			// End if not supported, e.g. IE9
 			if (!history.pushState) {return;}
 			
-			// Filter for enabled layers
-			var enabledLayers = [];
-			$.each (_layers, function (layerId, isEnabled) {
-				if (isEnabled) {
-					enabledLayers.push (layerId);
-				}
-			});
+			// Obtain the URL slug
+			var urlSlug = layerviewer.formParametersToUrlSlug ();
 			
 			// Construct the URL
 			var url = _settings.baseUrl;	// Absolute URL
-			url += enabledLayers.join(',') + (enabledLayers.length ? '/' : '');
+			url += urlSlug;
 			url += window.location.hash;
 			
-			// Construct the page title
+			// Construct the page title, based on the enabled layers
 			var title = layerviewer.pageTitle ();
 			
 			// Push the URL state
-			history.pushState (enabledLayers, title, url);
+			history.pushState (urlSlug, title, url);
 			document.title = title;		// Workaround for poor browser support; see: https://stackoverflow.com/questions/13955520/
+		},
+		
+		
+		// Function to convert form parameters to a URL slug
+		formParametersToUrlSlug: function ()
+		{
+			// Copy (clone) the parameter state for the purposes of determining the URL
+			var urlParameters = $.extend (true, {}, _parameters);	// See: https://stackoverflow.com/a/12690181/180733
+			
+			// Define system-wide parameters that are not layer-specific
+			var genericParameters = ['bbox', 'boundary'];
+			
+			// Filter for enabled layers
+			var enabledLayers = [];
+			var component;
+			$.each (_layers, function (layerId, isEnabled) {
+				if (isEnabled) {
+					
+					// Start with the layer ID
+					component = layerId;
+					
+					// Deal with parameters for each layer
+					if (urlParameters[layerId]) {
+						
+						// Omit generic parameters which the API will automatically receive
+						$.each (genericParameters, function (index, parameter) {
+							if (urlParameters[layerId].hasOwnProperty (parameter)) {
+								delete urlParameters[layerId][parameter];
+							}
+						});
+						
+						// Omit parameters whose value matches the virgin form state, to keep the URL as short as possible
+						$.each (_virginFormState[layerId], function (parameter, virginValue) {
+							if (urlParameters[layerId].hasOwnProperty (parameter) && (urlParameters[layerId][parameter] == virginValue)) {
+								delete urlParameters[layerId][parameter];
+							} else {
+								urlParameters[layerId][parameter] = '';		// Deal with scenario of e.g. checkbox ticked by default, and unticked, thus not being the default but not being present in the form parameter list
+							}
+						});
+						
+						// If there are now parameters remaining, add these to this layer's component
+						if (!$.isEmptyObject (urlParameters[layerId])) {
+							component += ':' + $.param (urlParameters[layerId]);
+						}
+					}
+					
+					// Register the component
+					enabledLayers.push (component);
+				}
+			});
+			
+			// Construct the URL slug
+			var urlSlug = enabledLayers.join(',') + (enabledLayers.length ? '/' : '');
+			
+			// Return the URL slug
+			return urlSlug;
 		},
 		
 		
@@ -1218,10 +1275,12 @@ var layerviewer = (function ($) {
 			}
 			$(rescanPath).change (function () {
 				_parameters[layerId] = layerviewer.parseFormValues (layerId);
+				layerviewer.updateUrl ();
 				layerviewer.getData (layerId, _parameters[layerId]);
 			});
 			$('form#data #' + layerId + ' :text, form#data #' + layerId + ' input[type="search"]').on ('input', function() {	// Also include text input changes as-you-type; see: https://gist.github.com/brandonaaskov/1596867
 				_parameters[layerId] = layerviewer.parseFormValues (layerId);
+				layerviewer.updateUrl ();
 				layerviewer.getData (layerId, _parameters[layerId]);
 			});
 			
