@@ -391,7 +391,7 @@ var layerviewer = (function ($) {
 			layerviewer.sliderValueDisplayHandler ();
 			
 			// Set form values specified in the URL
-			layerviewer.setFormValues (urlParameters.queryString);
+			layerviewer.setFormValues (urlParameters.formParameters);
 			
 			// Add tooltip support
 			layerviewer.tooltips ();
@@ -536,20 +536,25 @@ var layerviewer = (function ($) {
 			// Start a list of parameters
 			var urlParameters = {};
 			
-			// Split by slash; see: https://stackoverflow.com/a/8086637
+			// Split the path by slash; see: https://stackoverflow.com/a/8086637
 			var pathComponents = window.location.pathname.split('/').slice(1);
 			if (pathComponents) {
 				
+				// Obtain the sections and form parameters from the URL
+				var formParameters = layerviewer.urlSlugToFormParameters (pathComponents[0]);
+				
 				// Obtain the section(s), checking against the available sections in the settings
 				urlParameters.sections = [];
-				if (pathComponents[0]) {
-					var sections = pathComponents[0].split(',');
-					$.each (sections, function (index, section) {
-						if (_layerConfig[section]) {
-							urlParameters.sections.push (section);
+				if (formParameters) {
+					$.each (formParameters, function (layerId, parameters) {
+						if (_layerConfig[layerId]) {
+							urlParameters.sections.push (layerId);
 						}
 					});
 				}
+				
+				// Register the form parameters
+				urlParameters.formParameters = formParameters;
 				
 				// Obtain embed mode if present
 				if (pathComponents[1]) {
@@ -771,7 +776,7 @@ var layerviewer = (function ($) {
 				}
 			});
 			
-			// Construct the URL slug
+			// Construct the URL slug, joining by comma
 			var urlSlug = enabledLayers.join(',') + (enabledLayers.length ? '/' : '');
 			
 			// Return the URL slug
@@ -780,25 +785,25 @@ var layerviewer = (function ($) {
 		
 		
 		// Function to convert a URL to form parameters; this is the reverse of formParametersToUrlSlug()
-		urlSlugToFormParameters: function (parameters)
+		urlSlugToFormParameters: function (urlSlug)
 		{
-			// Loop through each parameter; valid matches are in the form 'layerId:inputId', e.g. layername:formwidget=value
-			var formParameters = {};
-			$.each (parameters, function (identifier, value) {
-				var identifierParts;
-				var layerId;
-				var inputName;
-				if (identifier.match (/^(.+):(.+)$/)) {
-					identifierParts = identifier.split (':', 2);
-					layerId = identifierParts[0];
-					inputName = identifierParts[1];
-					if (!formParameters[layerId]) {formParameters[layerId] = {};}	// Initialise nested array if not already present
-					formParameters[layerId][inputName] = value;
-				}
+			// Return empty array if empty string
+			if (!urlSlug) {return {};}
+			
+			// Split by comma
+			var components = urlSlug.split (',');
+			
+			// Split each component by optional colon, then unpack the encoded string
+			var layers = {};
+			$.each (components, function (index, component) {
+				var layerDetails = component.split (':', 2);
+				var layerId = layerDetails[0];
+				var parameters = (layerDetails[1] ? layerviewer.deparam (layerDetails[1]) : {});
+				layers[layerId] = parameters;
 			});
 			
-			// Return the form parameters
-			return formParameters;
+			// Return the result
+			return layers;
 		},
 		
 		
@@ -905,11 +910,8 @@ var layerviewer = (function ($) {
 		
 		
 		// Function to set form values specified in the URL
-		setFormValues: function (parameters)
+		setFormValues: function (formParameters)
 		{
-			// Obtain the form parameters from the URL slug
-			var formParameters = this.urlSlugToFormParameters (parameters);
-			
 			// Set form values, where they exist
 			var elementPath;
 			$.each (formParameters, function (layerId, values) {
