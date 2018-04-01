@@ -588,7 +588,7 @@ var layerviewer = (function ($) {
 			// See: https://stackoverflow.com/a/8649003/180733
 			if (!location.search.length) {return {};}
 			var queryString = location.search.substring(1);
-			var parameters = JSON.parse('{"' + decodeURI(queryString).replace(/"/g, '\\"').replace(/&/g, '","').replace(/=/g,'":"') + '"}');
+			var parameters = layerviewer.deparam (queryString);
 			return parameters;
 		},
 		
@@ -799,6 +799,19 @@ var layerviewer = (function ($) {
 			
 			// Return the form parameters
 			return formParameters;
+		},
+		
+		
+		// Reverse of $.param(); see: https://stackoverflow.com/a/26849194/180733
+		deparam: function (string)
+		{
+			return string.split('&').reduce(function (params, param) {
+				var paramSplit = param.split('=').map(function (value) {
+					return decodeURIComponent(value.replace('+', ' '));
+				});
+				params[paramSplit[0]] = paramSplit[1];
+				return params;
+			}, {});
 		},
 		
 		
