@@ -1211,8 +1211,8 @@ var layerviewer = (function ($) {
 				});
 			}
 			
-			// Reload the data, using a rescan of the form parameters when any change is made
-			var rescanPath = 'form#data #sections :input';
+			// Reload the data for this layer, using a rescan of the form parameters for the layer, when any change is made
+			var rescanPath = 'form#data #' + layerId + ' :input';
 			if (_settings.enableDrawing) {
 				rescanPath += ', form#data #drawing :input';
 			}
@@ -1220,7 +1220,7 @@ var layerviewer = (function ($) {
 				_parameters[layerId] = layerviewer.parseFormValues (layerId);
 				layerviewer.getData (layerId, _parameters[layerId]);
 			});
-			$('form#data #sections :text, form#data #sections input[type="search"]').on ('input', function() {	// Also include text input changes as-you-type; see: https://gist.github.com/brandonaaskov/1596867
+			$('form#data #' + layerId + ' :text, form#data #' + layerId + ' input[type="search"]').on ('input', function() {	// Also include text input changes as-you-type; see: https://gist.github.com/brandonaaskov/1596867
 				_parameters[layerId] = layerviewer.parseFormValues (layerId);
 				layerviewer.getData (layerId, _parameters[layerId]);
 			});
