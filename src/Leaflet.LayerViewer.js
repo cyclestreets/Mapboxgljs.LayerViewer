@@ -154,6 +154,9 @@ var layerviewer = (function ($) {
 			// Callback for data conversion just after receiving the data
 			convertData: function (data) {return somefunction (data);}
 			
+			// Minimum zoom required for this layer
+			minZoom: false,
+			
 			// Show a message if the zoom level is below this level (i.e. too zoomed out)
 			fullZoom: 17,
 			
@@ -1472,6 +1475,11 @@ var layerviewer = (function ($) {
 		{
 			// End if the layer has been disabled (as the event handler from _map.on('moveend', ...) may still be firing)
 			if (!_layers[layerId]) {return;}
+			
+			// If a minimum zoom is specified, end if the zoom is too low
+			if (_layerConfig[layerId].minZoom) {
+				if (_map.getZoom () < _layerConfig[layerId].minZoom) {return;}
+			}
 			
 			// If the layer is a tile layer rather than an API call, add it and end
 			if (_layerConfig[layerId].tileLayer) {
