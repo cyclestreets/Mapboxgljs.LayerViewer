@@ -1835,6 +1835,13 @@ var layerviewer = (function ($) {
 					// Apply number_format (if numeric)
 					value = layerviewer.number_format (value);
 					
+					// If a callback formatter, use that instead, ignoring other changes
+					if (_layerConfig[layerId].popupFormatters) {
+						if (_layerConfig[layerId].popupFormatters[key]) {
+							value = _layerConfig[layerId].popupFormatters[key] (feature.properties[key], feature);
+						}
+					}
+					
 					// Compile the HTML
 					html += '<tr><td>' + fieldLabel + ':</td><td><strong>' + value + '</strong></td></tr>';
 				});
