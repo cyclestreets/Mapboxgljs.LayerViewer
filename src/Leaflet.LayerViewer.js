@@ -20,6 +20,7 @@ var layerviewer = (function ($) {
 			longitude: 1.263,
 			zoom: 6
 		},
+		maxBounds: null,	// Or [W,S,E,N]
 		defaultTileLayer: 'mapnik',
 		
 		// Application baseUrl
@@ -1230,6 +1231,7 @@ var layerviewer = (function ($) {
 			_map = L.map('map', {
 				center: [defaultLocation.latitude, defaultLocation.longitude],
 				zoom: defaultLocation.zoom,
+				maxBounds: (_settings.maxBounds ? [[_settings.maxBounds[1], _settings.maxBounds[0]], [_settings.maxBounds[3], _settings.maxBounds[2]]] : null),	// [[S,W],[N,E]]
 				layers: baseLayersById[defaultTileLayer]	// Documentation suggests tileLayers is all that is needed, but that shows all together
 			});
 			
