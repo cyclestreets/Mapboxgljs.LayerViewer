@@ -1588,7 +1588,7 @@ var layerviewer = (function ($) {
 			// Fetch data
 			_xhrRequests[layerId] = $.ajax({
 				url: apiUrl,
-				dataType: (layerviewer.browserSupportsCors () ? 'json' : 'jsonp'),		// Fall back to JSON-P for IE9
+				dataType: (_layerConfig[layerId].dataType ? _layerConfig[layerId].dataType : (layerviewer.browserSupportsCors () ? 'json' : 'jsonp')),		// Fall back to JSON-P for IE9
 				crossDomain: true,	// Needed for IE<=9; see: https://stackoverflow.com/a/12644252/180733
 				data: apiData,
 				error: function (jqXHR, error, exception) {
