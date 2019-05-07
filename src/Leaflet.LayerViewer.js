@@ -148,6 +148,12 @@ var layerviewer = (function ($) {
 			name: '',
 			description: '',
 			
+			// Explicit data type (assumed to be JSON), e.g. XML
+			dataType: false,
+			
+			// Callback for data conversion just after receiving the data
+			convertData: function (data) {return somefunction (data);}
+			
 			// Show a message if the zoom level is below this level (i.e. too zoomed out)
 			fullZoom: 17,
 			
@@ -208,6 +214,12 @@ var layerviewer = (function ($) {
 			popupHtml:
 				+ '<p>Reference: <strong>{properties.id}</strong></p>'
 				+ '<p>Date and time: {properties.datetime}</p>',
+			
+			// Formatter for popup fields when using auto-table creation
+			popupFormatters: {
+				myField: function (value, feature) {return string;},
+				...
+			}
 			
 			// Make lookups (Popups / line colour stops) dependent on the value of a specified request parameter
 			sublayerParameter: false,
