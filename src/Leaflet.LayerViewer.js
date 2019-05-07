@@ -1957,6 +1957,12 @@ var layerviewer = (function ($) {
 			// Determine the field in the feature.properties data that specifies the icon to use
 			var iconField = _layerConfig[layerId].iconField;
 			
+			// Convert using a callback if required
+			if (_layerConfig[layerId].convertData) {
+				data = _layerConfig[layerId].convertData (data);
+				//console.log(data);
+			}
+			
 			// Convert from flat JSON to GeoJSON if required
 			if (_layerConfig[layerId].flatJson) {
 				data = GeoJSON.parse(data, {Point: _layerConfig[layerId].flatJson});
