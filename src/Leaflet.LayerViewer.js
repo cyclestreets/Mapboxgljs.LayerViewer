@@ -159,6 +159,7 @@ var layerviewer = (function ($) {
 			
 			// Show a message if the zoom level is below this level (i.e. too zoomed out)
 			fullZoom: 17,
+			fullZoomMessage: 'Customised string',
 			
 			// If the layer requires that query fields are prefixed with a namespace, prefix each fieldname
 			parameterNamespace: 'field:',
@@ -1363,7 +1364,12 @@ var layerviewer = (function ($) {
 		{
 			// Show or hide the message
 			if (_map.getZoom () < _layerConfig[layerId].fullZoom) {
-				_message.show ('Zoom in to show all ' + layerviewer.layerNameFromId (layerId).toLowerCase() + ' markers - only a selection are shown due to the volume.');
+				if (_layerConfig[layerId].fullZoomMessage) {
+					var message = _layerConfig[layerId].fullZoomMessage;
+				} else {
+					var message = 'Zoom in to show all ' + layerviewer.layerNameFromId (layerId).toLowerCase() + ' markers - only a selection are shown due to the volume.';
+				}
+				_message.show (message);
 				$('nav #selector li.' + layerId + ' p.total').hide();
 			} else {
 				_message.hide ();
