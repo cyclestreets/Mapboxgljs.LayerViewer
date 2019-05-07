@@ -297,7 +297,7 @@ var layerviewer = (function ($) {
 			var urlParameters = layerviewer.parseUrl ();
 			
 			// Show intial regions view if required
-			if (_settings.initialRegionsView && _settings.regionsFile && _settings.regionsField) {
+			if (_settings.initialRegionsView && _settings.regionsFile) {
 				if (!urlParameters.defaultLocation) {
 					
 					// Load the GeoJSON file
@@ -312,10 +312,12 @@ var layerviewer = (function ($) {
 								
 								onEachFeature: function (feature, layer) {
 									
-									// Add the region name as the popup content
-									var regionName = feature.properties[_settings.regionsField];
-									regionName = layerviewer.htmlspecialchars (layerviewer.ucfirst (regionName));
-									layer.bindPopup (regionName, {className: 'autowidth'});
+									// Add the region name as the popup content, if enabled
+									if (_settings.regionsField) {
+										var regionName = feature.properties[_settings.regionsField];
+										regionName = layerviewer.htmlspecialchars (layerviewer.ucfirst (regionName));
+										layer.bindPopup (regionName, {className: 'autowidth'});
+									}
 									
 									// Add mouseover hover
 									layer.on('mouseover', function (eventn) {
@@ -2353,6 +2355,9 @@ var layerviewer = (function ($) {
 		{
 			// End if not enabled
 			if (!_settings.regionsFile) {return;}
+			
+			// End if not enabled
+			if (!_settings.regionsField) {return;}
 			
 			// Load the GeoJSON file
 			$.ajax({
