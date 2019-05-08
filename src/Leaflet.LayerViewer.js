@@ -1844,6 +1844,10 @@ var layerviewer = (function ($) {
 				var fieldLabel;
 				$.each (feature.properties, function (key, value) {
 					
+					// Skip if value is an array/object
+					if ($.type (value) === 'array')  {return; /* i.e. continue */}
+					if ($.type (value) === 'object') {return; /* i.e. continue */}
+					
 					// Key
 					fieldLabel = key;
 					if (_layerConfig[layerId].popupLabels) {
