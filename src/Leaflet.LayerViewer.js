@@ -222,10 +222,11 @@ var layerviewer = (function ($) {
 				+ '<p>Date and time: {properties.datetime}</p>',
 			
 			// Formatter for popup fields when using auto-table creation
+			popupImagesField: false,
 			popupFormatters: {
 				myField: function (value, feature) {return string;},
 				...
-			}
+			},
 			
 			// Make lookups (Popups / line colour stops) dependent on the value of a specified request parameter
 			sublayerParameter: false,
@@ -1883,6 +1884,16 @@ var layerviewer = (function ($) {
 					html += '<tr><td>' + fieldLabel + ':</td><td><strong>' + value + '</strong></td></tr>';
 				});
 				html += '</table>';
+				
+				// Add images if enabled
+				if (_layerConfig[layerId].popupImagesField) {
+					var popupImagesField = _layerConfig[layerId].popupImagesField;
+					if (feature.properties[popupImagesField]) {
+						$.each (feature.properties[popupImagesField], function (index, imageUrl) {
+							html += '<a href="' + imageUrl + '" target="_blank"><img src="' + imageUrl + '" width="140" /> ';
+						});
+					}
+				}
 			}
 			
 			// Return the content
