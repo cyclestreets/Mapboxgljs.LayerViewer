@@ -484,7 +484,8 @@ var layerviewer = (function ($) {
 		passwordProtection: function ()
 		{
 			// Obtain the cookie if present
-			var cookieName = 'login';
+			var hostSuffix = window.location.hostname.toLowerCase().replace(/[^a-z]+/g, '');
+			var cookieName = 'login' + hostSuffix;
 			var value = Cookies.get(cookieName);
 			
 			// Validate if value supplied from cookie
