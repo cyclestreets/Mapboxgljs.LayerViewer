@@ -526,10 +526,15 @@ var layerviewer = (function ($) {
 					
 					// Show message
 					var message = 'The password you gave is not correct. Please check and try again.';
-					vex.dialog.alert ({message: message, showCloseButton: true, className: 'vex vex-theme-plain'});
-					
-					// Reset the form content
-					$('#password')[0].reset();
+					vex.dialog.alert ({
+						message: message,
+						showCloseButton: true,
+						className: 'vex vex-theme-plain',
+						afterClose: function () {
+							$('form#password')[0].reset();	// See: https://stackoverflow.com/a/21514788/180733
+							$('form#password input[type="password"]').focus();
+						}
+					});
 				}
 			});
 			
