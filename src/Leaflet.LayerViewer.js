@@ -1350,7 +1350,7 @@ var layerviewer = (function ($) {
 			if (_settings.enableDrawing) {
 				rescanPath += ', form#data #drawing :input';
 			}
-			$(rescanPath).change (function () {
+			$(document).on ('change', rescanPath, function () {
 				_parameters[layerId] = layerviewer.parseFormValues (layerId);
 				layerviewer.updateUrl ();
 				layerviewer.getData (layerId, _parameters[layerId]);
