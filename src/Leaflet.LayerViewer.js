@@ -116,7 +116,7 @@ var layerviewer = (function ($) {
 		
 		// Initial view of all regions; will use regionsFile
 		initialRegionsView: false,
-		initialRegionsViewRemovalZoom: 10,	// or false to keep it
+		initialRegionsViewRemovalZoom: 10,	// or false to keep it; 10 is roughly size of a UK County
 		
 		// Whether to show layer errors in a (non-modal) corner dialog, rather than as a modal popup
 		errorNonModalDialog: false,
@@ -361,7 +361,7 @@ var layerviewer = (function ($) {
 							if (_settings.initialRegionsViewRemovalZoom) {
 								_map.on ('zoomend', function (e) {
 									var currentZoom = _map.getZoom ();
-									if (currentZoom >= _settings.initialRegionsViewRemovalZoom) {	// Roughly size of a UK County
+									if (currentZoom >= _settings.initialRegionsViewRemovalZoom) {
 										_map.removeLayer (regionsOverlay);
 									}
 								});
