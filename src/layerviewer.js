@@ -1259,20 +1259,6 @@ var layerviewer = (function ($) {
 		// Create the map
 		createMap: function (defaultLocation, defaultTileLayer)
 		{
-			// Add the tile layers
-			var tileLayers = [];		// Background tile layers
-			var baseLayers = {};		// Labels
-			var baseLayersById = {};	// Layers, by id
-			var layer;
-			var name;
-			$.each (_settings.tileUrls, function (tileLayerId, tileLayerAttributes) {
-				layer = L.tileLayer(tileLayerAttributes[0], tileLayerAttributes[1]);
-				tileLayers.push (layer);
-				name = tileLayerAttributes[2];
-				baseLayers[name] = layer;
-				baseLayersById[tileLayerId] = layer;
-			});
-			
 			// Create the map in the "map" div, set the view to a given place and zoom
 			mapboxgl.accessToken = _settings.mapboxApiKey;
 			_map = new mapboxgl.Map ({
@@ -1285,14 +1271,14 @@ var layerviewer = (function ($) {
 				hash: true
 			});
 			
-			// Add the base (background) layer switcher
-			L.control.layers(baseLayers, null).addTo(_map);
-			
 			// Enable zoom in/out buttons
 			_map.addControl (new mapboxgl.NavigationControl (), 'top-left');
 			
 			// Add a geolocation control
 			layerviewer.geolocation ();
+			
+			// Add style (backround layer) switching
+			layerviewer.styleSwitcher ();
 			
 			// Add geocoder control
 			layerviewer.geocoder ();
@@ -1425,6 +1411,68 @@ var layerviewer = (function ($) {
 		},
 		
 		
+		// Function to add style (background layer) switching
+		// https://www.mapbox.com/mapbox-gl-js/example/setstyle/
+		// https://bl.ocks.org/ryanbaumann/7f9a353d0a1ae898ce4e30f336200483/96bea34be408290c161589dcebe26e8ccfa132d7
+		styleSwitcher: function ()
+		{
+			// Add style switcher UI
+			layerviewer.createControl ('styleswitcher', 'top-right', 'expandable');
+			
+			// Construct HTML for style switcher
+			var styleSwitcherHtml = '<ul>';
+			var name;
+			$.each (_styles, function (styleId, style) {
+				name = (_settings.tileUrls[styleId].label ? _settings.tileUrls[styleId].label : layerviewer.ucfirst (styleId));
+				styleSwitcherHtml += '<li><input id="' + styleId + '" type="radio" name="styleswitcher" value="' + styleId + '"' + (styleId == _settings.defaultTileLayer ? ' checked="checked"' : '') + '><label for="' + styleId + '"> ' + name + '</label></li>';
+			});
+			styleSwitcherHtml += '</ul>';
+			$('#styleswitcher').append (styleSwitcherHtml);
+			
+			// Switch to selected style
+			var styleList = document.getElementById ('styleswitcher');
+			var inputs = styleList.getElementsByTagName ('input');
+			function switchStyle (style) {
+				var styleId = style.target.id;
+				var style = _styles[styleId];
+				_map.setStyle (style);
+				
+				// Fire an event; see: https://javascript.info/dispatch-events
+				layerviewer.styleChanged ();
+			};
+			for (var i = 0; i < inputs.length; i++) {
+				inputs[i].onclick = switchStyle;
+			}
+		},
+		
+		
+		// Function to trigger style changed, checking whether it is actually loading; see: https://stackoverflow.com/a/47313389/180733
+		// Cannot use _map.on(style.load) directly, as that does not fire when loading a raster after another raster: https://github.com/mapbox/mapbox-gl-js/issues/7579
+		styleChanged: function ()
+		{
+			// Delay for 200 minutes in a loop until the style is loaded; see: https://stackoverflow.com/a/47313389/180733
+			if (!_map.isStyleLoaded()) {
+				setTimeout (function () {
+					layerviewer.styleChanged ();	// Done inside a function to avoid "Maximum Call Stack Size Exceeded"
+				}, 250);
+				return;
+			}
+			
+			// Fire a custom event that client code can pick up when the style is changed
+			var body = document.getElementsByTagName ('body')[0];
+			var myEvent = new Event ('style-changed', {'bubbles': true});
+			body.dispatchEvent (myEvent);
+		},
+		
+		
+		// Function to make first character upper-case; see: https://stackoverflow.com/a/1026087/180733
+		ucfirst: function (string)
+		{
+			if (typeof string !== 'string') {return string;}
+			return string.charAt(0).toUpperCase() + string.slice(1);
+		},
+		
+		
 		// Function to create a control in a corner
 		// See: https://www.mapbox.com/mapbox-gl-js/api/#icontrol
 		createControl: function (id, position, className)
@@ -1517,6 +1565,11 @@ var layerviewer = (function ($) {
 					layerviewer.getData (layerId, _parameters[layerId]);
 				});
 			}
+			
+			// Reload data on style change
+			$('body').on ('style-changed', function (event) {
+				layerviewer.getData (layerId, _parameters[layerId]);
+			});
 			
 			// Register to show/hide message based on zoom level
 			if (_layerConfig[layerId].fullZoom) {
