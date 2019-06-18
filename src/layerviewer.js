@@ -68,43 +68,68 @@ var layerviewer = (function ($) {
 		
 		// Tileserver URLs, each as [path, options, label]
 		tileUrls: {
-			opencyclemap: [
-				'https://{s}.tile.cyclestreets.net/opencyclemap/{z}/{x}/{y}@2x.png',
-				{maxZoom: 21, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors; <a href="https://www.thunderforest.com/">Thunderforest</a>'},
-				'OpenCycleMap'
-			],
-			mapnik: [
-				'https://{s}.tile.cyclestreets.net/mapnik/{z}/{x}/{y}.png',
-				{maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'},
-				'OpenStreetMap style'
-			],
-			osopendata: [
-				'https://{s}.tile.cyclestreets.net/osopendata/{z}/{x}/{y}.png',
-				{maxZoom: 19, attribution: 'Contains Ordnance Survey data &copy; Crown copyright and database right 2010'},
-				'OS Open Data'
-			],
-			bartholomew: [
-				'https://{s}.tile.cyclestreets.net/bartholomew/{z}/{x}/{y}@2x.png',
-				{maxZoom: 15, attribution: '&copy; <a href="https://maps.nls.uk/copyright.html">National Library of Scotland</a>'},
-				'NLS - Bartholomew Half Inch, 1897-1907'
-			],
-			os6inch: [
-				'https://{s}.tile.cyclestreets.net/os6inch/{z}/{x}/{y}@2x.png',
-				{maxZoom: 15, attribution: '&copy; <a href="https://maps.nls.uk/copyright.html">National Library of Scotland</a>'},
-				'NLS - OS 6-inch County Series 1888-1913'
-			]
+			opencyclemap: {
+				tiles: 'https://{s}.tile.cyclestreets.net/opencyclemap/{z}/{x}/{y}@2x.png',
+				maxZoom: 20,
+				attribution: 'Maps © <a href="https://www.thunderforest.com/">Thunderforest</a>, Data © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
+				tileSize: 512,
+				label: 'OpenCycleMap'
+			},
+			streets: {
+				vectorTiles: 'mapbox://styles/mapbox/streets-v9',
+				label: 'Streets'
+			},
+			dark: {
+				vectorTiles: 'mapbox://styles/mapbox/dark-v9',
+				label: 'Night',
+			},
+			satellite: {
+				vectorTiles: 'mapbox://styles/mapbox/satellite-v9',
+				label: 'Satellite',
+			},
+			mapnik: {
+				tiles: 'https://{s}.tile.cyclestreets.net/mapnik/{z}/{x}/{y}.png',
+				maxZoom: 19,
+				attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+				tileSize: 256,
+				label: 'OpenStreetMap style'
+			},
+			osopendata: {
+				tiles: 'https://{s}.tile.cyclestreets.net/osopendata/{z}/{x}/{y}.png',
+				maxZoom: 19,
+				attribution: 'Contains Ordnance Survey data &copy; Crown copyright and database right 2010',
+				tileSize: 256,
+				label: 'OS Open Data'
+			},
+			bartholomew: {
+				tiles: 'https://{s}.tile.cyclestreets.net/bartholomew/{z}/{x}/{y}@2x.png',
+				maxZoom: 15,
+				attribution: '&copy; <a href="https://maps.nls.uk/copyright.html">National Library of Scotland</a>',
+				tileSize: 256,
+				label: 'NLS - Bartholomew Half Inch, 1897-1907'
+			},
+			os6inch: {
+				tiles: 'https://{s}.tile.cyclestreets.net/os6inch/{z}/{x}/{y}@2x.png',
+				maxZoom: 15,
+				attribution: '&copy; <a href="https://maps.nls.uk/copyright.html">National Library of Scotland</a>',
+				tileSize: 256,
+				label: 'NLS - OS 6-inch County Series 1888-1913'
+			},
 			/*
-			,
-			os1to25k1stseries: [
-				'https://{s}.tile.cyclestreets.net/os1to25k1stseries/{z}/{x}/{-y}@2x.png',
-				{maxZoom: 16, attribution: '&copy; <a href="https://maps.nls.uk/copyright.html">National Library of Scotland</a>'},
-				'NLS - OS 1:25,000 Provisional / First Series 1937-1961',
-			],
-			os1inch7thseries: [
-				'https://{s}.tile.cyclestreets.net/os1inch7thseries/{z}/{x}/{y}@2x.png',
-				{maxZoom: 16, attribution: '&copy; <a href="https://maps.nls.uk/copyright.html">National Library of Scotland</a>'},
-				'NLS - OS 1-inch 7th Series 1955-1961'
-			]
+			os1to25k1stseries: {
+				tiles: 'https://{s}.tile.cyclestreets.net/os1to25k1stseries/{z}/{x}/{y}@2x.png',
+				maxZoom: 16,
+				attribution: '&copy; <a href="https://maps.nls.uk/copyright.html">National Library of Scotland</a>',
+				tileSize: 256,
+				label: 'NLS - OS 1:25,000 Provisional / First Series 1937-1961',
+			},
+			os1inch7thseries: {
+				tiles: 'https://{s}.tile.cyclestreets.net/os1inch7thseries/{z}/{x}/{y}@2x.png',
+				maxZoom: 16,
+				attribution: '&copy; <a href="https://maps.nls.uk/copyright.html">National Library of Scotland</a>',
+				tileSize: 256,
+				label: 'NLS - OS 1-inch 7th Series 1955-1961'
+			}
 			*/
 		},
 		
@@ -271,6 +296,7 @@ var layerviewer = (function ($) {
 	// Internal class properties
 	var _map = null;
 	var _layers = {};	// Layer status registry
+	var _styles = {};
 	var _currentDataLayer = {};
 	var _tileOverlayLayers = {};
 	var _heatmapOverlayLayers = {};
@@ -379,6 +405,9 @@ var layerviewer = (function ($) {
 			// Set the initial location and tile layer
 			var defaultLocation = (urlParameters.defaultLocation || _settings.defaultLocation);
 			var defaultTileLayer = (urlParameters.defaultTileLayer || _settings.defaultTileLayer);
+			
+			// Load styles
+			layerviewer.getStyles ();
 			
 			// Create the map
 			layerviewer.createMap (defaultLocation, defaultTileLayer);
@@ -1248,10 +1277,10 @@ var layerviewer = (function ($) {
 			mapboxgl.accessToken = _settings.mapboxApiKey;
 			_map = new mapboxgl.Map ({
 				container: 'map',
+				style: _styles[_settings.defaultTileLayer],
 				center: [defaultLocation.longitude, defaultLocation.latitude],
 				zoom: defaultLocation.zoom,
 				maxBounds: (_settings.maxBounds ? [[_settings.maxBounds[1], _settings.maxBounds[0]], [_settings.maxBounds[3], _settings.maxBounds[2]]] : null),	// [[S,W],[N,E]]
-				layers: baseLayersById[defaultTileLayer]	// Documentation suggests tileLayers is all that is needed, but that shows all together
 			});
 			
 			// Add the base (background) layer switcher
@@ -1279,6 +1308,104 @@ var layerviewer = (function ($) {
 			if (_settings.enableScale) {
 				L.control.scale({maxWidth: 300, position: 'bottomright'}).addTo(_map);
 			}
+		},
+		
+		
+		// Define styles
+		getStyles: function ()
+		{
+			// Register each tileset
+			$.each (_settings.tileUrls, function (tileLayerId, tileLayerAttributes) {
+				
+				// Register vector tiles or traditional raster (bitmap) layers
+				if (tileLayerAttributes.vectorTiles) {
+					_styles[tileLayerId] = layerviewer.defineVectorLayer (tileLayerAttributes);
+				} else {
+					_styles[tileLayerId] = layerviewer.defineRasterLayer (tileLayerAttributes, 'background-' + tileLayerId);
+				}
+			});
+		},
+		
+		
+		// Function to define a vector layer
+		defineVectorLayer: function (tileLayerAttributes)
+		{
+			// Support native mapbox:// format
+			if (tileLayerAttributes.vectorTiles.match (/^mapbox:\/\/.+/)) {
+				return tileLayerAttributes.vectorTiles;
+			}
+			
+			// Otherwise compile the layer definition
+			var layerDefinition = {
+				version: 8,
+				sources: {
+					vector: {
+						type: 'vector',
+						tiles: [tileLayerAttributes.vectorTiles]
+					}
+				},
+				layers: [{
+					id: 'vector-tiles',
+					type: 'vector',
+					source: 'vector',
+					'source-layer': 'vector',
+					paint : {'raster-opacity' : 0.7}	// https://stackoverflow.com/a/48016804/180733
+				}]
+			};
+			
+			// Return the layer definition
+			return layerDefinition;
+		},
+		
+		
+		// Function to define a raster layer
+		defineRasterLayer: function (tileLayerAttributes, id)
+		{
+			// Determine if this is a TMS (i.e. {-y}) tilesource; see: https://docs.mapbox.com/mapbox-gl-js/style-spec/#sources-raster-scheme
+			var scheme = 'xyz';
+			if (tileLayerAttributes.tiles.indexOf('{-y}') != -1) {
+				tileLayerAttributes.tiles = tileLayerAttributes.tiles.replace ('{-y}', '{y}');
+				scheme = 'tms';
+			}
+		
+			// Expand {s} server to a,b,c if present
+			if (tileLayerAttributes.tiles.indexOf('{s}') != -1) {
+				tileLayerAttributes.tiles = [
+					tileLayerAttributes.tiles.replace ('{s}', 'a'),
+					tileLayerAttributes.tiles.replace ('{s}', 'b'),
+					tileLayerAttributes.tiles.replace ('{s}', 'c')
+				]
+			}
+			
+			// Convert string (without {s}) to array
+			if (typeof tileLayerAttributes.tiles === 'string') {
+				tileLayerAttributes.tiles = [
+					tileLayerAttributes.tiles
+				]
+			}
+			
+			// Register the definition
+			var sources = {};
+			sources[id] = {
+				type: 'raster',
+				scheme: scheme,
+				tiles: tileLayerAttributes.tiles,
+				tileSize: (tileLayerAttributes.tileSize ? tileLayerAttributes.tileSize : 256),	// NB Mapbox GL default is 512
+				attribution: tileLayerAttributes.attribution
+			};
+			var layerDefinition = {
+				version: 8,
+				sources: sources,	// Defined separately so that the id can be specified as a key
+				layers: [{
+					id: id,
+					type: 'raster',
+					source: id,
+					paint : {'raster-opacity' : 0.7}	// https://stackoverflow.com/a/48016804/180733
+				}]
+			};
+			
+			// Return the layer definition
+			return layerDefinition;
 		},
 		
 		
