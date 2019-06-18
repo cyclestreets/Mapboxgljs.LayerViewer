@@ -1281,6 +1281,8 @@ var layerviewer = (function ($) {
 				center: [defaultLocation.longitude, defaultLocation.latitude],
 				zoom: defaultLocation.zoom,
 				maxBounds: (_settings.maxBounds ? [[_settings.maxBounds[1], _settings.maxBounds[0]], [_settings.maxBounds[3], _settings.maxBounds[2]]] : null),	// [[S,W],[N,E]]
+				// #!# Hash does not include layer; ideally would be added to: https://github.com/mapbox/mapbox-gl-js/blob/master/src/ui/hash.js perhaps using a monkey-patch: http://me.dt.in.th/page/JavaScript-override/
+				hash: true
 			});
 			
 			// Add the base (background) layer switcher
@@ -1293,10 +1295,6 @@ var layerviewer = (function ($) {
 			if (_settings.enableDrawing) {
 				layerviewer.drawing ('#geometry', true, '');
 			}
-			
-			// Add hash support
-			// #!# Note that this causes a map move, causing a second data request
-			new L.Hash (_map, baseLayersById);
 			
 			// Add geolocation control
 			_map.addControl(L.control.locate({
