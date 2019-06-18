@@ -2030,7 +2030,7 @@ var layerviewer = (function ($) {
 					
 					// Render the data into the overlay template
 					var template = (_layerConfig[layerId].overlayHtml ? _layerConfig[layerId].overlayHtml : false);
-					var html = layerviewer.renderDetails (template, feature, false, layerId);
+					var html = layerviewer.renderDetails (template, feature, layerId);
 					
 					// Create the dialog box and its contents
 					var divId = layerId + 'details';
@@ -2110,7 +2110,7 @@ var layerviewer = (function ($) {
 		
 		
 		// Function to construct the popup/overlay content
-		renderDetails: function (template, feature, layer, layerId)
+		renderDetails: function (template, feature, layerId)
 		{
 			// Use a template if this has been defined in the layer config
 			var html;
@@ -2130,13 +2130,10 @@ var layerviewer = (function ($) {
 				
 				// Convert OSM edit link macro
 				if (template.indexOf ('{%osmeditlink}') >= 0) {
-					if (layer) {	// Layer is not always supported by callers of this function
-						var bounds = layer.getBounds();
-						var centrePoint = bounds.getCenter();
-						var zoom = _map.getBoundsZoom (bounds) - 1;	// -1 to zoom out a level
-						var osmEditUrl = 'https://www.openstreetmap.org/edit#map=' + zoom + '/' + centrePoint.lat + '/' + centrePoint.lng;
-						template = template.replace ('{%osmeditlink}', '<a class="edit" target="_blank" href="' + osmEditUrl + '">Edit in OSM</a>');
-					}
+					var centroid = layerviewer.polygonCentroid (feature);
+					var zoom = 19;	// #!# Need equivalent of getBoundsZoom, to replace this fixed value
+					var osmEditUrl = 'https://www.openstreetmap.org/edit#map=' + zoom + '/' + centroid.lat.toFixed(5) + '/' + centroid.lng.toFixed(5);
+					template = template.replace ('{%osmeditlink}', '<a class="edit" target="_blank" href="' + osmEditUrl + '">Edit in OSM</a>');
 				}
 				
 				// If any property is null, show '?' instead
@@ -2198,7 +2195,7 @@ var layerviewer = (function ($) {
 							value = _layerConfig[layerId].popupFormatters[key] (feature.properties[key], feature);
 						}
 					}
-					
+
 					// Compile the HTML
 					html += '<tr><td>' + fieldLabel + ':</td><td><strong>' + value + '</strong></td></tr>';
 				});
@@ -2238,7 +2235,7 @@ var layerviewer = (function ($) {
 				default:
 					// Geometry type not yet supported
 			}
-			
+
 			// Assemble and return the HTML
 			return '<iframe id="streetview" src="/streetview.html?latitude=' + latitude + '&longitude=' + longitude + '">Street View loading &hellip;</div>';
 		},
