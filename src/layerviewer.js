@@ -298,8 +298,8 @@ var layerviewer = (function ($) {
 	var _layers = {};	// Layer status registry
 	var _styles = {};
 	var _currentDataLayer = {};
-	var _tileOverlayLayers = {};
 	var _heatmapOverlayLayers = {};
+	var _tileOverlayLayer = false;
 	var _virginFormState = {};
 	var _parameters = {};
 	var _xhrRequests = {};
@@ -1712,29 +1712,8 @@ var layerviewer = (function ($) {
 			
 			// If the layer is a tile layer rather than an API call, add it and end
 			if (_layerConfig[layerId].tileLayer) {
-				var tileUrl = _layerConfig[layerId].tileLayer[0];
-				var tileOptions = _layerConfig[layerId].tileLayer[1];
-				
-				// Substitute placeholder values, e.g. style switcher
-				if (parameters) {
-					var placeholder;
-					$.each(parameters, function (field, value) {
-						placeholder = '{%' + field + '}';
-						tileUrl = tileUrl.replace(placeholder, value);
-					});
-				}
-				
-				// Force redraw if already present, e.g. with different style options
-				if (_tileOverlayLayers[layerId]) {
-					_map.removeLayer(_tileOverlayLayers[layerId]);
-				}
-				
-				// Add to the map
-				_tileOverlayLayers[layerId] = L.tileLayer(tileUrl, tileOptions);
-				_map.addLayer(_tileOverlayLayers[layerId]);
-				
-				// No further action, e.g. API calls
-				return;
+				layerviewer.addTileLayer (_layerConfig[layerId].tileLayer, layerId, parameters);
+				return;		// No further action, e.g. API calls
 			}
 			
 			// Start API data parameters
@@ -1894,6 +1873,56 @@ var layerviewer = (function ($) {
 					return layerviewer.showCurrentData (layerId, data, apiData, requestSerialised);
 				}
 			});
+		},
+		
+		
+		// Function to add a tile layer
+		addTileLayer: function (tileLayerAttributes, layerId, parameters)
+		{
+			// Make changes on the tile layer attributes without modifying the original
+			tileLayerAttributes = $.extend (true, {}, tileLayerAttributes);
+			
+			// Substitute placeholder values, e.g. style switcher
+			if (parameters) {
+				var placeholder;
+				$.each (parameters, function (field, value) {
+					placeholder = '{%' + field + '}';
+					tileLayerAttributes.tiles = tileLayerAttributes.tiles.replace (placeholder, value);
+				});
+			}
+			
+			// Construct the ID, namespaced to avoid clashes with background layers, incorporating any parameters to ensure uniqueness
+			var id = 'overlay-' + layerId + '-' + jQuery.param (parameters);	// E.g. overlay-abc-style=blue
+			
+			// Leave current setup in place if already present, with the same style options
+			if (_tileOverlayLayer == id) {
+				return;
+			}
+			
+			// If an existing layer is already present, e.g. with different style options, remove it
+			if (_tileOverlayLayer) {
+				layerviewer.removeTileLayer ();
+			}
+			
+			// Register to the cache
+			_tileOverlayLayer = id;
+			
+			// Add to the map
+			var layer = layerviewer.defineRasterLayer (tileLayerAttributes, id);
+			_map.addSource (id, layer.sources[id]);
+			_map.addLayer (layer.layers[0]);
+			// #!# Max zoom on layer doesn't actually seem to work
+			_map.setLayerZoomRange (id, 0, (tileLayerAttributes.maxZoom ? tileLayerAttributes.maxZoom : 20));
+		},
+		
+		
+		// Function to remove a tile layer
+		removeTileLayer: function ()
+		{
+			// Remove the layer and the source, and reset the layer value
+			_map.removeLayer (_tileOverlayLayer);
+			_map.removeSource (_tileOverlayLayer);
+			_tileOverlayLayer = false;
 		},
 		
 		
@@ -2472,8 +2501,8 @@ var layerviewer = (function ($) {
 		{
 			// If the layer is a tile layer rather than an API call, remove it and end
 			if (_layerConfig[layerId].tileLayer) {
-				if (_tileOverlayLayers[layerId]) {
-					_map.removeLayer(_tileOverlayLayers[layerId]);
+				if (_tileOverlayLayer) {
+					layerviewer.removeTileLayer ();
 				}
 				
 				// No further action, e.g. API calls
