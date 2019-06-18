@@ -1288,6 +1288,9 @@ var layerviewer = (function ($) {
 			// Add the base (background) layer switcher
 			L.control.layers(baseLayers, null).addTo(_map);
 			
+			// Enable zoom in/out buttons
+			_map.addControl (new mapboxgl.NavigationControl (), 'top-left');
+			
 			// Add a geolocation control
 			layerviewer.geolocation ();
 			
