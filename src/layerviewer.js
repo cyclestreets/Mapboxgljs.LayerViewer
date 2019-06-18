@@ -1301,7 +1301,7 @@ var layerviewer = (function ($) {
 			
 			// Add map scale if required
 			if (_settings.enableScale) {
-				L.control.scale({maxWidth: 300, position: 'bottomright'}).addTo(_map);
+				_map.addControl(new mapboxgl.ScaleControl ({position: 'bottom-left'}));
 			}
 		},
 		
