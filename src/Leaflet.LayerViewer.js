@@ -154,7 +154,7 @@ var layerviewer = (function ($) {
 			dataType: false,
 			
 			// Callback for data conversion just after receiving the data
-			convertData: function (data) {return somefunction (data);}
+			convertData: function (data) {return somefunction (data);},
 			
 			// Minimum zoom required for this layer
 			minZoom: false,
