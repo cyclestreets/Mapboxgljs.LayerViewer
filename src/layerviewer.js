@@ -306,8 +306,8 @@ var layerviewer = (function ($) {
 	var _requestCache = {};
 	var _title = false;
 	var _embedMode = false;
-	var _message = null;
 	var _betaMode = false;
+	var _message = {};
 	
 	
 	return {
@@ -1200,28 +1200,20 @@ var layerviewer = (function ($) {
 		messageArea: function ()
 		{
 			// Create the control
-			_message = L.control({position:'bottomleft'});
-			
-			// Define its contents
-			_message.onAdd = function () {
-			    this._div = L.DomUtil.create('div', 'message');
-			    return this._div;
-			};
+			layerviewer.createControl ('message', 'bottom-left');
 			
 			// Register a method to set and show the message
 			_message.show = function (html) {
-				this._div.innerHTML = '<p>' + html + '</p>';
-				$('.message').show ();
+				var html = '<p>' + html + '</p>';
+				$('#message').html (html);
+				$('#message').show ();
 			};
 			
 			// Register a method to blank the message area
 			_message.hide = function () {
-				this._div.innerHTML = '';
-				$('.message').hide ();
+				$('#message').html ('');
+				$('#message').hide ();
 			}
-			
-			// Add to the map
-			_message.addTo(_map);
 		},
 		
 		
