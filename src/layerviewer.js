@@ -1280,7 +1280,7 @@ var layerviewer = (function ($) {
 				style: _styles[_settings.defaultTileLayer],
 				center: [defaultLocation.longitude, defaultLocation.latitude],
 				zoom: defaultLocation.zoom,
-				maxBounds: (_settings.maxBounds ? [[_settings.maxBounds[1], _settings.maxBounds[0]], [_settings.maxBounds[3], _settings.maxBounds[2]]] : null),	// [[S,W],[N,E]]
+				maxBounds: (_settings.maxBounds ? _settings.maxBounds : null),	// [W,S,E,N]
 				// #!# Hash does not include layer; ideally would be added to: https://github.com/mapbox/mapbox-gl-js/blob/master/src/ui/hash.js perhaps using a monkey-patch: http://me.dt.in.th/page/JavaScript-override/
 				hash: true
 			});
