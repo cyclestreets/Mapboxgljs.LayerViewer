@@ -2679,15 +2679,11 @@ var layerviewer = (function ($) {
 					html += '</select>';
 					
 					// Add to the map
-					var regionswitcher = L.control({position: 'topright'});
-					regionswitcher.onAdd = function () {
-						return L.DomUtil.create ('div', 'regionswitcher');
-					}
-					regionswitcher.addTo(_map);
-					$('.regionswitcher').html (html);
+					layerviewer.createControl ('regionswitcher', 'top-right', 'info');
+					$('#regionswitcher').html (html);
 					
 					// Add a handler
-					$('.regionswitcher select').change (function () {
+					$('#regionswitcher select').change (function () {
 						if (this.value) {
 							var selectedRegion = this.value;
 							_map.fitBounds (regions[selectedRegion]);
