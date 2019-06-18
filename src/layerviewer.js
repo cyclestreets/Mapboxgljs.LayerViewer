@@ -1,7 +1,7 @@
 // Layer viewer library code
 
 /*jslint browser: true, white: true, single: true, for: true */
-/*global $, jQuery, mapboxgl, MapboxDraw, autocomplete, Cookies, vex, GeoJSON, alert, console, window */
+/*global $, jQuery, mapboxgl, MapboxDraw, geojsonExtent, autocomplete, Cookies, vex, GeoJSON, alert, console, window */
 
 var layerviewer = (function ($) {
 	
@@ -2751,7 +2751,7 @@ var layerviewer = (function ($) {
 			if (!_settings.regionsFile || !_settings.regionsField) {return;}
 			
 			// Load the GeoJSON file
-			$.ajax({
+			$.ajax ({
 				url: _settings.regionsFile,
 				dataType: (layerviewer.browserSupportsCors () ? 'json' : 'jsonp'),		// Fall back to JSON-P for IE9
 				error: function (jqXHR, error, exception) {
@@ -2811,19 +2811,17 @@ var layerviewer = (function ($) {
 			// Parse each feature for name and location
 			var name;
 			var bounds;
-			var geojson = L.geoJSON(data, {
-				onEachFeature: function (feature, layer) {
-					
-					// Get the name, or skip if not present
-					if (!feature.properties[_settings.regionsField]) {return false;}
-					name = feature.properties[_settings.regionsField];
-					
-					// Get location; see: https://gis.stackexchange.com/a/167425/58752
-					bounds = layer.getBounds();
-					
-					// Register function
-					regions[name] = bounds;
-				}
+			$.each (data.features, function (index, feature) {
+				
+				// Get the name, or skip if not present
+				if (!feature.properties[_settings.regionsField]) {return false;}
+				name = feature.properties[_settings.regionsField];
+				
+				// Get location; see: https://github.com/mapbox/geojson-extent
+				bounds = geojsonExtent (feature);
+				
+				// Register region
+				regions[name] = bounds;
 			});
 			
 			// Return the list
