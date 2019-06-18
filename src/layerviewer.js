@@ -1288,6 +1288,9 @@ var layerviewer = (function ($) {
 			// Add the base (background) layer switcher
 			L.control.layers(baseLayers, null).addTo(_map);
 			
+			// Add a geolocation control
+			layerviewer.geolocation ();
+			
 			// Add geocoder control
 			layerviewer.geocoder ();
 			
@@ -1295,12 +1298,6 @@ var layerviewer = (function ($) {
 			if (_settings.enableDrawing) {
 				layerviewer.drawing ('#geometry', true, '');
 			}
-			
-			// Add geolocation control
-			_map.addControl(L.control.locate({
-				icon: 'fa fa-location-arrow',
-				locateOptions: {maxZoom: 17}
-			}));
 			
 			// Add map scale if required
 			if (_settings.enableScale) {
@@ -1404,6 +1401,24 @@ var layerviewer = (function ($) {
 			
 			// Return the layer definition
 			return layerDefinition;
+		},
+		
+		
+		// Function to add a geolocation control
+		// https://www.mapbox.com/mapbox-gl-js/example/locate-user/
+		// https://github.com/mapbox/mapbox-gl-js/issues/5464
+		geolocation: function ()
+		{
+			// Create a tracking control
+			var geolocate = new mapboxgl.GeolocateControl({
+				positionOptions: {
+					enableHighAccuracy: true
+				},
+				trackUserLocation: false
+			});
+			
+			// Add to the map
+			_map.addControl (geolocate, 'top-left');
 		},
 		
 		
