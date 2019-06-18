@@ -2414,10 +2414,7 @@ var layerviewer = (function ($) {
 		regionSwitcher: function ()
 		{
 			// End if not enabled
-			if (!_settings.regionsFile) {return;}
-			
-			// End if not enabled
-			if (!_settings.regionsField) {return;}
+			if (!_settings.regionsFile || !_settings.regionsField) {return;}
 			
 			// Load the GeoJSON file
 			$.ajax({
