@@ -1,7 +1,7 @@
 // Layer viewer library code
 
 /*jslint browser: true, white: true, single: true, for: true */
-/*global $, jQuery, mapboxgl, autocomplete, Cookies, vex, GeoJSON, alert, console, window */
+/*global $, jQuery, mapboxgl, MapboxDraw, autocomplete, Cookies, vex, GeoJSON, alert, console, window */
 
 var layerviewer = (function ($) {
 	
@@ -2509,76 +2509,100 @@ var layerviewer = (function ($) {
 		},
 		
 		
-		// Drawing functionality, wrapping Leaflet.draw
+		// Drawing functionality, wrapping mapbox-gl-draw
 		drawing: function (targetField, fragmentOnly, defaultValueString)
 		{
-			// Options for polygon drawing
-			var polygon_options = {
-				showArea: false,
-				shapeOptions: {
-					stroke: true,
-					color: 'blue',
-					weight: 4,
-					opacity: 0.5,
-					fill: true,
-					fillColor: null, //same as color by default
-					fillOpacity: 0.2,
-					clickable: true
+			// Define drawing styles; based on https://github.com/NYCPlanning/labs-factfinder/blob/a617955c652b05dd81308e8d4158cfd76c01d1e2/app/layers/draw-styles.js
+			var styles = [
+				// Polygon fill
+				{
+					id: 'gl-draw-polygon-fill',
+					type: 'fill',
+					paint: {
+						'fill-color': '#D20C0C',
+						'fill-outline-color': '#D20C0C',
+						'fill-opacity': 0.1,
+					},
+				},
+				// Polygon outline stroke
+				{
+					id: 'gl-draw-polygon-stroke-active',
+					type: 'line',
+					layout: {
+						'line-cap': 'round',
+						'line-join': 'round',
+					},
+					paint: {
+						'line-color': '#D96B27',
+						'line-dasharray': [0.2, 2],
+						'line-width': 4,
+					},
+				},
+				// Vertex point halos
+				{
+					id: 'gl-draw-polygon-and-line-vertex-halo-active',
+					type: 'circle',
+					filter: ['all', ['==', 'meta', 'vertex'], ['==', '$type', 'Point']],
+					paint: {
+						'circle-radius': 7,
+						'circle-color': '#FFF',
+					},
+				},
+				// Vertex points
+				{
+					id: 'gl-draw-polygon-and-line-vertex-active',
+					type: 'circle',
+					filter: ['all', ['==', 'meta', 'vertex'], ['==', '$type', 'Point']],
+					paint: {
+						'circle-radius': 6,
+						'circle-color': '#D96B27',
+					},
 				}
-			};
+			];
 			
-			// Create a map drawing layer
-			var drawnItems = new L.FeatureGroup();
+			// See example at: https://docs.mapbox.com/mapbox-gl-js/example/mapbox-gl-draw/
+			// See also support for circle drawing (potential future feature) at: https://medium.com/nyc-planning-digital/building-a-custom-draw-mode-for-mapbox-gl-draw-1dab71d143ee
+			var draw = new MapboxDraw ({
+				displayControlsDefault: false,
+				styles: styles
+			});
+			_map.addControl (draw);
 			
-			// Add default value if supplied; currently only polygon type supplied
-			if (defaultValueString) {
+			// Register handlers for data creation/update
+			_map.on ('draw.create', updateArea);
+			_map.on ('draw.update', updateArea);
+			
+			// Add default value if supplied; currently only polygon type supplied; see: https://github.com/mapbox/mapbox-gl-draw/blob/master/docs/API.md#addgeojson-object--arraystring
+			if (defaultValueString) {	// E.g. '[[-0.106355,51.510595],[-0.106709,51.51082],[-0.105666,51.511347],[-0.106355,51.510595]]'
 				
-				// Convert the string to an array of L.latLng(lat,lon) values
-				var polygonPoints = JSON.parse(defaultValueString);
-				var defaultPolygon = [];
-				if (polygonPoints) {
-					var i;
-					var point;
-					for (i = 0; i < polygonPoints.length; i++) {
-						point = polygonPoints[i];
-						defaultPolygon.push (L.latLng(point[1], point[0]));
-					}
-				}
+				// Convert the string to an array of lat,lon values
+				var polygonPoints = JSON.parse (defaultValueString);
 				
-				// Create the polygon and style it
-				var defaultPolygonFeature = L.polygon(defaultPolygon, polygon_options.shapeOptions);
+				// Construct the feature
+				var defaultPolygonFeature = {type: 'Polygon', coordinates: [polygonPoints]};
 				
-				// Create the layer and add the polygon to the layer
-				var defaultLayer = new L.layerGroup();
-				defaultLayer.addLayer(defaultPolygonFeature);
-				
-				// Add the layer to the drawing canvas
-				drawnItems.addLayer(defaultLayer);
+				// Add the polygon
+				draw.add (defaultPolygonFeature);
 			}
 			
-			// Add the drawing layer to the map
-			_map.addLayer(drawnItems);
-			
 			// Enable the polygon drawing when the button is clicked
-			var drawControl = new L.Draw.Polygon(_map, polygon_options);
 			$('.draw.area').click(function() {
-				drawControl.enable();
 				
-				// Allow only a single polygon at present
+				// Clear any existing features - allow only a single polygon at present
 				// #!# Remove this when the server-side allows multiple polygons
-				drawnItems.clearLayers();
+				draw.deleteAll ();
+				
+				// Start drawing
+				draw.changeMode ('draw_polygon');
 			});
 			
 			// Handle created polygons
-			_map.on('draw:created', function (e) {
-				var layer = e.layer;
-				drawnItems.addLayer(layer);
+			function updateArea (e) {
 				
-				// Convert to GeoJSON value
-				var geojsonValue = drawnItems.toGeoJSON();
+				// Capture the data, which will be GeoJSON
+				var geojsonValue = draw.getAll ();
 				
 				// Reduce coordinate accuracy to 6dp (c. 1m) to avoid over-long URLs
-				// #!# Ideally this would be native within Leaflet.draw: https://github.com/Leaflet/Leaflet.draw/issues/581
 				var coordinates = geojsonValue.features[0].geometry.coordinates[0];
 				var accuracy = 6;	// Decimal points; gives 0.1m accuracy; see: https://en.wikipedia.org/wiki/Decimal_degrees
 				var i;
@@ -2601,21 +2625,23 @@ var layerviewer = (function ($) {
 				// Trigger jQuery change event, so that .change() behaves as expected for the hidden field; see: https://stackoverflow.com/a/8965804
 				// #!# Note that this fires twice for some reason - see notes to the answer in the above URL
 				$(targetField).trigger('change');
-			});
+			};
 			
 			// Cancel button clears drawn polygon and clears the form value
 			$('.edit-clear').click(function() {
-				drawnItems.clearLayers();
+				draw.trash ();
 				$(targetField).val('');
 			
 				// Trigger jQuery change event, so that .change() behaves as expected for the hidden field; see: https://stackoverflow.com/a/8965804
 				$(targetField).trigger('change');
 			});
 			
-			// Undo button
+			// Undo button; not yet implemented: https://github.com/mapbox/mapbox-gl-draw/issues/791
+			/*
 			$('.edit-undo').click(function() {
-				drawnItems.revertLayers();
+				//
 			});
+			*/
 		},
 		
 		
