@@ -360,9 +360,11 @@ var layerviewer = (function ($) {
 							// Create a handler to remove the overlay automatically when zoomed in (but not explicitly clicked through)
 							if (_settings.initialRegionsViewRemovalZoom) {
 								_map.on ('zoomend', function (e) {
-									var currentZoom = _map.getZoom ();
-									if (currentZoom >= _settings.initialRegionsViewRemovalZoom) {
-										_map.removeLayer (regionsOverlay);
+									if (_map.hasLayer (regionsOverlay)) {
+										var currentZoom = _map.getZoom ();
+										if (currentZoom >= _settings.initialRegionsViewRemovalZoom) {
+											_map.removeLayer (regionsOverlay);
+										}
 									}
 								});
 							}
