@@ -1085,15 +1085,7 @@ var layerviewer = (function ($) {
 		createLegend: function ()
 		{
 			// Affix the legend
-			var legend = L.control({position: 'bottomleft'});
-			
-			// Define its contents
-			legend.onAdd = function () {
-				return L.DomUtil.create ('div', 'info legend');
-			};
-			
-			// Add to the map
-			legend.addTo (_map);
+			layerviewer.createControl ('legend', 'bottom-left');
 			
 			// Hide initially
 			layerviewer.clearLegend ();
