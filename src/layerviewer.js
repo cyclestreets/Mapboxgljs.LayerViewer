@@ -344,64 +344,6 @@ var layerviewer = (function ($) {
 			// Parse the URL
 			var urlParameters = layerviewer.parseUrl ();
 			
-			// Show intial regions view if required
-			if (_settings.initialRegionsView && _settings.regionsFile) {
-				if (!urlParameters.defaultLocation) {
-					
-					// Load the GeoJSON file
-					$.ajax({
-						url: _settings.regionsFile,
-						dataType: (layerviewer.browserSupportsCors () ? 'json' : 'jsonp'),		// Fall back to JSON-P for IE9
-						error: function (jqXHR, error, exception) {
-							vex.dialog.alert ('Error: could not load regions list file.');
-						},
-						success: function (data, textStatus, jqXHR) {
-							var regionsOverlay = L.geoJson(data, {
-								
-								onEachFeature: function (feature, layer) {
-									
-									// Support popup content, if enabled
-									if (_settings.regionsField) {
-										
-										// Add the region name
-										var regionName = feature.properties[_settings.regionsField];
-										regionName = layerviewer.htmlspecialchars (layerviewer.ucfirst (regionName));
-										layer.bindPopup (regionName, {className: 'autowidth'});
-										
-										// Add mouseover hover
-										layer.on('mouseover', function (eventn) {
-											this.openPopup();
-										});
-										layer.on('mouseout', function (event) {
-											this.closePopup();
-										});
-									}
-									
-									// Zoom to area and remove layer when clicked
-									layer.on('click', function (event) {
-										_map.fitBounds(layer.getBounds());
-										_map.removeLayer (regionsOverlay);
-									})
-								}
-								
-							}).addTo(_map);
-							
-							// Create a handler to remove the overlay automatically when zoomed in (but not explicitly clicked through)
-							if (_settings.initialRegionsViewRemovalZoom) {
-								_map.on ('zoomend', function (e) {
-									if (_map.hasLayer (regionsOverlay)) {
-										var currentZoom = _map.getZoom ();
-										if (currentZoom >= _settings.initialRegionsViewRemovalZoom) {
-											_map.removeLayer (regionsOverlay);
-										}
-									}
-								});
-							}
-						}
-					});
-				}
-			}
-			
 			// Set the initial location and tile layer
 			var defaultLocation = (urlParameters.defaultLocation || _settings.defaultLocation);
 			var defaultTileLayer = (urlParameters.defaultTileLayer || _settings.defaultTileLayer);
@@ -478,6 +420,9 @@ var layerviewer = (function ($) {
 			
 			// Region switcher
 			layerviewer.regionSwitcher ();
+			
+			// Show intial regions view if required
+			layerviewer.initialRegionsView (urlParameters);
 			
 			// Enable feedback handler
 			layerviewer.feedbackHandler ();
@@ -663,6 +608,133 @@ var layerviewer = (function ($) {
 			var queryString = location.search.substring(1);
 			var parameters = layerviewer.deparam (queryString);
 			return parameters;
+		},
+		
+		
+		// Function to add an initial regions view
+		initialRegionsView: function (urlParameters)
+		{
+			if (_settings.initialRegionsView && _settings.regionsFile) {
+				if (!urlParameters.defaultLocation) {
+					
+					// Add the data, rendering the polygons
+					_map.on ('load', function () {		// See: https://docs.mapbox.com/help/how-mapbox-works/web-apps/#adding-layers-to-the-map
+						_map.addLayer ({
+							id: 'regionsOverlay',
+							source: {
+								type: 'geojson',
+								data: _settings.regionsFile,
+								generateId: true	// NB See: https://github.com/mapbox/mapbox-gl-js/issues/8133
+							},
+							type: 'fill',
+							layout: {},
+							paint: {
+								'fill-color': '#3388ff',
+								'fill-opacity': ['case', ['boolean', ['feature-state', 'hover'], false], 1, 0.5],	// See: https://docs.mapbox.com/mapbox-gl-js/example/hover-styles/
+								'fill-outline-color': 'blue'
+								// NB Outline line width cannot be changed: https://github.com/mapbox/mapbox-gl-js/issues/3018#issuecomment-240381965
+							}
+						});
+					});
+					
+					// Set hover state; see: https://docs.mapbox.com/mapbox-gl-js/example/hover-styles/
+					layerviewer.setHoverState ('regionsOverlay', 'regionsOverlay');
+					
+					// Support popup content, if enabled
+					if (_settings.regionsField) {
+						
+						// Create a popup, but don't add it to the map yet
+						var popup = new mapboxgl.Popup ({
+							closeButton: false,
+							closeOnClick: false
+						});
+						
+						// Handle popup; see: https://docs.mapbox.com/mapbox-gl-js/example/popup-on-hover/
+						_map.on ('mouseenter', 'regionsOverlay', function (e) {
+							_map.getCanvas().style.cursor = 'pointer';
+							
+							// Set the co-ordinates
+							var feature = e.features[0];
+							var coordinates = layerviewer.polygonCentroid (feature);
+							
+							// Add the region name as the popup content
+							var regionName = feature.properties[_settings.regionsField];
+							regionName = layerviewer.htmlspecialchars (layerviewer.ucfirst (regionName));
+							
+							// Populate the popup and set its coordinates based on the feature found
+							popup.setLngLat (coordinates)
+								.setHTML (regionName)
+								.addTo (_map);
+						});
+						_map.on ('mouseleave', 'places', function (e) {
+							_map.getCanvas().style.cursor = '';
+							popup.remove ();
+						});
+					}
+					
+					// Zoom to area and remove layer when clicked
+					_map.on ('click', 'regionsOverlay', function (e) {
+						var feature = e.features[0];
+						_map.fitBounds (geojsonExtent (feature));
+						_map.removeLayer ('regionsOverlay');
+						if (_settings.regionsField) {
+							popup.remove ();
+						}
+					});
+					
+					// Create a handler to remove the overlay automatically when zoomed in (but not explicitly clicked through)
+					if (_settings.initialRegionsViewRemovalZoom) {
+						_map.on ('zoomend', function (e) {
+							if (_map.getLayer ('regionsOverlay')) {
+								var currentZoom = _map.getZoom ();
+								if (currentZoom >= _settings.initialRegionsViewRemovalZoom) {
+									_map.removeLayer ('regionsOverlay');
+								}
+							}
+						});
+					}
+				}
+			}
+		},
+		
+		
+		// Helper function to handle hover state; see: https://docs.mapbox.com/mapbox-gl-js/example/hover-styles/
+		setHoverState: function (layerId, sourceId)
+		{
+			// Create the hover state ID
+			var hoveredStateId =  null;
+			
+			// When the user moves their mouse over the state-fill layer, update the feature state for the feature under the mouse
+			_map.on ('mousemove', layerId, function (e) {
+				if (e.features.length > 0) {
+					if (hoveredStateId) {
+						_map.setFeatureState ({source: sourceId, id: hoveredStateId}, {hover: false});
+					}
+					hoveredStateId = e.features[0].id;
+					_map.setFeatureState ({source: sourceId, id: hoveredStateId}, {hover: true});
+				}
+			});
+			 
+			// When the mouse leaves the state-fill layer, update the feature state of the previously hovered feature
+			_map.on ('mouseleave', layerId, function () {
+				if (hoveredStateId) {
+					_map.setFeatureState ({source: sourceId, id: hoveredStateId}, {hover: false});
+				}
+				hoveredStateId =  null;
+			});
+		},
+		
+		
+		// Helper function to get the centre point of a ol
+		polygonCentroid: function (feature)
+		{
+			// Convert the feature to bbox bounds, and then get the centre of that bbox
+			var bounds = geojsonExtent (feature);
+			var coordinates = {
+				lng: ((bounds[0] + bounds[2]) / 2),	// Average (centre) of W/E
+				lat: ((bounds[1] + bounds[3]) / 2)	// Average (centre) of S/N
+			};
+			return coordinates;
 		},
 		
 		
