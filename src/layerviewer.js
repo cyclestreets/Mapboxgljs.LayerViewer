@@ -1,7 +1,7 @@
 // Layer viewer library code
 
 /*jslint browser: true, white: true, single: true, for: true */
-/*global $, jQuery, L, autocomplete, Cookies, vex, GeoJSON, alert, console, window */
+/*global $, jQuery, mapboxgl, autocomplete, Cookies, vex, GeoJSON, alert, console, window */
 
 var layerviewer = (function ($) {
 	
@@ -13,6 +13,9 @@ var layerviewer = (function ($) {
 		// API
 		apiBaseUrl: 'API_BASE_URL',
 		apiKey: 'YOUR_API_KEY',
+		
+		// Mapbox API key
+		mapboxApiKey: 'YOUR_MAPBOX_API_KEY',
 		
 		// Initial lat/lon/zoom of map and tile layer
 		defaultLocation: {
@@ -1242,8 +1245,10 @@ var layerviewer = (function ($) {
 			});
 			
 			// Create the map in the "map" div, set the view to a given place and zoom
-			_map = L.map('map', {
-				center: [defaultLocation.latitude, defaultLocation.longitude],
+			mapboxgl.accessToken = _settings.mapboxApiKey;
+			_map = new mapboxgl.Map ({
+				container: 'map',
+				center: [defaultLocation.longitude, defaultLocation.latitude],
 				zoom: defaultLocation.zoom,
 				maxBounds: (_settings.maxBounds ? [[_settings.maxBounds[1], _settings.maxBounds[0]], [_settings.maxBounds[3], _settings.maxBounds[2]]] : null),	// [[S,W],[N,E]]
 				layers: baseLayersById[defaultTileLayer]	// Documentation suggests tileLayers is all that is needed, but that shows all together
