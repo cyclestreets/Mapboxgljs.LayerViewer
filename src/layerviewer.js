@@ -1819,7 +1819,8 @@ var layerviewer = (function ($) {
 				
 				// For bbox, get the bbox, and reduce the co-ordinate accuracy to avoid over-long URLs
 				if (retrievalStrategy == 'bbox') {
-					parameters.bbox = _map.getBounds().toBBoxString();
+					var bbox = _map.getBounds();
+					parameters.bbox = bbox.getWest() + ',' + bbox.getSouth() + ',' + bbox.getEast() + ',' + bbox.getNorth();
 					parameters.bbox = layerviewer.reduceBboxAccuracy (parameters.bbox);
 				}
 				
@@ -1845,7 +1846,7 @@ var layerviewer = (function ($) {
 			// Send zoom if required
 			var sendZoom = layerviewer.glocalVariable ('sendZoom', layerId);
 			if (sendZoom) {
-				apiData.zoom = _map.getZoom ();
+				apiData.zoom = parseInt (_map.getZoom ());
 			}
 			
 			// Add in the parameters from the form
