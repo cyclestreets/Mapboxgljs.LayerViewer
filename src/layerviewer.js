@@ -1182,8 +1182,8 @@ var layerviewer = (function ($) {
 			// End if not required
 			if (!_settings.enableBetaSwitch) {return;}
 			
-			// Affix the control
-			var betaSwitch = L.control({position: 'bottomright'});
+			// Create the control
+			layerviewer.createControl ('betaswitch', 'bottom-right', 'info');
 			
 			// Determine the label
 			var label = (_settings.enableBetaSwitch === true ? 'Beta' : _settings.enableBetaSwitch);
@@ -1192,14 +1192,7 @@ var layerviewer = (function ($) {
 			var html = '<form id="beta"><input type="checkbox" id="betabutton" name="betabutton" value="true" /><label for="betabutton"> ' + label + '</label></form>';
 			
 			// Add the content
-			betaSwitch.onAdd = function () {
-				this._betaSwitchContents = L.DomUtil.create ('div', 'info betaswitch');
-				this._betaSwitchContents.innerHTML = html;
-				return this._betaSwitchContents;
-			};
-			
-			// Add to the map
-			betaSwitch.addTo (_map);
+			$('#betaswitch').html (html);
 		},
 		
 		
