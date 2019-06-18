@@ -436,10 +436,12 @@ var layerviewer = (function ($) {
 			});
 			
 			// Load the data, and add map interactions and form interactions
-			$.each (_layers, function (layerId, layerEnabled) {
-				if (layerEnabled) {
-					layerviewer.enableLayer (layerId);
-				}
+			_map.on ('load', function () {		// Because layers may do addLayer(), the whole layer management must be wrapped in map load; see: https://docs.mapbox.com/help/how-mapbox-works/web-apps/#adding-layers-to-the-map
+				$.each (_layers, function (layerId, layerEnabled) {
+					if (layerEnabled) {
+						layerviewer.enableLayer (layerId);
+					}
+				});
 			});
 			
 			// Toggle map data layers on/off when checkboxes changed
