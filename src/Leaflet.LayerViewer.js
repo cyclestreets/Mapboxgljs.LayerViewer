@@ -331,20 +331,22 @@ var layerviewer = (function ($) {
 								
 								onEachFeature: function (feature, layer) {
 									
-									// Add the region name as the popup content, if enabled
+									// Support popup content, if enabled
 									if (_settings.regionsField) {
+										
+										// Add the region name
 										var regionName = feature.properties[_settings.regionsField];
 										regionName = layerviewer.htmlspecialchars (layerviewer.ucfirst (regionName));
 										layer.bindPopup (regionName, {className: 'autowidth'});
+										
+										// Add mouseover hover
+										layer.on('mouseover', function (eventn) {
+											this.openPopup();
+										});
+										layer.on('mouseout', function (event) {
+											this.closePopup();
+										});
 									}
-									
-									// Add mouseover hover
-									layer.on('mouseover', function (eventn) {
-										this.openPopup();
-									});
-									layer.on('mouseout', function (event) {
-										this.closePopup();
-									});
 									
 									// Zoom to area and remove layer when clicked
 									layer.on('click', function (event) {
