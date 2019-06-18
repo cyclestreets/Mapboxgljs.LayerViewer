@@ -1,6 +1,8 @@
-# Leaflet.LayerViewer
+# Mapboxgljs.LayerViewer
 
-A UI framework for showing multiple layers in Leaflet.js, essentially a wrapper to Leaflet which integrates various plugins into a full map UI.
+A UI framework for showing multiple layers in Mapbox GL JS, essentially a wrapper to Mapbox GL JS which integrates various plugins into a full map UI.
+
+Branched from the [Leaflet.LayerViewer](https://github.com/cyclestreets/Leaflet.LayerViewer/) library.
 
 Originally written for the [CycleStreets Bikedata](https://github.com/cyclestreets/bikedata/) project.
 
