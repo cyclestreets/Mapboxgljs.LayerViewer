@@ -1561,8 +1561,8 @@ var layerviewer = (function ($) {
 			autocomplete.addTo ('#geocoder input', {
 				sourceUrl: geocoderApiUrl,
 				select: function (event, ui) {
-					var bbox = ui.item.feature.properties.bbox.split(',');
-					_map.fitBounds([ [bbox[1], bbox[0]], [bbox[3], bbox[2]] ]);
+					var bbox = ui.item.feature.properties.bbox.split(',');	// W,S,E,N
+					_map.fitBounds(bbox);
 					event.preventDefault();
 				}
 			});
