@@ -1955,6 +1955,200 @@ var layerviewer = (function ($) {
 		},
 		
 		
+		// Function to show the data for a layer
+		showCurrentData: function (layerId, data, requestData, requestSerialised)
+		{
+			// If a heatmap, divert to this
+			if (_layerConfig[layerId].heatmap) {
+				layerviewer.heatmap(layerId, data);
+				return;
+			}
+			
+			// If this layer already exists, remove it so that it can be redrawn
+			layerviewer.removeLayer (layerId, true);
+			
+			// Determine the field in the feature.properties data that specifies the icon to use
+			var iconField = _layerConfig[layerId].iconField;
+			
+			// Convert using a callback if required
+			if (_layerConfig[layerId].convertData) {
+				data = _layerConfig[layerId].convertData (data);
+				//console.log(data);
+			}
+			
+			// Convert from flat JSON to GeoJSON if required
+			if (_layerConfig[layerId].flatJson) {
+				data = GeoJSON.parse(data, {Point: _layerConfig[layerId].flatJson});
+				//console.log(data);
+			}
+			
+			// If marker importance is defined, define the zIndex offset values for each marker type, to be based on the iconField
+			if (_layerConfig[layerId].markerImportance) {
+				var markerZindexOffsets = [];
+				$.each (_layerConfig[layerId].markerImportance, function (index, iconFieldValue) {
+					markerZindexOffsets[iconFieldValue] = 1000 + (100 * index);	// See: http://leafletjs.com/reference-1.2.0.html#marker-zindexoffset
+				});
+			}
+			
+			// Determine the parameters
+			var popupHtml = layerviewer.sublayerableConfig ('popupHtml', layerId, requestData);
+			var lineColourField = layerviewer.sublayerableConfig ('lineColourField', layerId, requestData);
+			var lineColourStops = layerviewer.sublayerableConfig ('lineColourStops', layerId, requestData);
+			var intervals = layerviewer.sublayerableConfig ('intervals', layerId, requestData);
+			
+			// Set the legend
+			layerviewer.setLegend (layerId, intervals, lineColourStops);
+			
+			// Define the data layer
+			var totalItems = 0;
+			_currentDataLayer[layerId] = L.geoJson(data, {
+				
+				// Set icon type
+				pointToLayer: function (feature, latlng) {
+					
+					// Determine whether to use a local fixed icon, a local icon set, or an icon field in the data
+					var iconUrl = _settings.iconUrl;
+					if (_layerConfig[layerId].iconUrl) {
+						iconUrl = _layerConfig[layerId].iconUrl;
+					} else if (_layerConfig[layerId].icons) {
+						iconUrl = _layerConfig[layerId].icons[feature.properties[iconField]];
+					} else {
+						iconUrl = feature.properties[iconField];
+					}
+					
+					// Determine icon size
+					var iconSize = _settings.iconSize;
+					if (_layerConfig[layerId].iconSize) {
+						iconSize = _layerConfig[layerId].iconSize;
+					}
+					
+					// Compile marker properties
+					var markerProperties = {};
+					if (iconUrl) {
+						markerProperties = {
+							// Icon properties as per: http://leafletjs.com/reference.html#icon and http://leafletjs.com/examples/custom-icons/
+							icon: L.icon({
+								iconUrl: iconUrl,
+								iconSize: iconSize
+							})
+						};
+					}
+					
+					// Construct the icon
+					var icon = L.marker (latlng, markerProperties);
+					
+					// Set the icon zIndexOffset if required
+					if (_layerConfig[layerId].markerImportance) {
+						var fieldValue = feature.properties[iconField];
+						icon.setZIndexOffset (markerZindexOffsets[fieldValue]);
+					}
+					
+					// Return the icon
+					return icon;
+				},
+				
+				// Set popup
+				onEachFeature: function (feature, layer) {
+					totalItems++;
+					
+					// Determine the popup content
+					var popupContent = layerviewer.renderDetails (popupHtml, feature, layer, layerId);
+					layer.bindPopup(popupContent, {autoPan: false, className: layerId});
+					
+					// Add hover style if enabled
+					if (layer instanceof L.Path) {		// Do not apply to markers; see: https://stackoverflow.com/a/30852790/180733
+						if (_settings.hover || _layerConfig[layerId].hover) {
+							layer.on('mouseover', function () {
+								this.setStyle ({
+									weight: 12
+								});
+							});
+							layer.on('mouseout', function () {
+								_currentDataLayer[layerId].resetStyle(this);
+							});
+						}
+					}
+				},
+				
+				// Rendering style
+				style: function (feature) {
+					var styles = {};
+					
+					// Start from global style if supplied
+					if (_settings.style) {
+						styles = _settings.style;
+					}
+					
+					// Start from default layer style if supplied
+					if (_layerConfig[layerId].style) {
+						styles = _layerConfig[layerId].style;
+					}
+					
+					// Set polygon style if required
+					if (_layerConfig[layerId].polygonStyle) {
+						switch (_layerConfig[layerId].polygonStyle) {
+							
+							// Blue boxes with dashed lines, intended for data that is likely to tessellate, e.g. adjacent box grid
+							case 'grid':
+								styles.fillColor = (feature.properties.hasOwnProperty('colour') ? feature.properties.colour : '#03f');
+								styles.weight = 1;
+								styles.dashArray = [5, 5];
+								break;
+							
+							// Green
+							case 'green':
+								styles.color = 'green';
+								styles.fillColor = '#090';
+								break;
+							
+							// Red
+							case 'red':
+								styles.color = 'red';
+								styles.fillColor = 'red';
+								break;
+						}
+					}
+					
+					// Set line colour if required
+					if (lineColourField && lineColourStops) {
+						styles.color = layerviewer.lookupStyleValue (feature.properties[lineColourField], lineColourStops);
+					}
+					
+					// Set line width if required
+					if (_layerConfig[layerId].lineWidthField && _layerConfig[layerId].lineWidthStops) {
+						styles.weight = layerviewer.lookupStyleValue (feature.properties[_layerConfig[layerId].lineWidthField], _layerConfig[layerId].lineWidthStops);
+					}
+					
+					// Use supplied colour if present
+					if (feature.properties.hasOwnProperty('color')) {
+						styles.color = feature.properties.color;
+					}
+					
+					// Return the styles that have been defined, if any
+					return styles;
+				}
+			});
+			
+			// Update the total count
+			$('nav #selector li.' + layerId + ' p.total').html(totalItems);
+			
+			// Enable/update CSV/GeoJSON export link(s), if there are items, and show the count
+			if (totalItems) {
+				if ( $('#sections #' + layerId + ' div.export a').length == 0) {	// i.e. currently unlinked
+					var exportUrlCsv = (_layerConfig[layerId].apiCall.match (/^https?:\/\//) ? '' : _settings.apiBaseUrl) + _layerConfig[layerId].apiCall + '?' + requestSerialised + '&format=csv';
+					var exportUrlGeojson = (_layerConfig[layerId].apiCall.match (/^https?:\/\//) ? '' : _settings.apiBaseUrl) + _layerConfig[layerId].apiCall.replace(/.json$/, '.geojson') + '?' + requestSerialised;
+					$('#sections #' + layerId + ' div.export p').append(' <span>(' + totalItems + ')</span>');
+					$('#sections #' + layerId + ' div.export .csv').wrap('<a href="' + exportUrlCsv + '"></a>');
+					$('#sections #' + layerId + ' div.export .geojson').wrap('<a href="' + exportUrlGeojson + '"></a>');
+					$('#sections #' + layerId + ' div.export p').addClass('enabled');
+				}
+			}
+			
+			// Add to the map
+			_currentDataLayer[layerId].addTo(_map);
+		},
+		
+		
 		// Function to add a tile layer
 		addTileLayer: function (tileLayerAttributes, layerId, parameters)
 		{
@@ -2307,200 +2501,6 @@ var layerviewer = (function ($) {
 		isNumeric: function (value)
 		{
 			return !isNaN (parseFloat (value)) && isFinite (value);
-		},
-		
-		
-		// Function to show the data for a layer
-		showCurrentData: function (layerId, data, requestData, requestSerialised)
-		{
-			// If a heatmap, divert to this
-			if (_layerConfig[layerId].heatmap) {
-				layerviewer.heatmap(layerId, data);
-				return;
-			}
-			
-			// If this layer already exists, remove it so that it can be redrawn
-			layerviewer.removeLayer (layerId, true);
-			
-			// Determine the field in the feature.properties data that specifies the icon to use
-			var iconField = _layerConfig[layerId].iconField;
-			
-			// Convert using a callback if required
-			if (_layerConfig[layerId].convertData) {
-				data = _layerConfig[layerId].convertData (data);
-				//console.log(data);
-			}
-			
-			// Convert from flat JSON to GeoJSON if required
-			if (_layerConfig[layerId].flatJson) {
-				data = GeoJSON.parse(data, {Point: _layerConfig[layerId].flatJson});
-				//console.log(data);
-			}
-			
-			// If marker importance is defined, define the zIndex offset values for each marker type, to be based on the iconField
-			if (_layerConfig[layerId].markerImportance) {
-				var markerZindexOffsets = [];
-				$.each (_layerConfig[layerId].markerImportance, function (index, iconFieldValue) {
-					markerZindexOffsets[iconFieldValue] = 1000 + (100 * index);	// See: http://leafletjs.com/reference-1.2.0.html#marker-zindexoffset
-				});
-			}
-			
-			// Determine the parameters
-			var popupHtml = layerviewer.sublayerableConfig ('popupHtml', layerId, requestData);
-			var lineColourField = layerviewer.sublayerableConfig ('lineColourField', layerId, requestData);
-			var lineColourStops = layerviewer.sublayerableConfig ('lineColourStops', layerId, requestData);
-			var intervals = layerviewer.sublayerableConfig ('intervals', layerId, requestData);
-			
-			// Set the legend
-			layerviewer.setLegend (layerId, intervals, lineColourStops);
-			
-			// Define the data layer
-			var totalItems = 0;
-			_currentDataLayer[layerId] = L.geoJson(data, {
-				
-				// Set icon type
-				pointToLayer: function (feature, latlng) {
-					
-					// Determine whether to use a local fixed icon, a local icon set, or an icon field in the data
-					var iconUrl = _settings.iconUrl;
-					if (_layerConfig[layerId].iconUrl) {
-						iconUrl = _layerConfig[layerId].iconUrl;
-					} else if (_layerConfig[layerId].icons) {
-						iconUrl = _layerConfig[layerId].icons[feature.properties[iconField]];
-					} else {
-						iconUrl = feature.properties[iconField];
-					}
-					
-					// Determine icon size
-					var iconSize = _settings.iconSize;
-					if (_layerConfig[layerId].iconSize) {
-						iconSize = _layerConfig[layerId].iconSize;
-					}
-					
-					// Compile marker properties
-					var markerProperties = {};
-					if (iconUrl) {
-						markerProperties = {
-							// Icon properties as per: http://leafletjs.com/reference.html#icon and http://leafletjs.com/examples/custom-icons/
-							icon: L.icon({
-								iconUrl: iconUrl,
-								iconSize: iconSize
-							})
-						};
-					}
-					
-					// Construct the icon
-					var icon = L.marker (latlng, markerProperties);
-					
-					// Set the icon zIndexOffset if required
-					if (_layerConfig[layerId].markerImportance) {
-						var fieldValue = feature.properties[iconField];
-						icon.setZIndexOffset (markerZindexOffsets[fieldValue]);
-					}
-					
-					// Return the icon
-					return icon;
-				},
-				
-				// Set popup
-				onEachFeature: function (feature, layer) {
-					totalItems++;
-					
-					// Determine the popup content
-					var popupContent = layerviewer.renderDetails (popupHtml, feature, layer, layerId);
-					layer.bindPopup(popupContent, {autoPan: false, className: layerId});
-					
-					// Add hover style if enabled
-					if (layer instanceof L.Path) {		// Do not apply to markers; see: https://stackoverflow.com/a/30852790/180733
-						if (_settings.hover || _layerConfig[layerId].hover) {
-							layer.on('mouseover', function () {
-								this.setStyle ({
-									weight: 12
-								});
-							});
-							layer.on('mouseout', function () {
-								_currentDataLayer[layerId].resetStyle(this);
-							});
-						}
-					}
-				},
-				
-				// Rendering style
-				style: function (feature) {
-					var styles = {};
-					
-					// Start from global style if supplied
-					if (_settings.style) {
-						styles = _settings.style;
-					}
-					
-					// Start from default layer style if supplied
-					if (_layerConfig[layerId].style) {
-						styles = _layerConfig[layerId].style;
-					}
-					
-					// Set polygon style if required
-					if (_layerConfig[layerId].polygonStyle) {
-						switch (_layerConfig[layerId].polygonStyle) {
-							
-							// Blue boxes with dashed lines, intended for data that is likely to tessellate, e.g. adjacent box grid
-							case 'grid':
-								styles.fillColor = (feature.properties.hasOwnProperty('colour') ? feature.properties.colour : '#03f');
-								styles.weight = 1;
-								styles.dashArray = [5, 5];
-								break;
-							
-							// Green
-							case 'green':
-								styles.color = 'green';
-								styles.fillColor = '#090';
-								break;
-							
-							// Red
-							case 'red':
-								styles.color = 'red';
-								styles.fillColor = 'red';
-								break;
-						}
-					}
-					
-					// Set line colour if required
-					if (lineColourField && lineColourStops) {
-						styles.color = layerviewer.lookupStyleValue (feature.properties[lineColourField], lineColourStops);
-					}
-					
-					// Set line width if required
-					if (_layerConfig[layerId].lineWidthField && _layerConfig[layerId].lineWidthStops) {
-						styles.weight = layerviewer.lookupStyleValue (feature.properties[_layerConfig[layerId].lineWidthField], _layerConfig[layerId].lineWidthStops);
-					}
-					
-					// Use supplied colour if present
-					if (feature.properties.hasOwnProperty('color')) {
-						styles.color = feature.properties.color;
-					}
-					
-					// Return the styles that have been defined, if any
-					return styles;
-				}
-			});
-			
-			// Update the total count
-			$('nav #selector li.' + layerId + ' p.total').html(totalItems);
-			
-			// Enable/update CSV/GeoJSON export link(s), if there are items, and show the count
-			if (totalItems) {
-				if ( $('#sections #' + layerId + ' div.export a').length == 0) {	// i.e. currently unlinked
-					var exportUrlCsv = (_layerConfig[layerId].apiCall.match (/^https?:\/\//) ? '' : _settings.apiBaseUrl) + _layerConfig[layerId].apiCall + '?' + requestSerialised + '&format=csv';
-					var exportUrlGeojson = (_layerConfig[layerId].apiCall.match (/^https?:\/\//) ? '' : _settings.apiBaseUrl) + _layerConfig[layerId].apiCall.replace(/.json$/, '.geojson') + '?' + requestSerialised;
-					$('#sections #' + layerId + ' div.export p').append(' <span>(' + totalItems + ')</span>');
-					$('#sections #' + layerId + ' div.export .csv').wrap('<a href="' + exportUrlCsv + '"></a>');
-					$('#sections #' + layerId + ' div.export .geojson').wrap('<a href="' + exportUrlGeojson + '"></a>');
-					$('#sections #' + layerId + ' div.export p').addClass('enabled');
-				}
-			}
-			
-			// Add to the map
-			_currentDataLayer[layerId].addTo(_map);
 		},
 		
 		
