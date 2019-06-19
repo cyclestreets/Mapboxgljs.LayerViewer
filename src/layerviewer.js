@@ -1012,6 +1012,7 @@ var layerviewer = (function ($) {
 		populateDynamicFormControls: function ()
 		{
 			// Support for "data-monthly-since" (e.g. = '2013-07') macro which populates a select with an option list of each month, grouped by optgroup years
+			// #!# Also need support for data-monthly-until
 			var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 			$('select[data-monthly-since]').val(function() {	// See: https://stackoverflow.com/a/16086337
 				var since = $(this).data('monthly-since');
