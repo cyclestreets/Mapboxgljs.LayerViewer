@@ -2350,6 +2350,9 @@ var layerviewer = (function ($) {
 				});
 			});
 			
+			// Update display of total in the menu and export links
+			layerviewer.updateTotals (data.features, layerId, requestSerialised);
+			
 			// If this layer already exists, update the data for its source
 			// The Leaflet.js approach of take down and redraw does not work for MapboxGL.js, as this would require handler destruction which is impractical to achieve; see: https://gis.stackexchange.com/a/252061/58752
 			if (_map.getSource (layerId)) {
@@ -2554,24 +2557,32 @@ var layerviewer = (function ($) {
 					_popups[layerId].push (popup);
 				});
 			});
-			
+		},
+		
+		
+		// Function to update totals in the interface
+		updateTotals: function (features, layerId, requestSerialised)
+		{
 			// Determine the total number of items in the data
-			var totalItems = Object.keys(data.features).length;
+			var totalItems = Object.keys(features).length;
 			
-			// Update the total count
+			// Update the total count in the menu
 			$('nav #selector li.' + layerId + ' p.total').html(totalItems);
 			
-			// Enable/update CSV/GeoJSON export link(s), if there are items, and show the count
-			if (totalItems) {
-				if ( $('#sections #' + layerId + ' div.export a').length == 0) {	// i.e. currently unlinked
-					var exportUrlCsv = (_layerConfig[layerId].apiCall.match (/^https?:\/\//) ? '' : _settings.apiBaseUrl) + _layerConfig[layerId].apiCall + '?' + requestSerialised + '&format=csv';
-					var exportUrlGeojson = (_layerConfig[layerId].apiCall.match (/^https?:\/\//) ? '' : _settings.apiBaseUrl) + _layerConfig[layerId].apiCall.replace(/.json$/, '.geojson') + '?' + requestSerialised;
-					$('#sections #' + layerId + ' div.export p').append(' <span>(' + totalItems + ')</span>');
-					$('#sections #' + layerId + ' div.export .csv').wrap('<a href="' + exportUrlCsv + '"></a>');
-					$('#sections #' + layerId + ' div.export .geojson').wrap('<a href="' + exportUrlGeojson + '"></a>');
-					$('#sections #' + layerId + ' div.export p').addClass('enabled');
-				}
+			// Add the export link button(s) if not currently present
+			if ( $('#sections #' + layerId + ' div.export p a').length == 0) {	// i.e. currently unlinked
+				$('#sections #' + layerId + ' div.export p').append(' <span></span>');
+				$('#sections #' + layerId + ' div.export .csv').wrap('<a href="#"></a>');
+				$('#sections #' + layerId + ' div.export .geojson').wrap('<a href="#"></a>');
+				$('#sections #' + layerId + ' div.export p').addClass('enabled');
 			}
+			
+			// Enable/update CSV/GeoJSON export link(s), if there are items, and show the count
+			var exportUrlCsv = (_layerConfig[layerId].apiCall.match (/^https?:\/\//) ? '' : _settings.apiBaseUrl) + _layerConfig[layerId].apiCall + '?' + requestSerialised + '&format=csv';
+			var exportUrlGeojson = (_layerConfig[layerId].apiCall.match (/^https?:\/\//) ? '' : _settings.apiBaseUrl) + _layerConfig[layerId].apiCall.replace(/.json$/, '.geojson') + '?' + requestSerialised;
+			$('#sections #' + layerId + ' div.export p span').text ('(' + totalItems + ')');
+			$('#sections #' + layerId + ' div.export .csv').parent('a').attr('href', exportUrlCsv);
+			$('#sections #' + layerId + ' div.export .geojson').parent('a').attr('href', exportUrlGeojson);
 		},
 		
 		
