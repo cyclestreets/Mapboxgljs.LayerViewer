@@ -281,9 +281,6 @@ var layerviewer = (function ($) {
 			// Flat JSON mode, for when GeoJSON is not available, specifying the location of the location fields within a flat structure
 			flatJson: ['location.latitude', 'location.longitude'],
 			
-			// Heatmap mode, implementing Leaflet.heat
-			heatmap: false,
-			
 			// Tile layer mode, which adds a bitmap tile overlay
 			tileLayer: []	// Format as per _settings.tileUrls
 		},
@@ -299,7 +296,6 @@ var layerviewer = (function ($) {
 	var _layers = {};	// Layer status registry
 	var _styles = {};
 	var _currentDataLayer = {};
-	var _heatmapOverlayLayers = {};
 	var _tileOverlayLayer = false;
 	var _virginFormState = {};
 	var _parameters = {};
@@ -1958,12 +1954,6 @@ var layerviewer = (function ($) {
 		// Function to show the data for a layer
 		showCurrentData: function (layerId, data, requestData, requestSerialised)
 		{
-			// If a heatmap, divert to this
-			if (_layerConfig[layerId].heatmap) {
-				layerviewer.heatmap(layerId, data);
-				return;
-			}
-			
 			// If this layer already exists, remove it so that it can be redrawn
 			layerviewer.removeLayer (layerId, true);
 			
@@ -2551,27 +2541,6 @@ var layerviewer = (function ($) {
 		},
 		
 		
-		// Heatmap; see: https://github.com/Leaflet/Leaflet.heat
-		heatmap: function (layerId, data)
-		{
-			// Parse the address points
-			var points = data.map(function (point) {
-				return [ point[0], point[1] ];
-			});
-			
-			// Redraw if required
-			if (_heatmapOverlayLayers[layerId]) {
-				_map.removeLayer(_heatmapOverlayLayers[layerId]);
-			}
-			
-			// Create the heatmap
-			_heatmapOverlayLayers[layerId] = L.heatLayer(points);
-			
-			// Add to map
-			_heatmapOverlayLayers[layerId].addTo(_map);
-		},
-		
-		
 		// Function to remove a layer
 		removeLayer: function (layerId, temporaryRedrawing)
 		{
@@ -2583,13 +2552,6 @@ var layerviewer = (function ($) {
 				
 				// No further action, e.g. API calls
 				return;
-			}
-			
-			// If the layer is a heatmap layer rather than an API call, remove it and end
-			if (_layerConfig[layerId].heatmap) {
-				if (_heatmapOverlayLayers[layerId]) {
-					_map.removeLayer(_heatmapOverlayLayers[layerId]);
-				}
 			}
 			
 			// Remove the layer, checking first to ensure it exists
