@@ -1320,6 +1320,7 @@ var layerviewer = (function ($) {
 				maxBounds: (_settings.maxBounds ? _settings.maxBounds : null),	// [W,S,E,N]
 				// #!# Hash does not include layer; ideally would be added to: https://github.com/mapbox/mapbox-gl-js/blob/master/src/ui/hash.js perhaps using a monkey-patch: http://me.dt.in.th/page/JavaScript-override/
 				hash: true
+				// boxZoom is enabled, but mapbox-gl-draw causes it to fail: https://github.com/mapbox/mapbox-gl-draw/issues/571
 			});
 			
 			// Enable zoom in/out buttons
