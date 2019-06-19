@@ -281,6 +281,9 @@ var layerviewer = (function ($) {
 			// Flat JSON mode, for when GeoJSON is not available, specifying the location of the location fields within a flat structure
 			flatJson: ['location.latitude', 'location.longitude'],
 			
+			// Heatmap mode
+			heatmap: false,
+			
 			// Tile layer mode, which adds a bitmap tile overlay
 			tileLayer: []	// Format as per _settings.tileUrls
 		},
@@ -2455,6 +2458,17 @@ var layerviewer = (function ($) {
 				styles['LineString']['paint']['line-width'] = ['case', ['boolean', ['feature-state', 'hover'], false], 12, styles['LineString']['paint']['line-width'] ];
 			}
 			
+			// For a heatmap, ignore all the above styles and define directly; see: https://docs.mapbox.com/help/tutorials/make-a-heatmap-with-mapbox-gl-js/
+			if (_layerConfig[layerId].heatmap) {
+				styles = {
+					'heatmap': {
+						type: 'heatmap',
+						paint: layerviewer.heatmapStyles (),
+						layout: {}
+					}
+				}
+			}
+			
 			// Define the data source; rather than use addLayer and specify the source directly, we have to split the source addition and the layer addition, as the layers can have different feature types (point/line/polygon), which need different renderers
 			_map.addSource (layerId, {
 				type: 'geojson',
@@ -2471,7 +2485,9 @@ var layerviewer = (function ($) {
 					type: style.type,
 					paint: style.paint,
 					layout: style.layout,
-					filter: ['==', '$type', geometryType]
+				}
+				if (geometryType != 'heatmap') {
+					layer.filter = ['==', '$type', geometryType];
 				}
 				_map.addLayer (layer);
 			});
@@ -2566,6 +2582,9 @@ var layerviewer = (function ($) {
 		// This approach cannot work as it requires loadImage/addImage pairs to be done before map loading: https://gomasuga.com/blog/switch-from-google-maps-to-mapbox
 		drawIcons: function (data, layerId)
 		{
+			// Do not use for heatmap
+			if (_layerConfig[layerId].heatmap) {return;}
+			
 			// Remove any existing markers
 			layerviewer.removeMarkers (layerId);
 			
@@ -2674,6 +2693,56 @@ var layerviewer = (function ($) {
 		},
 		
 		
+		// Function to define heatmap styles
+		heatmapStyles: function ()
+		{
+			// Define and return the styles
+			return {
+				
+				// Increase weight as diameter breast height increases
+				'heatmap-weight': {
+					property: 'dbh',
+					type: 'exponential',
+					stops: [
+						[1, 0],
+						[62, 1]
+					]
+				},
+				
+				/*
+				// Increase intensity as zoom level increases
+				'heatmap-intensity': {
+					stops: [
+						[11, 1],
+						[15, 3]
+					]
+				},
+				*/
+				
+				// Assign color values be applied to points depending on their density
+				'heatmap-color': [
+					'interpolate',
+					['linear'],
+					['heatmap-density'],
+					0, 'rgba(236,222,239,0)',
+					0.1, 'blue',
+					0.2, 'cyan',
+					0.3, 'lime',
+					0.6, 'yellow',
+					1, 'red'
+				],
+				
+				// Increase radius as zoom increases
+				'heatmap-radius': {
+					stops: [
+						[11, 15],
+						[15, 18]
+					]
+				}
+			};
+		},
+		
+		
 		// Function to obtain a value from a sublayerable configuration parameter
 		sublayerableConfig: function (field, layerId, requestData)
 		{
@@ -2716,7 +2785,7 @@ var layerviewer = (function ($) {
 			layerviewer.removeMarkers (layerId);
 			
 			// Remove the layer(s) and source, checking first to ensure each exists
-			var geometryTypes = ['point', 'linestring', 'polygon'];
+			var geometryTypes = ['point', 'linestring', 'polygon', 'heatmap'];
 			$.each (geometryTypes, function (index, geometryType) {
 				var geometryTypeId = layerId + '_' + geometryType;
 				if (_map.getLayer (geometryTypeId)) {
