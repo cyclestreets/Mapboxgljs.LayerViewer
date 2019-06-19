@@ -295,6 +295,8 @@ var layerviewer = (function ($) {
 	var _map = null;
 	var _layers = {};	// Layer status registry
 	var _styles = {};
+	var _markers = [];
+	var _popups = [];
 	var _currentDataLayer = {};
 	var _tileOverlayLayer = false;
 	var _virginFormState = {};
@@ -452,7 +454,7 @@ var layerviewer = (function ($) {
 					if (_xhrRequests[layerId]) {
 						_xhrRequests[layerId].abort();
 					}
-					layerviewer.removeLayer (layerId, false);
+					layerviewer.removeLayer (layerId);
 					layerviewer.clearLegend ();
 					layerviewer.setStateCookie ();	// Update to catch deletion of cache entry
 				}
@@ -1930,7 +1932,7 @@ var layerviewer = (function ($) {
 					// Show API-level error if one occured
 					// #!# This is done here because the API still returns Status code 200
 					if (data.error) {
-						layerviewer.removeLayer (layerId, false);
+						layerviewer.removeLayer (layerId);
 						var errorMessage = (_layerConfig[layerId].name ? _layerConfig[layerId].name : layerId) + ' layer: ' + data.error;
 						if (errorNonModalDialog) {
 							_message.show (errorMessage);
@@ -1948,194 +1950,6 @@ var layerviewer = (function ($) {
 					return layerviewer.showCurrentData (layerId, data, apiData, requestSerialised);
 				}
 			});
-		},
-		
-		
-		// Function to show the data for a layer
-		showCurrentData: function (layerId, data, requestData, requestSerialised)
-		{
-			// If this layer already exists, remove it so that it can be redrawn
-			layerviewer.removeLayer (layerId, true);
-			
-			// Determine the field in the feature.properties data that specifies the icon to use
-			var iconField = _layerConfig[layerId].iconField;
-			
-			// Convert using a callback if required
-			if (_layerConfig[layerId].convertData) {
-				data = _layerConfig[layerId].convertData (data);
-				//console.log(data);
-			}
-			
-			// Convert from flat JSON to GeoJSON if required
-			if (_layerConfig[layerId].flatJson) {
-				data = GeoJSON.parse(data, {Point: _layerConfig[layerId].flatJson});
-				//console.log(data);
-			}
-			
-			// If marker importance is defined, define the zIndex offset values for each marker type, to be based on the iconField
-			if (_layerConfig[layerId].markerImportance) {
-				var markerZindexOffsets = [];
-				$.each (_layerConfig[layerId].markerImportance, function (index, iconFieldValue) {
-					markerZindexOffsets[iconFieldValue] = 1000 + (100 * index);	// See: http://leafletjs.com/reference-1.2.0.html#marker-zindexoffset
-				});
-			}
-			
-			// Determine the parameters
-			var popupHtml = layerviewer.sublayerableConfig ('popupHtml', layerId, requestData);
-			var lineColourField = layerviewer.sublayerableConfig ('lineColourField', layerId, requestData);
-			var lineColourStops = layerviewer.sublayerableConfig ('lineColourStops', layerId, requestData);
-			var intervals = layerviewer.sublayerableConfig ('intervals', layerId, requestData);
-			
-			// Set the legend
-			layerviewer.setLegend (layerId, intervals, lineColourStops);
-			
-			// Define the data layer
-			var totalItems = 0;
-			_currentDataLayer[layerId] = L.geoJson(data, {
-				
-				// Set icon type
-				pointToLayer: function (feature, latlng) {
-					
-					// Determine whether to use a local fixed icon, a local icon set, or an icon field in the data
-					var iconUrl = _settings.iconUrl;
-					if (_layerConfig[layerId].iconUrl) {
-						iconUrl = _layerConfig[layerId].iconUrl;
-					} else if (_layerConfig[layerId].icons) {
-						iconUrl = _layerConfig[layerId].icons[feature.properties[iconField]];
-					} else {
-						iconUrl = feature.properties[iconField];
-					}
-					
-					// Determine icon size
-					var iconSize = _settings.iconSize;
-					if (_layerConfig[layerId].iconSize) {
-						iconSize = _layerConfig[layerId].iconSize;
-					}
-					
-					// Compile marker properties
-					var markerProperties = {};
-					if (iconUrl) {
-						markerProperties = {
-							// Icon properties as per: http://leafletjs.com/reference.html#icon and http://leafletjs.com/examples/custom-icons/
-							icon: L.icon({
-								iconUrl: iconUrl,
-								iconSize: iconSize
-							})
-						};
-					}
-					
-					// Construct the icon
-					var icon = L.marker (latlng, markerProperties);
-					
-					// Set the icon zIndexOffset if required
-					if (_layerConfig[layerId].markerImportance) {
-						var fieldValue = feature.properties[iconField];
-						icon.setZIndexOffset (markerZindexOffsets[fieldValue]);
-					}
-					
-					// Return the icon
-					return icon;
-				},
-				
-				// Set popup
-				onEachFeature: function (feature, layer) {
-					totalItems++;
-					
-					// Determine the popup content
-					var popupContent = layerviewer.renderDetails (popupHtml, feature, layer, layerId);
-					layer.bindPopup(popupContent, {autoPan: false, className: layerId});
-					
-					// Add hover style if enabled
-					if (layer instanceof L.Path) {		// Do not apply to markers; see: https://stackoverflow.com/a/30852790/180733
-						if (_settings.hover || _layerConfig[layerId].hover) {
-							layer.on('mouseover', function () {
-								this.setStyle ({
-									weight: 12
-								});
-							});
-							layer.on('mouseout', function () {
-								_currentDataLayer[layerId].resetStyle(this);
-							});
-						}
-					}
-				},
-				
-				// Rendering style
-				style: function (feature) {
-					var styles = {};
-					
-					// Start from global style if supplied
-					if (_settings.style) {
-						styles = _settings.style;
-					}
-					
-					// Start from default layer style if supplied
-					if (_layerConfig[layerId].style) {
-						styles = _layerConfig[layerId].style;
-					}
-					
-					// Set polygon style if required
-					if (_layerConfig[layerId].polygonStyle) {
-						switch (_layerConfig[layerId].polygonStyle) {
-							
-							// Blue boxes with dashed lines, intended for data that is likely to tessellate, e.g. adjacent box grid
-							case 'grid':
-								styles.fillColor = (feature.properties.hasOwnProperty('colour') ? feature.properties.colour : '#03f');
-								styles.weight = 1;
-								styles.dashArray = [5, 5];
-								break;
-							
-							// Green
-							case 'green':
-								styles.color = 'green';
-								styles.fillColor = '#090';
-								break;
-							
-							// Red
-							case 'red':
-								styles.color = 'red';
-								styles.fillColor = 'red';
-								break;
-						}
-					}
-					
-					// Set line colour if required
-					if (lineColourField && lineColourStops) {
-						styles.color = layerviewer.lookupStyleValue (feature.properties[lineColourField], lineColourStops);
-					}
-					
-					// Set line width if required
-					if (_layerConfig[layerId].lineWidthField && _layerConfig[layerId].lineWidthStops) {
-						styles.weight = layerviewer.lookupStyleValue (feature.properties[_layerConfig[layerId].lineWidthField], _layerConfig[layerId].lineWidthStops);
-					}
-					
-					// Use supplied colour if present
-					if (feature.properties.hasOwnProperty('color')) {
-						styles.color = feature.properties.color;
-					}
-					
-					// Return the styles that have been defined, if any
-					return styles;
-				}
-			});
-			
-			// Update the total count
-			$('nav #selector li.' + layerId + ' p.total').html(totalItems);
-			
-			// Enable/update CSV/GeoJSON export link(s), if there are items, and show the count
-			if (totalItems) {
-				if ( $('#sections #' + layerId + ' div.export a').length == 0) {	// i.e. currently unlinked
-					var exportUrlCsv = (_layerConfig[layerId].apiCall.match (/^https?:\/\//) ? '' : _settings.apiBaseUrl) + _layerConfig[layerId].apiCall + '?' + requestSerialised + '&format=csv';
-					var exportUrlGeojson = (_layerConfig[layerId].apiCall.match (/^https?:\/\//) ? '' : _settings.apiBaseUrl) + _layerConfig[layerId].apiCall.replace(/.json$/, '.geojson') + '?' + requestSerialised;
-					$('#sections #' + layerId + ' div.export p').append(' <span>(' + totalItems + ')</span>');
-					$('#sections #' + layerId + ' div.export .csv').wrap('<a href="' + exportUrlCsv + '"></a>');
-					$('#sections #' + layerId + ' div.export .geojson').wrap('<a href="' + exportUrlGeojson + '"></a>');
-					$('#sections #' + layerId + ' div.export p').addClass('enabled');
-				}
-			}
-			
-			// Add to the map
-			_currentDataLayer[layerId].addTo(_map);
 		},
 		
 		
@@ -2494,6 +2308,372 @@ var layerviewer = (function ($) {
 		},
 		
 		
+		// Function to show the data for a layer
+		showCurrentData: function (layerId, data, requestData, requestSerialised)
+		{
+			// Convert using a callback if required
+			if (_layerConfig[layerId].convertData) {
+				data = _layerConfig[layerId].convertData (data);
+				//console.log(data);
+			}
+			
+			// Convert from flat JSON to GeoJSON if required
+			if (_layerConfig[layerId].flatJson) {
+				data = GeoJSON.parse(data, {Point: _layerConfig[layerId].flatJson});
+				//console.log(data);
+			}
+			
+			// Determine line colour field and stops
+			var lineColourField = layerviewer.sublayerableConfig ('lineColourField', layerId, requestData);
+			var lineColourStops = layerviewer.sublayerableConfig ('lineColourStops', layerId, requestData);
+			
+			// Fix up data
+			// #!# Fix GeoJSON feed upstream
+			$.each (data.features, function (index, feature) {
+				
+				// Ensure data is numeric for the line colour field, to enable correct comparison
+				data.features[index].properties[lineColourField] = Number (feature.properties[lineColourField]);
+				
+				// Ensure numeric data is numeric for the line width field, to enable correct comparison
+				if (!isNaN (data.features[index].properties[_layerConfig[layerId].lineWidthField])) {
+					data.features[index].properties[_layerConfig[layerId].lineWidthField] = Number (feature.properties[_layerConfig[layerId].lineWidthField]);
+				}
+				
+				// Workaround to fix up string "null" to null for popups; see: https://github.com/mapbox/vector-tile-spec/issues/62
+				$.each (feature.properties, function (key, value) {
+					if (value === 'null') {
+						data.features[index].properties[key] = null;
+					}
+				});
+			});
+			
+			// If this layer already exists, update the data for its source
+			// The Leaflet.js approach of take down and redraw does not work for MapboxGL.js, as this would require handler destruction which is impractical to achieve; see: https://gis.stackexchange.com/a/252061/58752
+			if (_map.getSource (layerId)) {
+				
+				// Remove any existing markers and popups, neither of which are technically bound to a feature
+				layerviewer.removePopups (layerId);
+				layerviewer.removeMarkers (layerId);
+				
+				// Set the new data
+				_map.getSource(layerId).setData(data);
+				layerviewer.drawIcons (data, layerId);
+				
+				return;
+			}
+			
+			// Determine the field in the feature.properties data that specifies the icon to use
+			var iconField = _layerConfig[layerId].iconField;
+			
+			// Determine the parameters
+			var popupHtml = layerviewer.sublayerableConfig ('popupHtml', layerId, requestData);
+			var intervals = layerviewer.sublayerableConfig ('intervals', layerId, requestData);
+			
+			// Set the legend
+			layerviewer.setLegend (layerId, intervals, lineColourStops);
+			
+			// Define the geometry types and their default styles
+			var styles = {
+				'Point' : {
+					// NB Icons, if present, are also drawn over the points
+					type: 'circle',
+					layout: {},		// Not applicable
+					paint: {
+						'circle-radius': 8,
+						'circle-color': '#007cbf',
+					},
+				},
+				'LineString': {
+					type: 'line',
+					layout: {
+						'line-cap': 'round',
+						'line-join': 'round',
+					},
+					paint: {
+						'line-color': ['case', ['has', 'color'], ['get', 'color'], /* fallback: */ '#888'],
+						'line-width': 3
+					},
+				},
+				'Polygon': {
+					type: 'fill',
+					layout: {},		// Not applicable
+					paint: {
+						'fill-color': '#888',
+						'fill-opacity': 0.4
+						// NB Outline line width cannot be changed: https://github.com/mapbox/mapbox-gl-js/issues/3018#issuecomment-240381965
+					},
+				}
+			};
+			
+			// Set line colour if required; uses original 'stops' method, see: https://github.com/mapbox/mapbox-gl-js/commit/9ac35b1059ed5f9f7798c37700b52259ce9a815d#diff-bde08934db09c688e8b1d2c0a4d2bce0
+			if (lineColourField && lineColourStops) {
+				styles['LineString']['paint']['line-color'] = layerviewer.stopsExpression (lineColourField, lineColourStops.slice().reverse());	// Reverse the original definition: https://stackoverflow.com/a/30610528/180733
+			}
+			
+			// Set line width if required
+			if (_layerConfig[layerId].lineWidthField && _layerConfig[layerId].lineWidthStops) {
+				styles['LineString']['paint']['line-width'] = layerviewer.stopsExpression (_layerConfig[layerId].lineWidthField, _layerConfig[layerId].lineWidthStops.slice().reverse());	// Reverse the original definition: https://stackoverflow.com/a/30610528/180733
+			}
+			
+			// Set polygon style if required
+			if (_layerConfig[layerId].polygonStyle) {
+				switch (_layerConfig[layerId].polygonStyle) {
+					
+					// Blue boxes with dashed lines, intended for data that is likely to tessellate, e.g. adjacent box grid
+					case 'grid':
+						styles['Polygon']['paint']['fill-color'] = ['case', ['has', 'colour'], ['get', 'colour'], /* fallback: */ '#03f'];	// See: https://github.com/mapbox/mapbox-gl-js/issues/4079#issuecomment-385196151 and https://docs.mapbox.com/mapbox-gl-js/example/data-driven-lines/
+						//styles['Polygon']['paint']['fill-outline-dasharray'] = [5, 5];
+						break;
+						
+					// Green
+					case 'green':
+						styles['Polygon']['paint']['fill-outline-color'] = 'green';
+						styles['Polygon']['paint']['fill-color'] = '#090';
+						break;
+						
+					// Red
+					case 'red':
+						styles['Polygon']['paint']['fill-outline-color'] = 'darkred';
+						styles['Polygon']['paint']['fill-color'] = 'red';
+						break;
+				}
+			}
+			
+			// Start from global style if supplied
+			// #!# Currently this means the whole structure, including type, has to be supplied; consider whether a better API should be created
+			if (!$.isEmptyObject (_settings.style)) {
+				styles = _settings.style;
+			}
+			
+			// Start from default layer style if supplied
+			if (!$.isEmptyObject (_layerConfig[layerId].style)) {
+				styles = _layerConfig[layerId].style;
+			}
+			
+			// For line style, if hover is enabled, override hover style width in definition
+			if (_settings.hover || _layerConfig[layerId].hover) {
+				styles['LineString']['paint']['line-width'] = ['case', ['boolean', ['feature-state', 'hover'], false], 12, styles['LineString']['paint']['line-width'] ];
+			}
+			
+			// Define the data source; rather than use addLayer and specify the source directly, we have to split the source addition and the layer addition, as the layers can have different feature types (point/line/polygon), which need different renderers
+			_map.addSource (layerId, {
+				type: 'geojson',
+				generateId: true,	// NB See: https://github.com/mapbox/mapbox-gl-js/issues/8133
+				data: data	// NB Potentially amended during style allocation
+			});
+			
+			// Add renderers for each different feature type; see: https://docs.mapbox.com/mapbox-gl-js/example/multiple-geometries/
+			var layer;
+			$.each (styles, function (geometryType, style) {
+				layer = {
+					id: layerId + '_' + geometryType.toLowerCase(),
+					source: layerId,
+					type: style.type,
+					paint: style.paint,
+					layout: style.layout,
+					filter: ['==', '$type', geometryType]
+				}
+				_map.addLayer (layer);
+			});
+			
+			// Show icons, where Points present
+			layerviewer.drawIcons (data, layerId);
+			
+			// Set up handlers to give a cursor pointer over each feature; see: https://docs.mapbox.com/mapbox-gl-js/example/hover-styles/
+			$.each (styles, function (geometryType, style) {
+				_map.on ('mousemove', layerId + '_' + geometryType.toLowerCase(), function () {
+					_map.getCanvas().style.cursor = 'pointer';
+				});
+				_map.on ('mouseleave', layerId + '_' + geometryType.toLowerCase(), function() {
+					_map.getCanvas().style.cursor = '';
+				});
+			});
+			
+			// For line style, add hover style if enabled; see: https://docs.mapbox.com/mapbox-gl-js/example/hover-styles/
+			if (_settings.hover || _layerConfig[layerId].hover) {
+				layerviewer.setHoverState (layerId + '_' + 'linestring', layerId);
+			}
+			
+			// Set a popup handler for when a feature is clicked on; see: https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/
+			var popup;
+			var popupFeatureId = null;
+			$.each (styles, function (geometryType, style) {
+				_map.on ('click', layerId + '_' + geometryType.toLowerCase(), function (e) {
+					var feature = e.features[0];
+					
+					// Remove the popup if already opened and clicked again (implied close)
+					if (popupFeatureId) {
+						if (popupFeatureId == feature.id) {
+							popup.remove ();
+							popupFeatureId = null;
+							return;		// End here
+						}
+					}
+					popupFeatureId = feature.id;
+					
+					// Remove any popup alerady existing for this layer, i.e. enforce single item only
+					layerviewer.removePopups (layerId);
+					
+					// Set the location of the click; for a point, look up the feature's actual location
+					var coordinates = e.lngLat;	// Actual lat/lon clicked on
+					if (geometryType == 'Point') {
+						coordinates = feature.geometry.coordinates.slice();	// https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/
+					}
+					
+					// Workaround to fix up string "null" to null; see: https://github.com/mapbox/vector-tile-spec/issues/62
+					$.each (feature.properties, function (key, value) {
+						if (value === 'null') {
+							feature.properties[key] = null;
+						}
+					});
+					
+					// Create the popup
+					var popupContent = layerviewer.renderDetails (popupHtml, feature, layerId);
+					popup = new mapboxgl.Popup ({className: layerId})
+						.setLngLat (coordinates)
+						.setHTML (popupContent)
+						.addTo (_map);
+					
+					// Register the marker so it can be removed on redraw
+					_popups[layerId].push (popup);
+				});
+			});
+			
+			// Determine the total number of items in the data
+			var totalItems = Object.keys(data.features).length;
+			
+			// Update the total count
+			$('nav #selector li.' + layerId + ' p.total').html(totalItems);
+			
+			// Enable/update CSV/GeoJSON export link(s), if there are items, and show the count
+			if (totalItems) {
+				if ( $('#sections #' + layerId + ' div.export a').length == 0) {	// i.e. currently unlinked
+					var exportUrlCsv = (_layerConfig[layerId].apiCall.match (/^https?:\/\//) ? '' : _settings.apiBaseUrl) + _layerConfig[layerId].apiCall + '?' + requestSerialised + '&format=csv';
+					var exportUrlGeojson = (_layerConfig[layerId].apiCall.match (/^https?:\/\//) ? '' : _settings.apiBaseUrl) + _layerConfig[layerId].apiCall.replace(/.json$/, '.geojson') + '?' + requestSerialised;
+					$('#sections #' + layerId + ' div.export p').append(' <span>(' + totalItems + ')</span>');
+					$('#sections #' + layerId + ' div.export .csv').wrap('<a href="' + exportUrlCsv + '"></a>');
+					$('#sections #' + layerId + ' div.export .geojson').wrap('<a href="' + exportUrlGeojson + '"></a>');
+					$('#sections #' + layerId + ' div.export p').addClass('enabled');
+				}
+			}
+		},
+		
+		
+		// Function to show icons from dynamic URLs in GeoJSON
+		// See: https://docs.mapbox.com/mapbox-gl-js/example/custom-marker-icons/
+		// See: https://github.com/mapbox/mapbox-gl-js/issues/4736 and https://github.com/mapbox/mapbox-gl-js/issues/822
+		// See: https://stackoverflow.com/questions/50411046/add-custom-marker-to-mapbox-map
+		// This approach cannot work as it requires loadImage/addImage pairs to be done before map loading: https://gomasuga.com/blog/switch-from-google-maps-to-mapbox
+		drawIcons: function (data, layerId)
+		{
+			// Remove any existing markers
+			layerviewer.removeMarkers (layerId);
+			
+			// Determine the field in the feature.properties data that specifies the icon to use
+			var iconField = _layerConfig[layerId].iconField;
+			
+			// If marker importance is defined, define the zIndex offset values for each marker type, to be based on the iconField
+			if (_layerConfig[layerId].markerImportance) {
+				var markerZindexOffsets = [];
+				$.each (_layerConfig[layerId].markerImportance, function (index, iconFieldValue) {
+					markerZindexOffsets[iconFieldValue] = 0 + (1 * index);	// NB Need to check for overlap with layer switcher
+				});
+			}
+			
+			// Loop through each feature
+			$.each (data.features, function (index, feature) {
+				
+				// Consider only points
+				if (feature.geometry.type == 'Point') {
+				
+					// Determine whether to use a local fixed icon, a local icon set, or an icon field in the data
+					var iconUrl = _settings.iconUrl;
+					if (_layerConfig[layerId].iconUrl) {
+						iconUrl = _layerConfig[layerId].iconUrl;
+					} else if (_layerConfig[layerId].icons) {
+						iconUrl = _layerConfig[layerId].icons[feature.properties[iconField]];
+					} else {
+						iconUrl = feature.properties[iconField];
+					}
+					
+					// Determine icon size
+					var iconSize = _settings.iconSize;
+					if (_layerConfig[layerId].iconSize) {
+						iconSize = _layerConfig[layerId].iconSize;
+					}
+					
+					// Construct the icon; see: https://docs.mapbox.com/mapbox-gl-js/example/custom-marker-icons/
+					var marker = document.createElement ('img');
+					marker.setAttribute ('src', iconUrl);
+					marker.className = 'marker';
+					marker.style.width = iconSize[0] + 'px';
+					marker.style.height = iconSize[1] + 'px';
+					marker.style.cursor = 'pointer';
+					
+					// Set the icon zIndexOffset if required
+					if (_layerConfig[layerId].markerImportance) {
+						var fieldValue = feature.properties[iconField];
+						marker.style.zIndex = markerZindexOffsets[fieldValue];
+					}
+					
+					// Add the marker to the map
+					marker = new mapboxgl.Marker (marker)
+						.setLngLat (feature.geometry.coordinates)
+						.addTo (_map);
+					
+					// Register the marker so it can be removed on redraw
+					_markers[layerId].push (marker);
+				}
+			});
+		},
+		
+		
+		// Function to remove any existing markers for a layer; see: https://docs.mapbox.com/mapbox-gl-js/api/#marker#remove
+		removeMarkers: function (layerId)
+		{
+			if (_markers[layerId]) {
+				var totalMarkers = _markers[layerId].length;
+				for (var i = 0; i < totalMarkers; i++) {
+					_markers[layerId][i].remove ();		// Remove the actual item, not a copy
+				};
+			}
+			_markers[layerId] = [];
+		},
+		
+		
+		// Function to remove any existing popups for a layer
+		removePopups: function (layerId)
+		{
+			if (_popups[layerId]) {
+				var totalPopups = _popups[layerId].length;
+				for (var i = 0; i < totalPopups; i++) {
+					_popups[layerId][i].remove ();		// Remove the actual item, not a copy
+				};
+			}
+			_popups[layerId] = [];
+		},
+		
+		
+		// Function to render a stops expression; see: https://github.com/mapbox/mapbox-gl-js/commit/9ac35b1059ed5f9f7798c37700b52259ce9a815d#diff-bde08934db09c688e8b1d2c0a4d2bce0
+		stopsExpression: function (property, stops)
+		{
+			// Start the expression
+			var expression = [
+				'interpolate',
+				['linear'],
+				['get', property]
+			];
+			
+			// Loop through each pair of the stops
+			$.each (stops, function (key, value) {
+				expression.push (value[0], value[1]);
+			});
+			
+			// Return the completed expression
+			return expression;
+		},
+		
+		
 		// Function to obtain a value from a sublayerable configuration parameter
 		sublayerableConfig: function (field, layerId, requestData)
 		{
@@ -2518,31 +2698,8 @@ var layerviewer = (function ($) {
 		},
 		
 		
-		// Assign style from lookup table
-		lookupStyleValue: function (value, lookupTable)
-		{
-			// Loop through each style stop until found
-			var styleStop;
-			for (var i = 0; i < lookupTable.length; i++) {
-				styleStop = lookupTable[i];
-				if (typeof lookupTable[0][0] === 'string') {	// Fixed string values
-					if (value == styleStop[0]) {
-						return styleStop[1];
-					}
-				} else {					// Range values
-					if (value >= styleStop[0]) {
-						return styleStop[1];
-					}
-				}
-			}
-			
-			// Fallback to final colour in the list
-			return styleStop[1];
-		},
-		
-		
 		// Function to remove a layer
-		removeLayer: function (layerId, temporaryRedrawing)
+		removeLayer: function (layerId)
 		{
 			// If the layer is a tile layer rather than an API call, remove it and end
 			if (_layerConfig[layerId].tileLayer) {
@@ -2554,9 +2711,20 @@ var layerviewer = (function ($) {
 				return;
 			}
 			
-			// Remove the layer, checking first to ensure it exists
-			if (_currentDataLayer[layerId]) {
-				_map.removeLayer (_currentDataLayer[layerId]);
+			// Remove any existing markers and popups, neither of which are technically bound to a feature
+			layerviewer.removePopups (layerId);
+			layerviewer.removeMarkers (layerId);
+			
+			// Remove the layer(s) and source, checking first to ensure each exists
+			var geometryTypes = ['point', 'linestring', 'polygon'];
+			$.each (geometryTypes, function (index, geometryType) {
+				var geometryTypeId = layerId + '_' + geometryType;
+				if (_map.getLayer (geometryTypeId)) {
+					_map.removeLayer (geometryTypeId);
+				}
+			});
+			if (_map.getSource (layerId)) {	// See: https://github.com/mapbox/mapbox-gl-js/issues/4466#issuecomment-288177042
+				_map.removeSource (layerId);
 			}
 			
 			// Remove the total count
@@ -2567,11 +2735,6 @@ var layerviewer = (function ($) {
 				$('#sections #' + layerId + ' div.export p a').contents().unwrap();
 				$('#sections #' + layerId + ' div.export p').removeClass('enabled');
 				$('#sections #' + layerId + ' div.export span').remove();
-			}
-			
-			// Reset cache entry
-			if (!temporaryRedrawing) {
-				delete _requestCache[layerId];
 			}
 		},
 		
