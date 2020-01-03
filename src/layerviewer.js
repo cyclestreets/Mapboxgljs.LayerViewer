@@ -2353,6 +2353,9 @@ var layerviewer = (function ($) {
 			// Update display of total in the menu and export links
 			layerviewer.updateTotals (data.features, layerId, requestSerialised);
 			
+			// Define the popupHtml template
+			var popupHtmlTemplate = layerviewer.sublayerableConfig ('popupHtml', layerId, requestData);
+			
 			// If this layer already exists, update the data for its source
 			// The Leaflet.js approach of take down and redraw does not work for MapboxGL.js, as this would require handler destruction which is impractical to achieve; see: https://gis.stackexchange.com/a/252061/58752
 			if (_map.getSource (layerId)) {
@@ -2363,16 +2366,13 @@ var layerviewer = (function ($) {
 				
 				// Set the new data
 				_map.getSource(layerId).setData(data);
-				layerviewer.drawIcons (data, layerId);
+				layerviewer.drawIcons (data, layerId, popupHtmlTemplate);
 				
 				return;
 			}
 			
-			// Determine the parameters
-			var popupHtml = layerviewer.sublayerableConfig ('popupHtml', layerId, requestData);
-			var intervals = layerviewer.sublayerableConfig ('intervals', layerId, requestData);
-			
 			// Set the legend
+			var intervals = layerviewer.sublayerableConfig ('intervals', layerId, requestData);
 			layerviewer.setLegend (layerId, intervals, lineColourStops);
 			
 			// Define the geometry types and their default styles
@@ -2493,7 +2493,7 @@ var layerviewer = (function ($) {
 			});
 			
 			// Show icons, where Points present
-			layerviewer.drawIcons (data, layerId);
+			layerviewer.drawIcons (data, layerId, popupHtmlTemplate);
 			
 			// Set up handlers to give a cursor pointer over each feature; see: https://docs.mapbox.com/mapbox-gl-js/example/hover-styles/
 			$.each (styles, function (geometryType, style) {
@@ -2510,7 +2510,7 @@ var layerviewer = (function ($) {
 				layerviewer.setHoverState (layerId + '_' + 'linestring', layerId);
 			}
 			
-			// Set a popup handler for when a feature is clicked on; see: https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/
+			// Set a popup handler for when a rendered (i.e. non-icon) feature is clicked on; see: https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/
 			var popup;
 			var popupFeatureId = null;
 			$.each (styles, function (geometryType, style) {
@@ -2544,7 +2544,7 @@ var layerviewer = (function ($) {
 					});
 					
 					// Create the popup
-					var popupContentHtml = layerviewer.renderDetailsHtml (feature, popupHtml, layerId);
+					var popupContentHtml = layerviewer.renderDetailsHtml (feature, popupHtmlTemplate, layerId);
 					popup = new mapboxgl.Popup ({className: layerId})
 						.setLngLat (coordinates)
 						.setHTML (popupContentHtml)
@@ -2588,7 +2588,7 @@ var layerviewer = (function ($) {
 		// See: https://github.com/mapbox/mapbox-gl-js/issues/4736 and https://github.com/mapbox/mapbox-gl-js/issues/822
 		// See: https://stackoverflow.com/questions/50411046/add-custom-marker-to-mapbox-map
 		// This approach cannot work as it requires loadImage/addImage pairs to be done before map loading: https://gomasuga.com/blog/switch-from-google-maps-to-mapbox
-		drawIcons: function (data, layerId)
+		drawIcons: function (data, layerId, popupHtmlTemplate)
 		{
 			// Do not use for heatmap
 			if (_layerConfig[layerId].heatmap) {return;}
@@ -2630,6 +2630,7 @@ var layerviewer = (function ($) {
 					}
 					
 					// Construct the icon; see: https://docs.mapbox.com/mapbox-gl-js/example/custom-marker-icons/
+					// This all has to be done manually in the DOM, unfortunately, as Mapbox GL JS has no support for native dynamically-defined markers
 					var marker = document.createElement ('img');
 					marker.setAttribute ('src', iconUrl);
 					marker.className = 'marker';
@@ -2643,9 +2644,15 @@ var layerviewer = (function ($) {
 						marker.style.zIndex = markerZindexOffsets[fieldValue];
 					}
 					
+					// Create the popup, as we cannot use the native popup handler in the standard renderer
+					var popupContentHtml = layerviewer.renderDetailsHtml (feature, popupHtmlTemplate, layerId);
+					var popup = new mapboxgl.Popup ({className: layerId})
+						.setHTML (popupContentHtml);
+					
 					// Add the marker to the map
 					marker = new mapboxgl.Marker (marker)
 						.setLngLat (feature.geometry.coordinates)
+						.setPopup (popup)
 						.addTo (_map);
 					
 					// Register the marker so it can be removed on redraw
