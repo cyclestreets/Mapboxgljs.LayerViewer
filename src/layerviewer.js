@@ -2037,7 +2037,7 @@ var layerviewer = (function ($) {
 					
 					// Render the data into the overlay template
 					var template = (_layerConfig[layerId].overlayHtml ? _layerConfig[layerId].overlayHtml : false);
-					var html = layerviewer.renderDetails (template, feature, layerId);
+					var html = layerviewer.renderDetailsHtml (feature, template, layerId);
 					
 					// Create the dialog box and its contents
 					var divId = layerId + 'details';
@@ -2116,8 +2116,8 @@ var layerviewer = (function ($) {
 		},
 		
 		
-		// Function to construct the popup/overlay content
-		renderDetails: function (template, feature, layerId)
+		// Function to construct the popup/overlay content HTML
+		renderDetailsHtml: function (feature, template /* optional */, layerId)
 		{
 			// Use a template if this has been defined in the layer config
 			var html;
@@ -2544,10 +2544,10 @@ var layerviewer = (function ($) {
 					});
 					
 					// Create the popup
-					var popupContent = layerviewer.renderDetails (popupHtml, feature, layerId);
+					var popupContentHtml = layerviewer.renderDetailsHtml (feature, popupHtml, layerId);
 					popup = new mapboxgl.Popup ({className: layerId})
 						.setLngLat (coordinates)
-						.setHTML (popupContent)
+						.setHTML (popupContentHtml)
 						.addTo (_map);
 					
 					// Register the marker so it can be removed on redraw
