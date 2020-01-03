@@ -2368,9 +2368,6 @@ var layerviewer = (function ($) {
 				return;
 			}
 			
-			// Determine the field in the feature.properties data that specifies the icon to use
-			var iconField = _layerConfig[layerId].iconField;
-			
 			// Determine the parameters
 			var popupHtml = layerviewer.sublayerableConfig ('popupHtml', layerId, requestData);
 			var intervals = layerviewer.sublayerableConfig ('intervals', layerId, requestData);
