@@ -2663,9 +2663,11 @@ var layerviewer = (function ($) {
 				return _layerConfig[layerId].iconUrl;
 			}
 			
+			// Obtain the field in the feature.properties data that specifies the icon to use
+			var iconField = _layerConfig[layerId].iconField;
+			
 			// Select from layer icon set, if set
 			if (_layerConfig[layerId].icons) {
-				var iconField = _layerConfig[layerId].iconField;	// The field in the feature.properties data that specifies the icon to use
 				return _layerConfig[layerId].icons[feature.properties[iconField]];
 			}
 			
