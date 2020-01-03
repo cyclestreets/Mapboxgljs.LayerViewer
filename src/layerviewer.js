@@ -2614,14 +2614,7 @@ var layerviewer = (function ($) {
 				if (feature.geometry.type == 'Point') {
 				
 					// Determine whether to use a local fixed icon, a local icon set, or an icon field in the data
-					var iconUrl = _settings.iconUrl;
-					if (_layerConfig[layerId].iconUrl) {
-						iconUrl = _layerConfig[layerId].iconUrl;
-					} else if (_layerConfig[layerId].icons) {
-						iconUrl = _layerConfig[layerId].icons[feature.properties[iconField]];
-					} else {
-						iconUrl = feature.properties[iconField];
-					}
+					var iconUrl = layerviewer.getIconUrl (layerId, feature, iconField);
 					
 					// Determine icon size
 					var iconSize = _settings.iconSize;
@@ -2659,6 +2652,29 @@ var layerviewer = (function ($) {
 					_markers[layerId].push (marker);
 				}
 			});
+		},
+		
+		
+		// Function to determine the iconUrl for a feature
+		getIconUrl: function (layerId, feature, iconField)
+		{
+			// Use layer fixed icon, if set
+			if (_layerConfig[layerId].iconUrl) {
+				return _layerConfig[layerId].iconUrl;
+			}
+			
+			// Select from layer icon set, if set
+			if (_layerConfig[layerId].icons) {
+				return _layerConfig[layerId].icons[feature.properties[iconField]];
+			}
+			
+			// Else use feature properties directly
+			if (feature.properties[iconField]) {
+				return feature.properties[iconField];
+			}
+			
+			// Otherwise use global icon, if set
+			return _settings.iconUrl;
 		},
 		
 		
