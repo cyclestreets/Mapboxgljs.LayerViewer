@@ -2376,7 +2376,7 @@ var layerviewer = (function ($) {
 			layerviewer.setLegend (layerId, intervals, lineColourStops);
 			
 			// Define the geometry types and their default styles
-			var styles = {
+			var defaultStyles = {
 				'Point' : {
 					// NB Icons, if present, are also drawn over the points
 					type: 'circle',
@@ -2407,6 +2407,7 @@ var layerviewer = (function ($) {
 					},
 				}
 			};
+			var styles = $.extend (true, {}, defaultStyles);	// Clone
 			
 			// Set line colour if required; uses original 'stops' method, see: https://github.com/mapbox/mapbox-gl-js/commit/9ac35b1059ed5f9f7798c37700b52259ce9a815d#diff-bde08934db09c688e8b1d2c0a4d2bce0
 			if (lineColourField && lineColourStops) {
@@ -2443,19 +2444,24 @@ var layerviewer = (function ($) {
 			}
 			
 			// Start from global style if supplied
-			// #!# Currently this means the whole structure, including type, has to be supplied; consider whether a better API should be created
+			// E.g. _settings.style = {LineString: {"line-color": "red";} } will get merged in
 			if (!$.isEmptyObject (_settings.style)) {
-				styles = _settings.style;
+				$.each (_settings.style, function (geometryType, style) {
+					styles[geometryType]['paint'] = style;
+				});
 			}
 			
 			// Start from default layer style if supplied
+			// E.g. layer.style = {LineString: {"line-color": "red";} } will get merged in
 			if (!$.isEmptyObject (_layerConfig[layerId].style)) {
-				styles = _layerConfig[layerId].style;
+				$.each (_layerConfig[layerId].style, function (geometryType, style) {
+					styles[geometryType]['paint'] = style;
+				});
 			}
 			
 			// For line style, if hover is enabled, override hover style width in definition
 			if (_settings.hover || _layerConfig[layerId].hover) {
-				styles['LineString']['paint']['line-width'] = ['case', ['boolean', ['feature-state', 'hover'], false], 12, styles['LineString']['paint']['line-width'] ];
+				styles['LineString']['paint']['line-width'] = ['case', ['boolean', ['feature-state', 'hover'], false], 12, defaultStyles['LineString']['paint']['line-width'] ];
 			}
 			
 			// For a heatmap, ignore all the above styles and define directly; see: https://docs.mapbox.com/help/tutorials/make-a-heatmap-with-mapbox-gl-js/
