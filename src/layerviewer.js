@@ -2485,6 +2485,13 @@ var layerviewer = (function ($) {
 			// Add renderers for each different feature type; see: https://docs.mapbox.com/mapbox-gl-js/example/multiple-geometries/
 			var layer;
 			$.each (styles, function (geometryType, style) {
+				
+				// Determine if there is an icon; if so, the marker has been rendered already, so a render icon is not needed
+				if (geometryType == 'Point') {
+					var iconUrl = layerviewer.getIconUrl (layerId, null);
+					if (iconUrl) {return;}
+				}
+				
 				layer = {
 					id: layerId + '_' + geometryType.toLowerCase(),
 					source: layerId,
@@ -2618,7 +2625,7 @@ var layerviewer = (function ($) {
 				
 				// Consider only points
 				if (feature.geometry.type == 'Point') {
-				
+					
 					// Determine whether to use a local fixed icon, a local icon set, or an icon field in the data
 					var iconUrl = layerviewer.getIconUrl (layerId, feature);
 					
@@ -2662,7 +2669,7 @@ var layerviewer = (function ($) {
 		
 		
 		// Function to determine the iconUrl for a feature
-		getIconUrl: function (layerId, feature)
+		getIconUrl: function (layerId, feature /* may be set to null if checking layer-only definitions */)
 		{
 			// Use layer fixed icon, if set
 			if (_layerConfig[layerId].iconUrl) {
@@ -2672,14 +2679,24 @@ var layerviewer = (function ($) {
 			// Obtain the field in the feature.properties data that specifies the icon to use
 			var iconField = _layerConfig[layerId].iconField;
 			
-			// Select from layer icon set, if set
-			if (_layerConfig[layerId].icons) {
-				return _layerConfig[layerId].icons[feature.properties[iconField]];
-			}
-			
-			// Else use feature properties directly
-			if (feature.properties[iconField]) {
-				return feature.properties[iconField];
+			// If there is a feature, use iconField
+			if (feature) {
+				
+				// Select from layer icon set, if set
+				if (_layerConfig[layerId].icons) {
+					return _layerConfig[layerId].icons[feature.properties[iconField]];
+				}
+				
+				// Else use feature properties directly
+				if (feature.properties[iconField]) {
+					return feature.properties[iconField];
+				}
+			} else {
+				
+				// If no feature, but an iconField is set, an iconUrl can be deemed to exist
+				if (iconField) {
+					return true;
+				}
 			}
 			
 			// Otherwise use global icon, if set
