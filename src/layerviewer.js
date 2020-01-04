@@ -2201,6 +2201,9 @@ var layerviewer = (function ($) {
 					// Apply number_format (if numeric)
 					value = layerviewer.number_format (value);
 					
+					// Convert TRUE to tick
+					if (value == 'TRUE') {value = '&#10004;';}
+					
 					// If a callback formatter, use that instead, ignoring other changes
 					if (_layerConfig[layerId].popupFormatters) {
 						if (_layerConfig[layerId].popupFormatters[key]) {
