@@ -2340,7 +2340,9 @@ var layerviewer = (function ($) {
 			$.each (data.features, function (index, feature) {
 				
 				// Ensure data is numeric for the line colour field, to enable correct comparison
-				data.features[index].properties[lineColourField] = Number (feature.properties[lineColourField]);
+				if (lineColourField) {
+					data.features[index].properties[lineColourField] = Number (feature.properties[lineColourField]);
+				}
 				
 				// Ensure numeric data is numeric for the line width field, to enable correct comparison
 				if (!isNaN (data.features[index].properties[_layerConfig[layerId].lineWidthField])) {
