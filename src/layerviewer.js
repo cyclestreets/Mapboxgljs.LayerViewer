@@ -844,7 +844,7 @@ var layerviewer = (function ($) {
 				if ($('nav').is(':visible')) {
 					$('nav').hide ('slide', {direction: 'right'}, 250);
 				} else {
-					$('nav').animate ({width:'toggle'}, 250);
+					$('nav').animate ({width: 'toggle'}, 250);
 				}
 			});
 			
@@ -2171,6 +2171,11 @@ var layerviewer = (function ($) {
 					// Skip if value is an array/object
 					if ($.type (value) === 'array')  {return; /* i.e. continue */}
 					if ($.type (value) === 'object') {return; /* i.e. continue */}
+					
+					// Skip if icon field
+					if (_layerConfig[layerId].iconField) {
+						if (key == _layerConfig[layerId].iconField) {return; /* i.e. continue */}
+					}
 					
 					// Key
 					fieldLabel = key;
