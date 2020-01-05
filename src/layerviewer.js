@@ -1551,7 +1551,7 @@ var layerviewer = (function ($) {
 			
 			// Add panning control
 			var html = '<p><a id="panning" href="#">Panning: disabled</a></p>';
-			$('#styleswitcher ul').append (html);
+			$('#styleswitcher ul').prepend (html);
 			
 			// Handle panning control UI
 			layerviewer.controlPanning ();
