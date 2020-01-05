@@ -1543,6 +1543,9 @@ var layerviewer = (function ($) {
 		// See: https://github.com/mapbox/mapbox-gl-js/issues/3405#issuecomment-449059564
 		enablePitchGestures: function ()
 		{
+			// Only enable on a touch device
+			if (!_isTouchDevice) {return;}
+			
 			// Two-finger gesture on mobile for pitch; see: https://github.com/mapbox/mapbox-gl-js/issues/3405#issuecomment-449059564
 			_map.on ('touchstart', function (data) {
 				if (data.points.length == 2) {
