@@ -2566,6 +2566,13 @@ var layerviewer = (function ($) {
 						}
 					});
 					
+					// Workaround to deal with nested images property; see: https://github.com/mapbox/mapbox-gl-js/issues/2434
+					// The array has become serialised to a string that looks like an array; this parses out the string back to an array
+					if (_layerConfig[layerId].popupImagesField) {
+						var popupImagesField = _layerConfig[layerId].popupImagesField;
+						feature.properties[popupImagesField] = JSON.parse (feature.properties[popupImagesField]);
+					}
+					
 					// Create the popup
 					var popupContentHtml = layerviewer.renderDetailsHtml (feature, popupHtmlTemplate, layerId);
 					popup = new mapboxgl.Popup ({className: layerId})
