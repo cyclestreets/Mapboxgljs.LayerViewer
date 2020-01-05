@@ -2885,6 +2885,10 @@ var layerviewer = (function ($) {
 		// Drawing functionality, wrapping mapbox-gl-draw
 		drawing: function (targetField, fragmentOnly, defaultValueString)
 		{
+			// Disable drawing on mobile, as it interferes with popups, pending workaround for https://github.com/mapbox/mapbox-gl-draw/issues/617
+			var supportsTouch = 'ontouchstart' in window || navigator.msMaxTouchPoints;		// https://stackoverflow.com/a/13470899/180733
+			if (supportsTouch) {return;}
+			
 			// Define drawing styles; based on https://github.com/NYCPlanning/labs-factfinder/blob/a617955c652b05dd81308e8d4158cfd76c01d1e2/app/layers/draw-styles.js
 			var styles = [
 				// Polygon fill
