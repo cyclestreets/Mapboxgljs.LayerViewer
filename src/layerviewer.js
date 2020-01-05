@@ -306,6 +306,7 @@ var layerviewer = (function ($) {
 	var _popups = [];
 	var _currentDataLayer = {};
 	var _tileOverlayLayer = false;
+	var _isTouchDevice;
 	var _virginFormState = {};
 	var _parameters = {};
 	var _xhrRequests = {};
@@ -329,6 +330,9 @@ var layerviewer = (function ($) {
 					_settings[setting] = config[setting];
 				}
 			});
+			
+			// Determine if the device is a touch device
+			_isTouchDevice = layerviewer.isTouchDevice ();
 			
 			// Enable general page handlers
 			if (_settings.pages) {
@@ -466,6 +470,14 @@ var layerviewer = (function ($) {
 					layerviewer.setStateCookie ();	// Update to catch deletion of cache entry
 				}
 			});
+		},
+		
+		
+		// Function to determine if the device is a touch device
+		isTouchDevice: function ()
+		{
+			// See https://stackoverflow.com/a/13470899/180733
+			return 'ontouchstart' in window || navigator.msMaxTouchPoints;		// https://stackoverflow.com/a/13470899/180733
 		},
 		
 		
@@ -3010,8 +3022,7 @@ var layerviewer = (function ($) {
 		drawing: function (targetField, fragmentOnly, defaultValueString)
 		{
 			// Disable drawing on mobile, as it interferes with popups, pending workaround for https://github.com/mapbox/mapbox-gl-draw/issues/617
-			var supportsTouch = 'ontouchstart' in window || navigator.msMaxTouchPoints;		// https://stackoverflow.com/a/13470899/180733
-			if (supportsTouch) {return;}
+			if (_isTouchDevice) {return;}
 			
 			// Define drawing styles; based on https://github.com/NYCPlanning/labs-factfinder/blob/a617955c652b05dd81308e8d4158cfd76c01d1e2/app/layers/draw-styles.js
 			var styles = [
