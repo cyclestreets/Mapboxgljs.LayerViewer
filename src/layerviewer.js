@@ -1543,7 +1543,7 @@ var layerviewer = (function ($) {
 		styleSwitcher: function ()
 		{
 			// Add style switcher UI
-			layerviewer.createControl ('styleswitcher', 'top-right', 'expandable');
+			layerviewer.createControl ('styleswitcher', 'bottom-left', 'expandable');
 			
 			// Construct HTML for style switcher
 			var styleSwitcherHtml = '<ul>';
@@ -1680,6 +1680,7 @@ var layerviewer = (function ($) {
 			}
 			
 			// Set the legend
+			// #!# Ideally this would appear below the style switcher, but this does not seem to be controllable
 			layerviewer.setLegend (layerId, false, false);
 			
 			// Fetch the data
