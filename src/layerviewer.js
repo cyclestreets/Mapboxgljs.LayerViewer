@@ -1,7 +1,7 @@
 // Layer viewer library code
 
 /*jslint browser: true, white: true, single: true, for: true */
-/*global $, jQuery, mapboxgl, MapboxDraw, geojsonExtent, autocomplete, Cookies, vex, GeoJSON, alert, console, window */
+/*global $, jQuery, mapboxgl, MapboxDraw, geojsonExtent, autocomplete, Cookies, vex, GeoJSON, FULLTILT, alert, console, window */
 
 var layerviewer = (function ($) {
 	
@@ -307,6 +307,7 @@ var layerviewer = (function ($) {
 	var _currentDataLayer = {};
 	var _tileOverlayLayer = false;
 	var _isTouchDevice;
+	var _panningEnabled = false;
 	var _virginFormState = {};
 	var _parameters = {};
 	var _xhrRequests = {};
@@ -1349,14 +1350,17 @@ var layerviewer = (function ($) {
 			// Add buildings
 			layerviewer.addBuildings ();
 			
-			// Add a geolocation control
-			layerviewer.geolocation ();
-			
 			// Add style (backround layer) switching
 			layerviewer.styleSwitcher ();
 			
 			// Enable pitch gestures
 			layerviewer.enablePitchGestures ();
+			
+			// Enable tilt and direction
+			layerviewer.enableTilt ();
+			
+			// Add a geolocation control
+			layerviewer.geolocation ();
 			
 			// Add geocoder control
 			layerviewer.geocoder ();
@@ -1539,6 +1543,110 @@ var layerviewer = (function ($) {
 		},
 		
 		
+		// Wrapper to enable tilt
+		enableTilt: function ()
+		{
+			// Only enable on a touch device
+			if (!_isTouchDevice) {return;}
+			
+			// Add panning control
+			var html = '<p><a id="panning" href="#">Panning: disabled</a></p>';
+			$('#styleswitcher ul').append (html);
+			
+			// Handle panning control UI
+			layerviewer.controlPanning ();
+			
+			// Request permission where required on iOS13 and other supporting browsers; see:
+			// https://github.com/w3c/deviceorientation/issues/57
+			// https://dev.to/li/how-to-requestpermission-for-devicemotion-and-deviceorientation-events-in-ios-13-46g2
+			$('body').on ('click', '#panning', function () {
+				if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+					DeviceOrientationEvent.requestPermission()
+						.then ( (permissionState) => {
+							if (permissionState === 'granted') {
+								layerviewer.implementTilt ();
+							}
+						})
+						.catch (console.error);
+				} else {
+					layerviewer.implementTilt ();
+				}
+			});
+		},
+		
+		
+		// Control panning
+		controlPanning: function ()
+		{
+			/*
+			// Enable pan on rotate
+			// https://github.com/mapbox/mapbox-gl-js/issues/3357
+			_map.on ('rotateend', function () {
+				_panningEnabled = true;
+				layerviewer.setPanningIndicator ();
+			});
+			*/
+			
+			// Toggle panning on/off, and update the control
+			$('#panning').on ('click', function () {
+				_panningEnabled = !_panningEnabled;
+				layerviewer.setPanningIndicator ();
+				
+				// Switch to top-down view when not enabled
+				if (!_panningEnabled) {
+					_map.setPitch (0);
+				}
+			});
+		},
+		
+		
+		// Set text for panning control
+		setPanningIndicator: function ()
+		{
+			var text = (_panningEnabled ? 'Panning: enabled' : 'Panning: disabled');
+			$('#panning').text (text);
+		},
+		
+		
+		// Function to tilt and orientate the map direction automatically based on the phone position
+		// Note that the implementation of the W3C spec is inconsistent and is split between "world-orientated" and "game-orientated" implementations; accordingly a library is used
+		// https://developer.mozilla.org/en-US/docs/Web/API/Detecting_device_orientation
+		// https://developers.google.com/web/fundamentals/native-hardware/device-orientation/
+		// https://stackoverflow.com/a/26275869/180733
+		// https://www.w3.org/2008/geolocation/wiki/images/e/e0/Device_Orientation_%27alpha%27_Calibration-_Implementation_Status_and_Challenges.pdf
+		implementTilt: function ()
+		{
+			// Obtain a new *world-oriented* Full Tilt JS DeviceOrientation Promise
+			var promise = FULLTILT.getDeviceOrientation ({ 'type': 'world' });
+			
+			// Wait for Promise result
+			promise.then (function (deviceOrientation) { // Device Orientation Events are supported
+				
+				// Register a callback to run every time a new deviceorientation event is fired by the browser.
+				deviceOrientation.listen (function() {
+					
+					// Disable if required
+					// #!# For efficiency, disabling panning should disable this whole function, using FULLTILT.DeviceOrientation.stop() / .start(), rather than just at the final point here
+					if (_panningEnabled) {
+						
+						// Get the current *screen-adjusted* device orientation angles
+						var currentOrientation = deviceOrientation.getScreenAdjustedEuler ();
+						
+						// Calculate the current compass heading that the user is 'looking at' (in degrees)
+						var compassHeading = 360 - currentOrientation.alpha;
+						
+						// Set the bearing and pitch
+						_map.setBearing (compassHeading);
+						_map.setPitch (currentOrientation.beta);
+					}
+				});
+				
+			}).catch (function (errorMessage) { // Device Orientation Events are not supported
+				console.log (errorMessage);
+			});
+		},
+		
+		
 		// Enable pitch gesture handling
 		// See: https://github.com/mapbox/mapbox-gl-js/issues/3405#issuecomment-449059564
 		enablePitchGestures: function ()
@@ -1593,7 +1701,7 @@ var layerviewer = (function ($) {
 		geolocation: function ()
 		{
 			// Create a tracking control
-			var geolocate = new mapboxgl.GeolocateControl({
+			var geolocate = new mapboxgl.GeolocateControl ({
 				positionOptions: {
 					enableHighAccuracy: true
 				},
@@ -1602,6 +1710,12 @@ var layerviewer = (function ($) {
 			
 			// Add to the map
 			_map.addControl (geolocate, 'top-left');
+			
+			// Disable tilt on click
+			geolocate.on ('geolocate', function () {
+				_panningEnabled = false;
+				layerviewer.setPanningIndicator ();
+			});
 		},
 		
 		
