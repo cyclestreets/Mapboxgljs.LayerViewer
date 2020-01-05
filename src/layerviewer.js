@@ -71,9 +71,9 @@ var layerviewer = (function ($) {
 		tileUrls: {
 			opencyclemap: {
 				tiles: 'https://{s}.tile.cyclestreets.net/opencyclemap/{z}/{x}/{y}@2x.png',
-				maxZoom: 20,
+				maxZoom: 22,
 				attribution: 'Maps © <a href="https://www.thunderforest.com/">Thunderforest</a>, Data © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
-				tileSize: 512,
+				tileSize: 256,		// 512 also works but 256 gives better map detail
 				label: 'OpenCycleMap'
 			},
 			streets: {
