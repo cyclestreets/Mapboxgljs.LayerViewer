@@ -95,6 +95,10 @@ var layerviewer = (function ($) {
 				tileSize: 256,
 				label: 'OpenStreetMap style'
 			},
+			osoutdoor: {
+				vectorTiles: 'https://s3-eu-west-1.amazonaws.com/tiles.os.uk/styles/open-zoomstack-outdoor/style.json',
+				label: 'Ordnance Survey outdoor'
+			},
 			osopendata: {
 				tiles: 'https://{s}.tile.cyclestreets.net/osopendata/{z}/{x}/{y}.png',
 				maxZoom: 19,
@@ -1376,12 +1380,13 @@ var layerviewer = (function ($) {
 		// Function to define a vector layer
 		defineVectorLayer: function (tileLayerAttributes)
 		{
-			// Support native mapbox:// format
-			if (tileLayerAttributes.vectorTiles.match (/^mapbox:\/\/.+/)) {
+			// Support native vector tiles format
+			if (tileLayerAttributes.vectorTiles) {
 				return tileLayerAttributes.vectorTiles;
 			}
 			
 			// Otherwise compile the layer definition
+			// #!# Appears to be WIP code
 			var layerDefinition = {
 				version: 8,
 				sources: {
