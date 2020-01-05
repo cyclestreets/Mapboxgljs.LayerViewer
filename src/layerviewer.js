@@ -1919,8 +1919,15 @@ var layerviewer = (function ($) {
 		
 		
 		// Function to create a zoom message for a layer
+		// #!# This needs to be reworked to register messages on a per-layer basis, then compile them, and hide the message box if none; currently it operates only on zoom changes
 		fullZoomMessage: function (layerId)
 		{
+			// If the layer is disabled, hide the message
+			if (!_layers[layerId]) {
+				_message.hide ();
+				return;
+			}
+			
 			// Show or hide the message
 			if (_map.getZoom () < _layerConfig[layerId].fullZoom) {
 				if (_layerConfig[layerId].fullZoomMessage) {
