@@ -860,8 +860,10 @@ var layerviewer = (function ($) {
 			$('#nav-mobile').click(function () {
 				if ($('nav').is(':visible')) {
 					$('nav').hide ('slide', {direction: 'right'}, 250);
+					$('#nav-mobile').fadeTo(250, 1);
 				} else {
 					$('nav').animate ({width: 'toggle'}, 250);
+					$('#nav-mobile').fadeTo(250, 0.5);
 				}
 			});
 			
@@ -870,6 +872,7 @@ var layerviewer = (function ($) {
 				if (!$('nav').is(':visible')) {
 					$('.map').click(function () {
 						$('nav').hide ('slide', {direction: 'right'}, 250);
+						$('#nav-mobile').fadeTo(250, 1);
 					});
 				};
 			};
@@ -878,6 +881,7 @@ var layerviewer = (function ($) {
 			if ($('#nav-mobile').is(':visible')) {
 				$('nav').on('swiperight', function () {
 					$('nav').hide ('slide', {direction: 'right'}, 250);
+					$('#nav-mobile').fadeTo(250, 1);
 				});
 			};
 		},
