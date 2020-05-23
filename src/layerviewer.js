@@ -302,6 +302,7 @@ var layerviewer = (function ($) {
 	var _map = null;
 	var _layers = {};	// Layer status registry
 	var _styles = {};
+	var _currentStyleId;
 	var _markers = [];
 	var _popups = [];
 	var _currentDataLayer = {};
@@ -471,6 +472,9 @@ var layerviewer = (function ($) {
 					layerviewer.setStateCookie ();	// Update to catch deletion of cache entry
 				}
 			});
+			
+			// Enable embed dialog handler
+			layerviewer.embedHandler ();
 		},
 		
 		
@@ -1351,6 +1355,9 @@ var layerviewer = (function ($) {
 				// boxZoom is enabled, but mapbox-gl-draw causes it to fail: https://github.com/mapbox/mapbox-gl-draw/issues/571
 			});
 			
+			// Set the style flag
+			_currentStyleId = defaultTileLayer;
+			
 			// Enable zoom in/out buttons
 			_map.addControl (new mapboxgl.NavigationControl (), 'top-left');
 			
@@ -1751,6 +1758,9 @@ var layerviewer = (function ($) {
 				var styleId = style.target.id;
 				var style = _styles[styleId];
 				_map.setStyle (style);
+				
+				// Set the style flag to the new ID
+				_currentStyleId = styleId;
 				
 				// Fire an event; see: https://javascript.info/dispatch-events
 				layerviewer.styleChanged ();
@@ -3431,11 +3441,42 @@ var layerviewer = (function ($) {
 					});
 					
 					// Prevent normal submit
-					event.preventDefault();
+					event.preventDefault ();
 				});
 				
 				// Prevent following link to contact page
 				return false;
+			});
+		},
+		
+		
+		// Embed dialog box handler
+		embedHandler: function ()
+		{
+			// Add a click handler for the embed link
+			$('a.embed').click (function (e) {
+				
+				// Construct the embed URL
+				var url  = window.location.href;
+				url = url.replace ('/#', '/embed/#');
+				url += '/' + _currentStyleId;
+				
+				// Compile the iframe code
+				var iframeHtml = '<iframe src="' + url + '" width="100%" height="650" title="CycleStreets Bikedata map" frameborder="0"></iframe>';
+				
+				// Compile the HTML
+				var html  = '<div id="embedbox">';
+				html += '<h2>Embed this map in your website</h2>';
+				html += '<p>To use this on your website, add the following code to any page:</p>';
+				html += '<p><tt>' + layerviewer.htmlspecialchars (iframeHtml) + '</tt></p>';
+				html += '<p>The currently-enabled layers, map position and map style are all captured in this link.</p>';
+				html += '</div>';
+				
+				// Create a dialog
+				vex.dialog.alert ({unsafeMessage: html, showCloseButton: true, className: 'vex vex-theme-plain'});
+				
+				// Prevent normal submit
+				event.preventDefault ();
 			});
 		},
 		
