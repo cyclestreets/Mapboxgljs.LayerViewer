@@ -605,7 +605,7 @@ var layerviewer = (function ($) {
 			urlParameters.defaultLocation = null;
 			urlParameters.defaultTileLayer = null;
 			if (window.location.hash) {
-				var hashParts = window.location.hash.match (/^#([0-9]{1,2})\/([-.0-9]+)\/([-.0-9]+)\/([a-z0-9]+)$/);	// E.g. #17/51.51137/-0.10498/opencyclemap
+				var hashParts = window.location.hash.match (/^#([0-9]{1,2}.?[0-9]*)\/([-.0-9]+)\/([-.0-9]+)\/([a-z0-9]+)$/);	// E.g. #17.21/51.51137/-0.10498/opencyclemap
 				if (hashParts) {
 					urlParameters.defaultLocation = {
 						latitude: hashParts[2],
