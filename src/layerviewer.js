@@ -613,6 +613,9 @@ var layerviewer = (function ($) {
 						zoom: hashParts[1]
 					}
 					urlParameters.defaultTileLayer = hashParts[4];
+					
+					// Remove the tile layer element, before loading the map, so that the MapboxGL hash value is as expected
+					window.location.hash = window.location.hash.replace ('/' + urlParameters.defaultTileLayer, '');
 				}
 			}
 			
