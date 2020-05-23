@@ -77,11 +77,11 @@ var layerviewer = (function ($) {
 				label: 'OpenCycleMap'
 			},
 			streets: {
-				vectorTiles: 'mapbox://styles/mapbox/streets-v9',
+				vectorTiles: 'mapbox://styles/mapbox/streets-v11',
 				label: 'Streets'
 			},
 			dark: {
-				vectorTiles: 'mapbox://styles/mapbox/dark-v9',
+				vectorTiles: 'mapbox://styles/mapbox/dark-v10',
 				label: 'Night',
 			},
 			satellite: {
