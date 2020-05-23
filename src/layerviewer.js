@@ -1338,7 +1338,7 @@ var layerviewer = (function ($) {
 			mapboxgl.accessToken = _settings.mapboxApiKey;
 			_map = new mapboxgl.Map ({
 				container: 'map',
-				style: _styles[_settings.defaultTileLayer],
+				style: _styles[defaultTileLayer],
 				center: [defaultLocation.longitude, defaultLocation.latitude],
 				zoom: defaultLocation.zoom,
 				maxZoom: _settings.maxZoom,
