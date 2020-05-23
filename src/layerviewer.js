@@ -76,11 +76,11 @@ var layerviewer = (function ($) {
 				tileSize: 256,		// 512 also works but 256 gives better map detail
 				label: 'OpenCycleMap'
 			},
-			streets: {
+			mapboxstreets: {
 				vectorTiles: 'mapbox://styles/mapbox/streets-v11',
 				label: 'Streets'
 			},
-			dark: {
+			night: {
 				vectorTiles: 'mapbox://styles/mapbox/dark-v10',
 				label: 'Night',
 			},
