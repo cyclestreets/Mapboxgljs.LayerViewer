@@ -293,10 +293,11 @@ var layerviewer = (function ($) {
 			heatmap: false,
 			
 			// Tile layer mode, which adds a bitmap tile overlay
-			tileLayer: []	// Format as per _settings.tileUrls
+			tileLayer: [],	// Format as per _settings.tileUrls
+			
+			// Marker-setting mode, which requires a hidden input field; a default value of that field will set an initial location; uses iconUrl
+			setMarker: false
 		},
-		
-		// More layers
 		
 		*/
 	};
@@ -1874,6 +1875,9 @@ var layerviewer = (function ($) {
 				return;
 			}
 			
+			// If marker setting is enabled, add handlers
+			layerviewer.setMarkerHandling (layerId);
+			
 			// Get the form parameters on load
 			_parameters[layerId] = layerviewer.parseFormValues (layerId);
 			
@@ -1932,6 +1936,47 @@ var layerviewer = (function ($) {
 					layerviewer.getData (layerId, _parameters[layerId]);
 				});
 			}
+		},
+		
+		
+		// Marker setting handling
+		setMarkerHandling: function (layerId)
+		{
+			// Run only if enabled
+			if (!_layerConfig[layerId].setMarker) {return;}
+			
+			// Determine the input field
+			var inputField = _layerConfig[layerId].setMarker;
+			var inputFieldSelector = 'nav #' + layerId + " input[name='" + inputField + "']";
+			
+			// Get any intial value
+			var initialValue = $(inputFieldSelector).val ();
+			var lonLat;
+			if (initialValue) {
+				var position = initialValue.split (',');
+				lonLat = {lng: parseFloat(position[0]), lat: parseFloat(position[1])};
+			} else {
+				lonLat = _map.getCenter ();
+			}
+			
+			// Create the icon
+			var iconUrl = layerviewer.getIconUrl (layerId, null);
+			var iconSize = layerviewer.getIconSize (layerId, null);
+			var icon = layerviewer.createIconDom (iconUrl, iconSize);
+			
+			// Add the marker to the map, setting it as draggable
+			var marker = new mapboxgl.Marker (icon, {draggable: true})
+				.setLngLat (lonLat)
+				.addTo (_map);
+			
+			// If the marker is dragged or set to a different location, update the input value
+			marker.on ('dragend', function (e) {
+				var lngLat = marker.getLngLat ();
+				var value = lngLat.lng.toFixed(5) + ',' + lngLat.lat.toFixed(5);
+				$(inputFieldSelector)
+					.attr ('value', value)		// Using this rather than .val() ensures the console representation is also correct
+					.trigger('change');			// Ensure that form rescan gets triggered
+			});
 		},
 		
 		
