@@ -250,7 +250,7 @@ var layerviewer = (function ($) {
 			// Legend, either array of values (as same format as lineColourStops), or boolean true to use lineColourStops if that exists
 			legend: true,
 			
-			// Polygon style; currently supported values are 'grid' (blue boxes with dashed lines, intended for tessellating data), 'green', 'red'
+			// Polygon style; currently supported values are 'grid' (blue boxes with dashed lines, intended for tessellating data), 'green', 'red', 'blue'
 			polygonStyle: 'grid',
 			
 			// Code for popups; placeholders can be used to reference data in the GeoJSON; if using sublayerParameter, this is specified as a hashmap
@@ -2720,16 +2720,22 @@ var layerviewer = (function ($) {
 						//styles['Polygon']['paint']['fill-outline-dasharray'] = [5, 5];
 						break;
 						
+					// Red
+					case 'red':
+						styles['Polygon']['paint']['fill-outline-color'] = 'darkred';
+						styles['Polygon']['paint']['fill-color'] = 'red';
+						break;
+						
 					// Green
 					case 'green':
 						styles['Polygon']['paint']['fill-outline-color'] = 'green';
 						styles['Polygon']['paint']['fill-color'] = '#090';
 						break;
 						
-					// Red
-					case 'red':
-						styles['Polygon']['paint']['fill-outline-color'] = 'darkred';
-						styles['Polygon']['paint']['fill-color'] = 'red';
+					// Blue
+					case 'blue':
+						styles['Polygon']['paint']['fill-outline-color'] = 'darkblue';
+						styles['Polygon']['paint']['fill-color'] = '#3388ff';
 						break;
 				}
 			}
