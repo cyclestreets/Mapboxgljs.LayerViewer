@@ -2957,8 +2957,44 @@ var layerviewer = (function ($) {
 		},
 		
 		
+		// Function to determine the iconUrl for a feature
+		getIconUrl: function (layerId, feature /* may be set to null if checking layer-only definitions */)
+		{
+			// Use layer fixed icon, if set
+			if (_layerConfig[layerId].iconUrl) {
+				return _layerConfig[layerId].iconUrl;
+			}
+			
+			// Obtain the field in the feature.properties data that specifies the icon to use
+			var iconField = _layerConfig[layerId].iconField;
+			
+			// If there is a feature, use iconField
+			if (feature) {
+				
+				// Select from layer icon set, if set
+				if (_layerConfig[layerId].icons) {
+					return _layerConfig[layerId].icons[feature.properties[iconField]];
+				}
+				
+				// Else use feature properties directly
+				if (feature.properties[iconField]) {
+					return feature.properties[iconField];
+				}
+			} else {
+				
+				// If no feature, but an iconField is set, an iconUrl can be deemed to exist
+				if (iconField) {
+					return true;
+				}
+			}
+			
+			// Otherwise use global icon, if set
+			return _settings.iconUrl;
+		},
+		
+		
 		// Determine icon size
-		getIconSize: function (layerId, feature)
+		getIconSize: function (layerId, feature /* may be set to null if checking layer-only definitions */)
 		{
 			// Use the global setting by default
 			var iconSize = _settings.iconSize;
@@ -2998,42 +3034,6 @@ var layerviewer = (function ($) {
 			
 			// Return the marker
 			return marker;
-		},
-		
-		
-		// Function to determine the iconUrl for a feature
-		getIconUrl: function (layerId, feature /* may be set to null if checking layer-only definitions */)
-		{
-			// Use layer fixed icon, if set
-			if (_layerConfig[layerId].iconUrl) {
-				return _layerConfig[layerId].iconUrl;
-			}
-			
-			// Obtain the field in the feature.properties data that specifies the icon to use
-			var iconField = _layerConfig[layerId].iconField;
-			
-			// If there is a feature, use iconField
-			if (feature) {
-				
-				// Select from layer icon set, if set
-				if (_layerConfig[layerId].icons) {
-					return _layerConfig[layerId].icons[feature.properties[iconField]];
-				}
-				
-				// Else use feature properties directly
-				if (feature.properties[iconField]) {
-					return feature.properties[iconField];
-				}
-			} else {
-				
-				// If no feature, but an iconField is set, an iconUrl can be deemed to exist
-				if (iconField) {
-					return true;
-				}
-			}
-			
-			// Otherwise use global icon, if set
-			return _settings.iconUrl;
 		},
 		
 		
