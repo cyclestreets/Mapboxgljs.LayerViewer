@@ -2939,14 +2939,8 @@ var layerviewer = (function ($) {
 						}	// Otherwise default to the above, e.g. if property not present or not in the list
 					}
 					
-					// Construct the icon; see: https://docs.mapbox.com/mapbox-gl-js/example/custom-marker-icons/
-					// This all has to be done manually in the DOM, unfortunately, as Mapbox GL JS has no support for native dynamically-defined markers
-					var marker = document.createElement ('img');
-					marker.setAttribute ('src', iconUrl);
-					marker.className = 'marker';
-					marker.style.width = iconSize[0] + 'px';
-					marker.style.height = iconSize[1] + 'px';
-					marker.style.cursor = 'pointer';
+					// Construct the icon
+					var marker = layerviewer.createIconDom (iconUrl, iconSize);
 					
 					// Set the icon zIndexOffset if required
 					if (_layerConfig[layerId].markerImportance) {
@@ -2969,6 +2963,24 @@ var layerviewer = (function ($) {
 					_markers[layerId].push (marker);
 				}
 			});
+		},
+		
+		
+		// Construct the DOM representation for an icon
+		// See: https://docs.mapbox.com/mapbox-gl-js/example/custom-marker-icons/
+		// This all has to be done manually in the DOM, unfortunately, as Mapbox GL JS has no support for native dynamically-defined markers
+		createIconDom: function (iconUrl, iconSize)
+		{
+			// Create the marker
+			var marker = document.createElement ('img');
+			marker.setAttribute ('src', iconUrl);
+			marker.className = 'marker';
+			marker.style.width = iconSize[0] + 'px';
+			marker.style.height = iconSize[1] + 'px';
+			marker.style.cursor = 'pointer';
+			
+			// Return the marker
+			return marker;
 		},
 		
 		
