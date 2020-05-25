@@ -2928,16 +2928,7 @@ var layerviewer = (function ($) {
 					var iconUrl = layerviewer.getIconUrl (layerId, feature);
 					
 					// Determine icon size
-					var iconSize = _settings.iconSize;
-					if (_layerConfig[layerId].iconSize) {
-						iconSize = _layerConfig[layerId].iconSize;
-					}
-					if (_layerConfig[layerId].iconSizeField && !$.isEmptyObject (_layerConfig[layerId].iconSizes)) {
-						var dataValue = feature.properties[_layerConfig[layerId].iconSizeField];
-						if (_layerConfig[layerId].iconSizes.hasOwnProperty (dataValue)) {
-							iconSize = _layerConfig[layerId].iconSizes[dataValue];
-						}	// Otherwise default to the above, e.g. if property not present or not in the list
-					}
+					var iconSize = layerviewer.getIconSize (layerId, feature);
 					
 					// Construct the icon
 					var marker = layerviewer.createIconDom (iconUrl, iconSize);
@@ -2963,6 +2954,32 @@ var layerviewer = (function ($) {
 					_markers[layerId].push (marker);
 				}
 			});
+		},
+		
+		
+		// Determine icon size
+		getIconSize: function (layerId, feature)
+		{
+			// Use the global setting by default
+			var iconSize = _settings.iconSize;
+			
+			// If a layer-specific value is set, use that
+			if (_layerConfig[layerId].iconSize) {
+				iconSize = _layerConfig[layerId].iconSize;
+			}
+			
+			// Dynamic icon size based on feature properties
+			if (feature) {
+				if (_layerConfig[layerId].iconSizeField && !$.isEmptyObject (_layerConfig[layerId].iconSizes)) {
+					var dataValue = feature.properties[_layerConfig[layerId].iconSizeField];
+					if (_layerConfig[layerId].iconSizes.hasOwnProperty (dataValue)) {
+						iconSize = _layerConfig[layerId].iconSizes[dataValue];
+					}	// Otherwise default to the above, e.g. if property not present or not in the list
+				}
+			}
+			
+			// Return the icon size
+			return iconSize;
 		},
 		
 		
