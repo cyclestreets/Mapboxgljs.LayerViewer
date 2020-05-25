@@ -204,7 +204,6 @@ var layerviewer = (function ($) {
 			
 			// Specific icon to use for all markers in this layer
 			iconUrl: '/images/icon.svg',
-			iconSize: [38, 42],
 			
 			// Field in GeoJSON data where the icon value can be looked up
 			iconField: 'type',
@@ -215,6 +214,11 @@ var layerviewer = (function ($) {
 				bar: '/images/bar.svg',
 				qux: '/images/qux.svg'
 			},
+			
+			// Icon size, either fixed or dynamic lookup from a field in the feature properties
+			iconSize: [38, 42],
+			iconSizeField: false,
+			iconSizes: {},
 			
 			// Order of marker appearance, in order from least to most important
 			markerImportance: ['foo', 'bar', 'qux'],
@@ -2927,6 +2931,12 @@ var layerviewer = (function ($) {
 					var iconSize = _settings.iconSize;
 					if (_layerConfig[layerId].iconSize) {
 						iconSize = _layerConfig[layerId].iconSize;
+					}
+					if (_layerConfig[layerId].iconSizeField && !$.isEmptyObject (_layerConfig[layerId].iconSizes)) {
+						var dataValue = feature.properties[_layerConfig[layerId].iconSizeField];
+						if (_layerConfig[layerId].iconSizes.hasOwnProperty (dataValue)) {
+							iconSize = _layerConfig[layerId].iconSizes[dataValue];
+						}	// Otherwise default to the above, e.g. if property not present or not in the list
 					}
 					
 					// Construct the icon; see: https://docs.mapbox.com/mapbox-gl-js/example/custom-marker-icons/
