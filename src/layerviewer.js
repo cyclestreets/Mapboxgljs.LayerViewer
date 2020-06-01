@@ -1843,7 +1843,8 @@ var layerviewer = (function ($) {
 				sourceUrl: geocoderApiUrl,
 				select: function (event, ui) {
 					var bbox = ui.item.feature.properties.bbox.split(',');	// W,S,E,N
-					_map.fitBounds(bbox);
+					_map.fitBounds(bbox, {maxZoom: 16});
+					
 					event.preventDefault();
 				}
 			});
