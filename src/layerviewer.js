@@ -805,6 +805,8 @@ var layerviewer = (function ($) {
 		// Function to load the tabs
 		loadTabs: function (defaultLayers)
 		{
+			return; // While integrating; this should be revisited later
+		
 			// Set each default layer and add background
 			$.each (defaultLayers, function (index, layerId) {
 				
