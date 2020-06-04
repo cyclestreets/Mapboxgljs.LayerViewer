@@ -74,51 +74,60 @@ var layerviewer = (function ($) {
 				maxZoom: 22,
 				attribution: 'Maps © <a href="https://www.thunderforest.com/">Thunderforest</a>, Data © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
 				tileSize: 256,		// 512 also works but 256 gives better map detail
-				label: 'OpenCycleMap'
+				label: 'OpenCycleMap',
+				description: 'A cycling-orientated map, highlighting cycle infrastructure, hills, bike shops and more.'
 			},
 			mapboxstreets: {
 				vectorTiles: 'mapbox://styles/mapbox/streets-v11',
-				label: 'Streets'
+				label: 'Streets',
+				description: 'Mapbox Streets is a comprehensive, general-purpose map that emphasizes legible styling of road and transit networks.'
 			},
 			night: {
 				vectorTiles: 'mapbox://styles/mapbox/dark-v10',
 				label: 'Night',
+				description: 'A subtle, full-featured map designed to provide minimalist geographic context.'
 			},
 			satellite: {
 				vectorTiles: 'mapbox://styles/mapbox/satellite-v9',
 				label: 'Satellite',
+				description: "A map that uses real satellite imagery to give you a bird's-eye view of your surroundings."
 			},
 			mapnik: {
 				tiles: 'https://{s}.tile.cyclestreets.net/mapnik/{z}/{x}/{y}.png',
 				maxZoom: 19,
 				attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
 				tileSize: 256,
-				label: 'OpenStreetMap style'
+				label: 'OpenStreetMap',
+				description : 'The default Open Street Map style, emphasising road size and surrounding buildings.'
 			},
 			osoutdoor: {
 				vectorTiles: 'https://s3-eu-west-1.amazonaws.com/tiles.os.uk/styles/open-zoomstack-outdoor/style.json',
-				label: 'Ordnance Survey outdoor'
+				label: 'OS outdoor',
+				description: 'Display footpaths, rights of way, open access land and the vegetation on the land.'
 			},
 			osopendata: {
 				tiles: 'https://{s}.tile.cyclestreets.net/osopendata/{z}/{x}/{y}.png',
 				maxZoom: 19,
 				attribution: 'Contains Ordnance Survey data &copy; Crown copyright and database right 2010',
 				tileSize: 256,
-				label: 'OS Open Data'
+				label: 'OS Open Data',
+				description: 'T most detailed, street-level mapping product available as open data.'
 			},
 			bartholomew: {
 				tiles: 'https://{s}.tile.cyclestreets.net/bartholomew/{z}/{x}/{y}@2x.png',
 				maxZoom: 15,
 				attribution: '&copy; <a href="https://maps.nls.uk/copyright.html">National Library of Scotland</a>',
 				tileSize: 256,
-				label: 'NLS - Bartholomew Half Inch, 1897-1907'
+				label: 'Bartholomew',
+				description: "John Bartholomew's distinctive 1897 map using different layers of colour to represent landscape relief."
 			},
 			os6inch: {
 				tiles: 'https://{s}.tile.cyclestreets.net/os6inch/{z}/{x}/{y}@2x.png',
 				maxZoom: 15,
 				attribution: '&copy; <a href="https://maps.nls.uk/copyright.html">National Library of Scotland</a>',
 				tileSize: 256,
-				label: 'NLS - OS 6-inch County Series 1888-1913'
+				label: 'OS 6-inch',
+				description: 'The most comprehensive, topographic mapping covering all of England and Wales from the 1840s to the 1950s.'
 			},
 			/*
 			os1to25k1stseries: {
@@ -1762,6 +1771,51 @@ var layerviewer = (function ($) {
 			});
 			styleSwitcherHtml += '</ul>';
 			$('#styleswitcher').append (styleSwitcherHtml);
+			
+			// Switch to selected style
+			var styleList = document.getElementById ('styleswitcher');
+			var inputs = styleList.getElementsByTagName ('input');
+			function switchStyle (style) {
+				var styleId = style.target.id;
+				var style = _styles[styleId];
+				_map.setStyle (style);
+				
+				// Set the style flag to the new ID
+				_currentStyleId = styleId;
+				
+				// Fire an event; see: https://javascript.info/dispatch-events
+				layerviewer.styleChanged ();
+			};
+			for (var i = 0; i < inputs.length; i++) {
+				inputs[i].onclick = switchStyle;
+			}
+		},
+		*/
+
+		// Function to add style (background layer) switching
+		// https://www.mapbox.com/mapbox-gl-js/example/setstyle/
+		// https://bl.ocks.org/ryanbaumann/7f9a353d0a1ae898ce4e30f336200483/96bea34be408290c161589dcebe26e8ccfa132d7
+		styleSwitcher: function ()
+		{
+			
+			// Construct HTML for style switcher
+			var styleSwitcherHtml = '<ul id="styleswitcher">';
+			var name;
+			var description;
+			var image;
+			$.each (_styles, function (styleId, style) {
+				name = (_settings.tileUrls[styleId].label ? _settings.tileUrls[styleId].label : layerviewer.ucfirst (styleId));
+				description = (_settings.tileUrls[styleId].description ? _settings.tileUrls[styleId].description : '');
+				image = `assets/maps-${styleId}.png`;
+				styleSwitcherHtml += '<li><input id="' + styleId + '" type="radio" name="styleswitcher" value="' + styleId + '"' + (styleId == _settings.defaultTileLayer ? ' checked="checked"' : '') + '>';
+				styleSwitcherHtml += '<label for="' + styleId + '">';
+				styleSwitcherHtml += '<img src="' + image + '" alt="' + name + '" />';
+				styleSwitcherHtml += '<span>' + name + '</span>';
+				styleSwitcherHtml += '<p>' + description + '</p>';
+				styleSwitcherHtml += '</label></li>';
+			});
+			styleSwitcherHtml += '</ul>';
+			$('.panel.map-style').append (styleSwitcherHtml);
 			
 			// Switch to selected style
 			var styleList = document.getElementById ('styleswitcher');
