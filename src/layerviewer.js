@@ -80,7 +80,7 @@ var layerviewer = (function ($) {
 			mapboxstreets: {
 				vectorTiles: 'mapbox://styles/mapbox/streets-v11',
 				label: 'Streets',
-				description: 'Mapbox Streets is a comprehensive, general-purpose map that emphasizes legible styling of road and transit networks.'
+				description: 'A general-purpose map that emphasizes legible styling of road and transit networks.'
 			},
 			night: {
 				vectorTiles: 'mapbox://styles/mapbox/dark-v10',
@@ -111,7 +111,7 @@ var layerviewer = (function ($) {
 				attribution: 'Contains Ordnance Survey data &copy; Crown copyright and database right 2010',
 				tileSize: 256,
 				label: 'OS Open Data',
-				description: 'T most detailed, street-level mapping product available as open data.'
+				description: 'The most detailed, street-level mapping product available, which only uses open data.'
 			},
 			bartholomew: {
 				tiles: 'https://{s}.tile.cyclestreets.net/bartholomew/{z}/{x}/{y}@2x.png',
@@ -119,7 +119,7 @@ var layerviewer = (function ($) {
 				attribution: '&copy; <a href="https://maps.nls.uk/copyright.html">National Library of Scotland</a>',
 				tileSize: 256,
 				label: 'Bartholomew',
-				description: "John Bartholomew's distinctive 1897 map using different layers of colour to represent landscape relief."
+				description: "John Bartholomew's distinctive 1897 map, using colour to represent landscape relief."
 			},
 			os6inch: {
 				tiles: 'https://{s}.tile.cyclestreets.net/os6inch/{z}/{x}/{y}@2x.png',
@@ -127,7 +127,7 @@ var layerviewer = (function ($) {
 				attribution: '&copy; <a href="https://maps.nls.uk/copyright.html">National Library of Scotland</a>',
 				tileSize: 256,
 				label: 'OS 6-inch',
-				description: 'The most comprehensive, topographic mapping covering all of England and Wales from the 1840s to the 1950s.'
+				description: 'Comprehensive topographic mapping covering all of England and Wales from the 1840s.'
 			},
 			/*
 			os1to25k1stseries: {
@@ -1753,7 +1753,7 @@ var layerviewer = (function ($) {
 			});
 		},
 		
-		
+		/*
 		// Function to add style (background layer) switching
 		// https://www.mapbox.com/mapbox-gl-js/example/setstyle/
 		// https://bl.ocks.org/ryanbaumann/7f9a353d0a1ae898ce4e30f336200483/96bea34be408290c161589dcebe26e8ccfa132d7
