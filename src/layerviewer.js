@@ -1770,7 +1770,7 @@ var layerviewer = (function ($) {
 			$.each (_styles, function (styleId, style) {
 				name = (_settings.tileUrls[styleId].label ? _settings.tileUrls[styleId].label : layerviewer.ucfirst (styleId));
 				description = (_settings.tileUrls[styleId].description ? _settings.tileUrls[styleId].description : '');
-				image = `assets/maps-${styleId}.png`;
+				image = `images/maps-${styleId}.png`;
 				styleSwitcherHtml += '<li><input id="' + styleId + '" type="radio" name="styleswitcher" value="' + styleId + '"' + (styleId == _settings.defaultTileLayer ? ' checked="checked"' : '') + '>';
 				styleSwitcherHtml += '<label for="' + styleId + '">';
 				styleSwitcherHtml += '<img src="' + image + '" alt="' + name + '" />';
