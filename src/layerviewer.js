@@ -462,7 +462,11 @@ var layerviewer = (function ($) {
 			});
 			
 			// Toggle map data layers on/off when checkboxes changed
+			
 			$('nav #selector input[type="checkbox"]').change (function() {
+				// Add class "enabled" to display the eye icon
+				$(this).closest('li').toggleClass ('enabled');
+				
 				var layerId = this.id.replace('show_', '');
 				if (this.checked) {
 					_layers[layerId] = true;
