@@ -1099,7 +1099,8 @@ var layerviewer = (function ($) {
 		sliderValueDisplayHandler: function ()
 		{
 			// For each slider, show the input's value (at start, and on change), in the associated paragraph tag
-			var sliderDivs = $('form#data .slider');
+			//var sliderDivs = $('form#data .slider');
+			var sliderDivs = $('form .slider');
 			$.each (sliderDivs, function (index, sliderDiv) {
 				var datalistLabel = $('datalist option[value="' + $('input', sliderDiv).val() + '"]', sliderDiv).text();
 				$('p', sliderDiv).text (datalistLabel);
@@ -1921,16 +1922,20 @@ var layerviewer = (function ($) {
 			}
 			
 			// Reload the data for this layer, using a rescan of the form parameters for the layer, when any change is made
-			var rescanPath = 'form#data #' + layerId + ' :input';
+			//var rescanPath = 'form#data #' + layerId + ' :input';
+			var rescanPath = '.' + layerId + ' form :input';
+
 			if (_settings.enableDrawing) {
-				rescanPath += ', form#data #drawing :input';
+				//rescanPath += ', form#data #drawing :input';
+				rescanPath =+ ', form #drawing :input';
 			}
 			$(document).on ('change', rescanPath, function () {
 				_parameters[layerId] = layerviewer.parseFormValues (layerId);
 				layerviewer.updateUrl ();
 				layerviewer.getData (layerId, _parameters[layerId]);
 			});
-			$('form#data #' + layerId + ' :text, form#data #' + layerId + ' input[type="search"]').on ('input', function() {	// Also include text input changes as-you-type; see: https://gist.github.com/brandonaaskov/1596867
+			//$('form#data #' + layerId + ' :text, form#data #' + layerId + ' input[type="search"]').on ('input', function() {	// Also include text input changes as-you-type; see: https://gist.github.com/brandonaaskov/1596867
+			$('.' + layerId + ' form :text, .' + layerId + ' form input[type="search"]').on ('input', function() {	// Also include text input changes as-you-type; see: https://gist.github.com/brandonaaskov/1596867
 				_parameters[layerId] = layerviewer.parseFormValues (layerId);
 				layerviewer.updateUrl ();
 				layerviewer.getData (layerId, _parameters[layerId]);
@@ -2025,7 +2030,9 @@ var layerviewer = (function ($) {
 			// Loop through list of inputs (e.g. checkboxes, select, etc.) for the selected layer
 			var processing = {};
 			var processingStrategy;
-			$('form#data #' + layerId + ' :input').each(function() {
+			
+			$('.' + layerId + ' form :input').each(function() {
+			//$('form#data #' + layerId + ' :input').each(function() {
 				
 				// Determine the input type
 				var tagName = this.tagName.toLowerCase();	// Examples: 'input', 'select'
@@ -2100,7 +2107,8 @@ var layerviewer = (function ($) {
 			
 			// Add in boundary data if drawn; this will override bbox (added later)
 			if (_settings.enableDrawing) {
-				var boundary = $('form#data #drawing :input').val();
+				//var boundary = $('form#data #drawing :input').val();
+				var boundary = $('form #drawing :input').val();
 				if (boundary) {
 					parameters.boundary = boundary;
 				}
