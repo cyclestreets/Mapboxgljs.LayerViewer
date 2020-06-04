@@ -395,6 +395,7 @@ var layerviewer = (function ($) {
 			*/
 			
 			// If cookie state is provided, use that to select the sections
+			
 			var state = Cookies.getJSON('state');
 			var initialLayersCookies = [];
 			if (state) {
@@ -855,6 +856,7 @@ var layerviewer = (function ($) {
 			// Allow double-clicking of each menu item (surrounding each checkbox) as implicit selection of its checkbox
 			$('nav #selector li a').dblclick(function() {
 				$(this).parent().find('input').click();
+				
 			});
 			
 			// Allow any form change within a layer as implicit selection of its checkbox
@@ -950,6 +952,7 @@ var layerviewer = (function ($) {
 			// Filter for enabled layers
 			var enabledLayers = [];
 			var component;
+			
 			$.each (_layers, function (layerId, isEnabled) {
 				if (isEnabled) {
 					
@@ -1752,45 +1755,6 @@ var layerviewer = (function ($) {
 				layerviewer.setPanningIndicator ();
 			});
 		},
-		
-		/*
-		// Function to add style (background layer) switching
-		// https://www.mapbox.com/mapbox-gl-js/example/setstyle/
-		// https://bl.ocks.org/ryanbaumann/7f9a353d0a1ae898ce4e30f336200483/96bea34be408290c161589dcebe26e8ccfa132d7
-		styleSwitcher: function ()
-		{
-			// Add style switcher UI
-			layerviewer.createControl ('styleswitcher', 'bottom-left', 'expandable');
-			
-			// Construct HTML for style switcher
-			var styleSwitcherHtml = '<ul>';
-			var name;
-			$.each (_styles, function (styleId, style) {
-				name = (_settings.tileUrls[styleId].label ? _settings.tileUrls[styleId].label : layerviewer.ucfirst (styleId));
-				styleSwitcherHtml += '<li><input id="' + styleId + '" type="radio" name="styleswitcher" value="' + styleId + '"' + (styleId == _settings.defaultTileLayer ? ' checked="checked"' : '') + '><label for="' + styleId + '"> ' + name + '</label></li>';
-			});
-			styleSwitcherHtml += '</ul>';
-			$('#styleswitcher').append (styleSwitcherHtml);
-			
-			// Switch to selected style
-			var styleList = document.getElementById ('styleswitcher');
-			var inputs = styleList.getElementsByTagName ('input');
-			function switchStyle (style) {
-				var styleId = style.target.id;
-				var style = _styles[styleId];
-				_map.setStyle (style);
-				
-				// Set the style flag to the new ID
-				_currentStyleId = styleId;
-				
-				// Fire an event; see: https://javascript.info/dispatch-events
-				layerviewer.styleChanged ();
-			};
-			for (var i = 0; i < inputs.length; i++) {
-				inputs[i].onclick = switchStyle;
-			}
-		},
-		*/
 
 		// Function to add style (background layer) switching
 		// https://www.mapbox.com/mapbox-gl-js/example/setstyle/
@@ -2095,7 +2059,7 @@ var layerviewer = (function ($) {
 				// Obtain the element name and value
 				var name = $(this).attr('name');
 				var value = $(this).val();
-				
+
 				// For checkboxes, degroup them by creating/adding a value that is checked, split by the delimiter
 				if (tagName == 'input' && type == 'checkbox') {
 					if (this.checked) {
@@ -2134,6 +2098,7 @@ var layerviewer = (function ($) {
 				}
 				
 				// For all other input types, if there is a value, register it
+				
 				if (value.length > 0) {
 					parameters[name] = value;	// Set value
 					return;	// Continue to next input
