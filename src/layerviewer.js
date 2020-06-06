@@ -98,7 +98,7 @@ var layerviewer = (function ($) {
 				attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
 				tileSize: 256,
 				label: 'OpenStreetMap',
-				description : 'The default Open Street Map style, emphasising road size and surrounding buildings.'
+				description : 'The default OpenStreetMap style, emphasising road type and surrounding buildings.'
 			},
 			osoutdoor: {
 				vectorTiles: 'https://s3-eu-west-1.amazonaws.com/tiles.os.uk/styles/open-zoomstack-outdoor/style.json',
@@ -111,7 +111,7 @@ var layerviewer = (function ($) {
 				attribution: 'Contains Ordnance Survey data &copy; Crown copyright and database right 2010',
 				tileSize: 256,
 				label: 'OS Open Data',
-				description: 'The most detailed, street-level mapping product available, which only uses open data.'
+				description: "The OS's most detailed, street-level mapping product available, using open data."
 			},
 			bartholomew: {
 				tiles: 'https://{s}.tile.cyclestreets.net/bartholomew/{z}/{x}/{y}@2x.png',
