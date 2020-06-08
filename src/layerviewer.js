@@ -497,6 +497,13 @@ var layerviewer = (function ($) {
 		},
 		
 		
+		// Getter for map
+		getMap: function ()
+		{
+			return _map; 
+		},
+		
+		
 		// Function to determine if the device is a touch device
 		isTouchDevice: function ()
 		{
