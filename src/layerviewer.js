@@ -3532,51 +3532,40 @@ var layerviewer = (function ($) {
 		
 		// Feedback box and handler
 		feedbackHandler: function ()
-		{
-			// Obtain the HTML from the page
-			var html = $('#feedback').html();
-			
-			$('a.feedback').click (function (e) {
-				html = '<div id="feedbackbox">' + html + '</div>';
-				vex.dialog.alert ({unsafeMessage: html, showCloseButton: true, className: 'vex vex-theme-plain feedback'});
+		{			
+			$('.wizard.feedback .action.forward').click (function () {
+				// Feedback URL; re-use of settings values is supported, represented as placeholders {%apiBaseUrl}, {%apiKey}
+				var feedbackApiUrl = layerviewer.settingsPlaceholderSubstitution (_settings.feedbackApiUrl, ['apiBaseUrl', 'apiKey']);
 				
-				// Create the form handler, which submits to the API
-				$('#feedbackbox form').submit (function(event) {	// #feedbackbox form used as #feedbackform doesn't seem to exist in the DOM properly in this context
-					var resultHtml;
+				// Locate the form
+				var form = $('.feedback form');
+				
+				console.log (form.serialize());
+
+				// Send the feedback via AJAX
+				$.ajax({
+					url: feedbackApiUrl,
+					type: form.attr('method'),
+					data: form.serialize()
+				}).done (function (result) {
+					console.log(result);
+					// Detect API error
+					if ('error' in result) {
+						$('.feedback-submit.error p').text (result.error);
+						cyclestreetsui.switchPanel ('.panel', '.feedback-submit.error');
 					
-					// Feedback URL; re-use of settings values is supported, represented as placeholders {%apiBaseUrl}, {%apiKey}
-					var feedbackApiUrl = layerviewer.settingsPlaceholderSubstitution (_settings.feedbackApiUrl, ['apiBaseUrl', 'apiKey']);
+					// Normal result; NB result.id is the feedback number
+					} else {
+						cyclestreetsui.switchPanel ('.panel', '.feedback-submit.submitted');
+						$('.feedback-submit.submitted p').text ('Your feedback has been submitted as number ' + result.id + '.');
+					}
 					
-					var form = $(this);
-					$.ajax({
-						url: feedbackApiUrl,
-						type: form.attr('method'),
-						data: form.serialize()
-					}).done (function (result) {
-						
-						// Detect API error
-						if ('error' in result) {
-							resultHtml = "<p class=\"error\">Sorry, an error occured. The API said: <em>" + result.error + '</em></p>';
-							$('#feedbackbox').replaceWith (resultHtml);
-						
-						// Normal result; NB result.id is the feedback number
-						} else {
-							resultHtml  = '<p class="success">&#10004; Thank you for submitting feedback.</p>';
-							resultHtml += '<p>We read all submissions and endeavour to respond to all feedback.</p>';
-							$('#feedbackbox').replaceWith (resultHtml);
-						}
-						
-					}).fail (function (failure) {
-						resultHtml = '<p>There was a problem contacting the server; please try again later. The failure was: <em>' + failure.responseText + '</em>.</p>';
-						$('#feedbackbox').replaceWith (resultHtml);
-					});
-					
-					// Prevent normal submit
-					event.preventDefault ();
+				}).fail (function (failure) {
+					if (failure.responseJSON.error) {
+						$('.feedback-submit.error p').text (failure.responseJSON.error);
+					}
+					cyclestreetsui.switchPanel ('.panel', '.feedback-submit.error');
 				});
-				
-				// Prevent following link to contact page
-				return false;
 			});
 		},
 		
