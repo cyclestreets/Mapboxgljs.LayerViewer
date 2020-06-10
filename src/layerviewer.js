@@ -473,7 +473,7 @@ var layerviewer = (function ($) {
 			
 			// Toggle map data layers on/off when checkboxes changed
 			
-			$('nav #selector input[type="checkbox"]').change (function() {
+			$('.selector input[type="checkbox"]').change (function() {
 				// Add class "enabled" to display the eye icon
 				$(this).closest('li').toggleClass ('enabled');
 				
@@ -1063,7 +1063,7 @@ var layerviewer = (function ($) {
 		// Function to get the layer name from its ID
 		layerNameFromId: function (layerId)
 		{
-			return $('#selector li.' + layerId + ' a').text();
+			return $('.selector li.' + layerId + ' a').text();
 		},
 		
 		
@@ -1362,7 +1362,7 @@ var layerviewer = (function ($) {
 			});
 			
 			// Create a list of the enabled layers
-			$('nav #selector input:checked').map (function () {
+			$('.selector input:checked').map (function () {
 				var layerId = this.id.replace('show_', '');
 				_layers[layerId] = true;
 			});
@@ -1902,8 +1902,8 @@ var layerviewer = (function ($) {
 		enableLayer: function (layerId)
 		{
 			// If the layer is not available, give a dialog
-			if ($('#selector li.' + layerId).hasClass('unavailable')) {
-				vex.dialog.alert ('Sorry, the ' + $('#selector li.' + layerId + ' a').text().toLowerCase() + ' layer is not available yet.');
+			if ($('.selector li.' + layerId).hasClass('unavailable')) {
+				vex.dialog.alert ('Sorry, the ' + $('.selector li.' + layerId + ' a').text().toLowerCase() + ' layer is not available yet.');
 				$('nav li.' + layerId + ' input').prop('checked', false);
 				return;
 			}
@@ -2035,10 +2035,10 @@ var layerviewer = (function ($) {
 					var message = 'Zoom in to show all ' + layerviewer.layerNameFromId (layerId).toLowerCase() + ' markers - only a selection are shown due to the volume.';
 				}
 				_message.show (message);
-				$('nav #selector li.' + layerId + ' p.total').hide();
+				$('.selector li.' + layerId + ' p.total').hide();
 			} else {
 				_message.hide ();
-				$('nav #selector li.' + layerId + ' p.total').show();
+				$('.selector li.' + layerId + ' p.total').show();
 			}
 		},
 		
@@ -2258,7 +2258,7 @@ var layerviewer = (function ($) {
 			}
 			
 			// Start data loading spinner for this layer
-			$('#selector li.' + layerId + ' img.loading').show();
+			$('.selector li.' + layerId + ' img.loading').show();
 			
 			// Fetch data
 			_xhrRequests[layerId] = $.ajax({
@@ -2272,7 +2272,7 @@ var layerviewer = (function ($) {
 					_xhrRequests[layerId] = null;
 					
 					// Stop data loading spinner for this layer
-					$('#selector li.' + layerId + ' img.loading').hide();
+					$('.selector li.' + layerId + ' img.loading').hide();
 					
 					/* Commented out as can be obtrusive if an API endpoint is slow/down
 					// Catch cases of being unable to access the server, e.g. no internet access; avoids "Unexpected token u in JSON at position 0" errors
@@ -2294,7 +2294,7 @@ var layerviewer = (function ($) {
 					_xhrRequests[layerId] = null;
 					
 					// Stop data loading spinner for this layer
-					$('#selector li.' + layerId + ' img.loading').hide();
+					$('.selector li.' + layerId + ' img.loading').hide();
 					
 					// Determine error handling UI mode
 					var errorNonModalDialog = layerviewer.glocalVariable ('errorNonModalDialog', layerId);
@@ -2967,7 +2967,7 @@ var layerviewer = (function ($) {
 			var totalItems = Object.keys(features).length;
 			
 			// Update the total count in the menu
-			$('nav #selector li.' + layerId + ' p.total').html(totalItems);
+			$('.selector li.' + layerId + ' p.total').html(totalItems);
 			
 			// Add the export link button(s) if not currently present
 			if ( $('#sections #' + layerId + ' div.export p a').length == 0) {	// i.e. currently unlinked
@@ -3279,7 +3279,7 @@ var layerviewer = (function ($) {
 			}
 			
 			// Remove the total count
-			$('nav #selector li.' + layerId + ' p.total').html('');
+			$('.selector li.' + layerId + ' p.total').html('');
 			
 			// Remove/reset the export link, and its count
 			if ($('#sections #' + layerId + ' div.export p a').length) {	// i.e. currently linked
