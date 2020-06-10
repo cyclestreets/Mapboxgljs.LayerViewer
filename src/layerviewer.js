@@ -3040,7 +3040,15 @@ var layerviewer = (function ($) {
 					
 					// Create the popup, as we cannot use the native popup handler in the standard renderer
 					var popupContentHtml = layerviewer.renderDetailsHtml (feature, popupHtmlTemplate, layerId);
-					var popup = new mapboxgl.Popup ({className: layerId})
+					
+					// if property.useManualPopup 
+					// '#map .class'.show()
+
+					// Register a custom popup handler
+					
+
+					//var popup = new mapboxgl.Popup ({className: layerId})
+					var popup = new mapboxgl.Popup ({className: 'popup photomap'})
 						.setHTML (popupContentHtml);
 					
 					// Add the marker to the map
