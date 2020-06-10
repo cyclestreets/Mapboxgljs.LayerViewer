@@ -2486,6 +2486,13 @@ var layerviewer = (function ($) {
 		// Function to construct the popup/overlay content HTML
 		renderDetailsHtml: function (feature, template /* optional */, layerId)
 		{
+			// If temmplate is a selector, query the DOM to convert this into an HTML string
+			if (typeof template === 'object') {
+				if (template.hasOwnProperty('selector')) {
+					template = $(template.selector).prop('outerHTML');
+				}
+			}
+
 			// Use a template if this has been defined in the layer config
 			var html;
 			if (template) {
@@ -3539,8 +3546,6 @@ var layerviewer = (function ($) {
 				
 				// Locate the form
 				var form = $('.feedback form');
-				
-				console.log (form.serialize());
 
 				// Send the feedback via AJAX
 				$.ajax({
@@ -3548,7 +3553,6 @@ var layerviewer = (function ($) {
 					type: form.attr('method'),
 					data: form.serialize()
 				}).done (function (result) {
-					console.log(result);
 					// Detect API error
 					if ('error' in result) {
 						$('.feedback-submit.error p').text (result.error);
