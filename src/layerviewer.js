@@ -1183,6 +1183,27 @@ var layerviewer = (function ($) {
 				}
 				$(this).append(html);
 			});
+			
+			// Support for "data-yearly-range-{since|until}-sqldate" macros which populate a select with an option list of each year in a comma-separated range, expressed as SQL time
+			var sqltimeMacros = {
+				'yearly-range-since-sqldate': '-01-01',
+				'yearly-range-until-sqldate': '-12-31'
+			};
+			$.each (sqltimeMacros, function (macroName, monthDateString) {
+				$('select[data-' + macroName + ']').val(function() {
+					var yearRange = $(this).data(macroName).split (',');
+					var startYear = yearRange[0];
+					var finishYear = yearRange[1];
+					var html = '';
+					var year;
+					var sqldate;
+					for (year = finishYear; year >= startYear; year--) {	// See: https://stackoverflow.com/a/26511699
+						sqldate = year + monthDateString;
+						html += '<option value="' + sqldate + '">' + year + '</option>';
+					}
+					$(this).append(html);
+				});
+			});
 		},
 		
 		
