@@ -1390,7 +1390,7 @@ var layerviewer = (function ($) {
 			_currentStyleId = defaultTileLayer;
 			
 			// Enable zoom in/out buttons
-			_map.addControl (new mapboxgl.NavigationControl (), 'top-left');
+			_map.addControl (new mapboxgl.NavigationControl (), 'bottom-right');
 			
 			// Add buildings
 			layerviewer.addBuildings ();
@@ -1405,7 +1405,8 @@ var layerviewer = (function ($) {
 			layerviewer.enableTilt ();
 			
 			// Add a geolocation control
-			layerviewer.geolocation ();
+			var geolocationElementId = 'geolocate-button'
+			layerviewer.geolocation (geolocationElementId);
 			
 			// Add geocoder control
 			layerviewer.geocoder ();
@@ -1743,7 +1744,7 @@ var layerviewer = (function ($) {
 		// Function to add a geolocation control
 		// https://www.mapbox.com/mapbox-gl-js/example/locate-user/
 		// https://github.com/mapbox/mapbox-gl-js/issues/5464
-		geolocation: function ()
+		geolocation: function (geolocationElementId = false)
 		{
 			// Create a tracking control
 			var geolocate = new mapboxgl.GeolocateControl ({
@@ -1761,6 +1762,26 @@ var layerviewer = (function ($) {
 				_panningEnabled = false;
 				layerviewer.setPanningIndicator ();
 			});
+
+			
+			if (geolocationElementId) {
+				var alternativeGeolocate = document.getElementById(geolocationElementId);
+				if (!navigator.geolocation) {
+					alternativeGeolocate.innerHTML = 'Geolocation is not available';
+				} else {
+					alternativeGeolocate.onclick = function (e) {
+						e.preventDefault();
+						e.stopPropagation();
+						geolocate.trigger();
+					};
+				}
+
+				_map.on('locationfound', function(e) {
+					_map.fitBounds(e.bounds);
+				});
+
+				$('.mapboxgl-ctrl-geolocate').hide();
+			}
 		},
 
 		// Function to add style (background layer) switching
@@ -3051,18 +3072,36 @@ var layerviewer = (function ($) {
 					var popup = new mapboxgl.Popup ({className: 'popup photomap'})
 						.setHTML (popupContentHtml);
 					
+					
+						
 					// Add the marker to the map
 					marker = new mapboxgl.Marker (marker)
 						.setLngLat (feature.geometry.coordinates)
 						.setPopup (popup)
 						.addTo (_map);
 					
+					marker.on('click', function(e) {
+						alert ('hey');
+						// popup opened so we fire an event
+						//map.fire('your.custom.popup.event.name', {popup});
+					});
+
+					_map.on('click', function(e) {
+						console.log (e);
+						//const target = event.originalEvent.target;
+						//const markerWasClicked = markerDiv.contains(target);
+						return false;
+						e.stopPropagation();
+						marker.togglePopup();
+					});
+
 					// Register the marker so it can be removed on redraw
 					_markers[layerId].push (marker);
 				}
 			});
 		},
-		
+
+
 		
 		// Function to determine the iconUrl for a feature
 		getIconUrl: function (layerId, feature /* may be set to null if checking layer-only definitions */)
