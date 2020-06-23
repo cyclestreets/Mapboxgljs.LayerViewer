@@ -62,6 +62,9 @@ var layerviewer = (function ($) {
 		
 		// Enable hover for all (line-based) layers
 		hover: true,
+
+		// Use existing geolocation button instead of Mapbox's
+		geolocationElementId: false,
 		
 		// Default icon and size
 		iconUrl: null,
@@ -1405,8 +1408,7 @@ var layerviewer = (function ($) {
 			layerviewer.enableTilt ();
 			
 			// Add a geolocation control
-			var geolocationElementId = 'geolocate-button'
-			layerviewer.geolocation (geolocationElementId);
+			layerviewer.geolocation (_settings.geolocationElementId);
 			
 			// Add geocoder control
 			layerviewer.geocoder ();
