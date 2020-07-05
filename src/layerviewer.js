@@ -2907,7 +2907,7 @@ var layerviewer = (function ($) {
 			}
 			
 			// Enable/update CSV/GeoJSON export link(s), if there are items, and show the count
-			var exportUrlCsv = (_layerConfig[layerId].apiCall.match (/^https?:\/\//) ? '' : _settings.apiBaseUrl) + _layerConfig[layerId].apiCall + '?' + requestSerialised + '&format=csv';
+			var exportUrlCsv = (_layerConfig[layerId].apiCall.match (/^https?:\/\//) ? '' : _settings.apiBaseUrl) + _layerConfig[layerId].apiCall + '?' + requestSerialised + '&format=csv&export=csv';		// Both parameter types supported
 			var exportUrlGeojson = (_layerConfig[layerId].apiCall.match (/^https?:\/\//) ? '' : _settings.apiBaseUrl) + _layerConfig[layerId].apiCall.replace(/.json$/, '.geojson') + '?' + requestSerialised;
 			$('#sections #' + layerId + ' div.export p span').text ('(' + totalItems + ')');
 			$('#sections #' + layerId + ' div.export .csv').parent('a').attr('href', exportUrlCsv);
