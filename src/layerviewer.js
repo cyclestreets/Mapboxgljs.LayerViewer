@@ -65,6 +65,9 @@ var layerviewer = (function ($) {
 
 		// Use existing geolocation button instead of Mapbox's
 		geolocationElementId: false,
+
+		// Display a dot that tracks user location (usual design language on mobile)
+		trackUser: true,
 		
 		// Default icon and size
 		iconUrl: null,
@@ -322,6 +325,7 @@ var layerviewer = (function ($) {
 	var _currentStyleId;
 	var _markers = [];
 	var _popups = [];
+	var _action;
 	var _currentDataLayer = {};
 	var _tileOverlayLayer = false;
 	var _isTouchDevice;
@@ -1408,7 +1412,7 @@ var layerviewer = (function ($) {
 			layerviewer.enableTilt ();
 			
 			// Add a geolocation control
-			layerviewer.geolocation (_settings.geolocationElementId);
+			layerviewer.geolocation (_settings.geolocationElementId, _settings.trackUser);
 			
 			// Add geocoder control
 			layerviewer.geocoder ();
@@ -1746,14 +1750,14 @@ var layerviewer = (function ($) {
 		// Function to add a geolocation control
 		// https://www.mapbox.com/mapbox-gl-js/example/locate-user/
 		// https://github.com/mapbox/mapbox-gl-js/issues/5464
-		geolocation: function (geolocationElementId = false)
+		geolocation: function (geolocationElementId = false, trackUser = false)
 		{
 			// Create a tracking control
 			var geolocate = new mapboxgl.GeolocateControl ({
 				positionOptions: {
 					enableHighAccuracy: true
 				},
-				trackUserLocation: false
+				trackUserLocation: trackUser
 			});
 			
 			// Add to the map
@@ -1782,7 +1786,7 @@ var layerviewer = (function ($) {
 					_map.fitBounds(e.bounds);
 				});
 
-				$('.mapboxgl-ctrl-geolocate').hide();
+				$('.mapboxgl-ctrl').hide();
 			}
 		},
 
