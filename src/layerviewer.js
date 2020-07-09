@@ -1898,7 +1898,7 @@ var layerviewer = (function ($) {
 			var geocoderApiUrl = layerviewer.settingsPlaceholderSubstitution (_settings.geocoderApiUrl, ['apiBaseUrl', 'apiKey', 'autocompleteBbox']);
 			
 			// Attach the autocomplete library behaviour to the location control
-			autocomplete.addTo ('#geocoder input', {
+			autocomplete.addTo ('.geocoder input', {
 				sourceUrl: geocoderApiUrl,
 				select: function (event, ui) {
 					var bbox = ui.item.feature.properties.bbox.split(',');	// W,S,E,N
