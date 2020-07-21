@@ -1796,6 +1796,19 @@ var layerviewer = (function ($) {
 		styleSwitcher: function ()
 		{
 			
+			// Load a style from the cookie, if it exists
+			if ($.cookie('map-style')) {
+				var styleId = $.cookie('map-style');
+				var style = _styles[styleId];
+				_map.setStyle (style);
+				
+				// Set the style flag to the new ID
+				_currentStyleId = styleId;
+				
+				// Fire an event; see: https://javascript.info/dispatch-events
+				layerviewer.styleChanged ();
+			}
+			
 			// Construct HTML for style switcher
 			var styleSwitcherHtml = '<ul id="styleswitcher">';
 			var name;
@@ -1822,6 +1835,9 @@ var layerviewer = (function ($) {
 				var styleId = style.target.id;
 				var style = _styles[styleId];
 				_map.setStyle (style);
+
+				// Save this style as a cookie
+				$.cookie('map-style', styleId);
 				
 				// Set the style flag to the new ID
 				_currentStyleId = styleId;
