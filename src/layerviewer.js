@@ -479,28 +479,32 @@ var layerviewer = (function ($) {
 			});
 			
 			// Toggle map data layers on/off when checkboxes changed
-			
-			$('.selector input[type="checkbox"]').change (function() {
-				// Add class "enabled" to display the eye icon
-				$(this).closest('li').toggleClass ('enabled');
-				
-				var layerId = this.id.replace('show_', '');
-				if (this.checked) {
-					_layers[layerId] = true;
-					layerviewer.enableLayer (layerId);
-				} else {
-					_layers[layerId] = false;
-					if (_xhrRequests[layerId]) {
-						_xhrRequests[layerId].abort();
-					}
-					layerviewer.removeLayer (layerId);
-					layerviewer.clearLegend ();
-					layerviewer.setStateCookie ();	// Update to catch deletion of cache entry
-				}
+			$('.selector input[type="checkbox"]').change (function(event) {
+				layerviewer.toggleDataLayer (event.target);
 			});
 			
 			// Enable embed dialog handler
 			layerviewer.embedHandler ();
+		},
+
+
+		toggleDataLayer: function (target)
+		{
+			// Add class "enabled" to display the eye icon
+			$(target).closest('li').toggleClass ('enabled');
+			var layerId = target.id.replace('show_', '');
+			if (target.checked) {
+				_layers[layerId] = true;
+				layerviewer.enableLayer (layerId);
+			} else {
+				_layers[layerId] = false;
+				if (_xhrRequests[layerId]) {
+					_xhrRequests[layerId].abort();
+				}
+				layerviewer.removeLayer (layerId);
+				layerviewer.clearLegend ();
+				layerviewer.setStateCookie ();	// Update to catch deletion of cache entry
+			}
 		},
 		
 		
@@ -1848,6 +1852,7 @@ var layerviewer = (function ($) {
 			for (var i = 0; i < inputs.length; i++) {
 				inputs[i].onclick = switchStyle;
 			}
+
 		},
 		
 		
