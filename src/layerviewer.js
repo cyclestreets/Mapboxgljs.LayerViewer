@@ -173,7 +173,10 @@ var layerviewer = (function ($) {
 		enableBetaSwitch: false,
 		
 		// Password protection, as an SHA-256 hash
-		password: false
+		password: false,
+
+		// Hide default LayerViewer message area and legend
+		hideExtraMapControls: false
 	};
 	
 	// Layer definitions, which should be overriden by being supplied as an argument by the calling application
@@ -1231,6 +1234,8 @@ var layerviewer = (function ($) {
 		// Function to create and update the legend
 		createLegend: function ()
 		{
+			if (_settings.hideExtraMapControls) {return;}
+
 			// Affix the legend
 			layerviewer.createControl ('legend', 'bottom-left');
 			
@@ -1346,6 +1351,8 @@ var layerviewer = (function ($) {
 		// Function to create a message area, and provide methods to manipulate it
 		messageArea: function ()
 		{
+			if (_settings.hideExtraMapControls) {return;}
+			
 			// Create the control
 			layerviewer.createControl ('message', 'bottom-left');
 			
