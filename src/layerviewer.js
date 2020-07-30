@@ -341,6 +341,7 @@ var layerviewer = (function ($) {
 	var _embedMode = false;
 	var _betaMode = false;
 	var _message = {};
+	var _geolocate = null; // Store the geolocation element
 	
 	
 	return {
@@ -1764,7 +1765,7 @@ var layerviewer = (function ($) {
 		geolocation: function (geolocationElementId = false, trackUser = false)
 		{
 			// Create a tracking control
-			var geolocate = new mapboxgl.GeolocateControl ({
+			_geolocate = new mapboxgl.GeolocateControl ({
 				positionOptions: {
 					enableHighAccuracy: true
 				},
@@ -1772,10 +1773,10 @@ var layerviewer = (function ($) {
 			});
 			
 			// Add to the map
-			_map.addControl (geolocate, 'top-left');
+			_map.addControl (_geolocate, 'top-left');
 			
 			// Disable tilt on click
-			geolocate.on ('geolocate', function () {
+			_geolocate.on ('geolocate', function () {
 				_panningEnabled = false;
 				layerviewer.setPanningIndicator ();
 			});
@@ -1789,7 +1790,7 @@ var layerviewer = (function ($) {
 					alternativeGeolocate.onclick = function (e) {
 						e.preventDefault();
 						e.stopPropagation();
-						geolocate.trigger();
+						_geolocate.trigger();
 					};
 				}
 
@@ -1799,6 +1800,13 @@ var layerviewer = (function ($) {
 
 				$('.mapboxgl-ctrl').hide();
 			}
+		},
+
+
+		// "Getter" to trigger geolocation, accessible externally
+		triggerGeolocation: function ()
+		{
+			_geolocate.trigger();
 		},
 
 		// Function to add style (background layer) switching
