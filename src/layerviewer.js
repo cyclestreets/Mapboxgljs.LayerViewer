@@ -1783,14 +1783,14 @@ var layerviewer = (function ($) {
 
 			
 			if (geolocationElementId) {
-				var alternativeGeolocate = document.getElementById(geolocationElementId);
+				var alternativeGeolocate = document.getElementById (geolocationElementId);
 				if (!navigator.geolocation) {
 					alternativeGeolocate.innerHTML = 'Geolocation is not available';
 				} else {
 					alternativeGeolocate.onclick = function (e) {
-						e.preventDefault();
-						e.stopPropagation();
-						_geolocate.trigger();
+						e.preventDefault ();
+						e.stopPropagation ();
+						_geolocate.trigger ();
 					};
 				}
 
@@ -1798,7 +1798,7 @@ var layerviewer = (function ($) {
 					_map.fitBounds(e.bounds);
 				});
 
-				$('.mapboxgl-ctrl').hide();
+				$('.mapboxgl-ctrl').hide ();
 			}
 		},
 
@@ -1806,7 +1806,12 @@ var layerviewer = (function ($) {
 		// "Getter" to trigger geolocation, accessible externally
 		triggerGeolocation: function ()
 		{
-			_geolocate.trigger();
+			_geolocate.trigger ();
+		},
+
+		getGeolocation: function ()
+		{
+			return _geolocate;
 		},
 
 		// Function to add style (background layer) switching
