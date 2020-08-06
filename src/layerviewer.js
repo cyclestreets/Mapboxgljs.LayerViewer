@@ -41,6 +41,8 @@ var layerviewer = (function ($) {
 		
 		// Feedback API URL; re-use of settings values represented as placeholders {%apiBaseUrl}, {%apiKey}, are supported
 		feedbackApiUrl: '{%apiBaseUrl}/v2/feedback.add?key={%apiKey}',
+
+		poisApiUrl: '{%apiBaseUrl}/v2/pois.types?icons=32?key={%apiKey}',
 		
 		// Enable/disabled drawing feature
 		enableDrawing: true,
@@ -489,6 +491,14 @@ var layerviewer = (function ($) {
 			
 			// Enable embed dialog handler
 			layerviewer.embedHandler ();
+
+		},
+
+
+		// Function to set a layer configuration after loading
+		setLayerConfigParameter: function (layer, field, value)
+		{
+			_layerConfig[layer][field] = value;
 		},
 
 
@@ -2554,12 +2564,6 @@ var layerviewer = (function ($) {
 		// Function to construct the popup/overlay content HTML
 		renderDetailsHtml: function (feature, template /* optional */, layerId)
 		{
-			// If temmplate is a selector, query the DOM to convert this into an HTML string
-			if (typeof template === 'object') {
-				if (template.hasOwnProperty('selector')) {
-					template = $(template.selector).prop('outerHTML');
-				}
-			}
 
 			// Use a template if this has been defined in the layer config
 			var html;
@@ -3108,39 +3112,32 @@ var layerviewer = (function ($) {
 					
 					// Create the popup, as we cannot use the native popup handler in the standard renderer
 					var popupContentHtml = layerviewer.renderDetailsHtml (feature, popupHtmlTemplate, layerId);
-					
-					// if property.useManualPopup 
-					// '#map .class'.show()
 
-					// Register a custom popup handler
-					
-
-					//var popup = new mapboxgl.Popup ({className: layerId})
-					var popup = new mapboxgl.Popup ({className: 'popup photomap'})
-						.setHTML (popupContentHtml);
-					
-					
-						
+					var popup = new mapboxgl.Popup ({className: layerId})
+					.setHTML (popupContentHtml);					
+					//var popup = new mapboxgl.Popup ({className: 'popup photomap'})
+		
 					// Add the marker to the map
 					marker = new mapboxgl.Marker (marker)
 						.setLngLat (feature.geometry.coordinates)
 						.setPopup (popup)
 						.addTo (_map);
-					
-					marker.on('click', function(e) {
-						alert ('hey');
-						// popup opened so we fire an event
-						//map.fire('your.custom.popup.event.name', {popup});
-					});
+	
+					if (_layerConfig[layerId].hasOwnProperty ('popupCallback')) 
+					{	
+						// Set the popupHTML as marker property
+						var template = _layerConfig[layerId].popupHtml;
+						marker['popupHtml'] = layerviewer.renderDetailsHtml (feature, template, layerId);
 
-					_map.on('click', function(e) {
-						console.log (e);
-						//const target = event.originalEvent.target;
-						//const markerWasClicked = markerDiv.contains(target);
-						return false;
-						e.stopPropagation();
-						marker.togglePopup();
-					});
+						// Add a custom click listener, which will ignore the default popup action
+						marker.getElement().addEventListener('click', function (event) {
+							_layerConfig[layerId].popupCallback (marker['popupHtml']);
+							
+							event.preventDefault ();
+							event.stopImmediatePropagation ();
+						});
+					}
+					
 
 					// Register the marker so it can be removed on redraw
 					_markers[layerId].push (marker);
