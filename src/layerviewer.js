@@ -178,7 +178,10 @@ var layerviewer = (function ($) {
 		password: false,
 
 		// Hide default LayerViewer message area and legend
-		hideExtraMapControls: false
+		hideExtraMapControls: false,
+
+		// Custom data loading spinner selector for layerviewer. For layer specific spinner, should contain layerId
+		dataLoadingSpinnerSelector: '.selector li. {layerId} img.loading'
 	};
 	
 	// Layer definitions, which should be overriden by being supplied as an argument by the calling application
@@ -2336,7 +2339,8 @@ var layerviewer = (function ($) {
 			}
 			
 			// Start data loading spinner for this layer
-			$('.selector li.' + layerId + ' img.loading').show();
+			var dataLoadingSpinnerSelector = layerviewer.parseDataSpinnerSelector (layerId);
+			$(dataLoadingSpinnerSelector).show();
 			
 			// Fetch data
 			_xhrRequests[layerId] = $.ajax({
@@ -2350,7 +2354,7 @@ var layerviewer = (function ($) {
 					_xhrRequests[layerId] = null;
 					
 					// Stop data loading spinner for this layer
-					$('.selector li.' + layerId + ' img.loading').hide();
+					$(dataLoadingSpinnerSelector).hide();
 					
 					/* Commented out as can be obtrusive if an API endpoint is slow/down
 					// Catch cases of being unable to access the server, e.g. no internet access; avoids "Unexpected token u in JSON at position 0" errors
@@ -2372,7 +2376,7 @@ var layerviewer = (function ($) {
 					_xhrRequests[layerId] = null;
 					
 					// Stop data loading spinner for this layer
-					$('.selector li.' + layerId + ' img.loading').hide();
+					$(dataLoadingSpinnerSelector).hide();
 					
 					// Determine error handling UI mode
 					var errorNonModalDialog = layerviewer.glocalVariable ('errorNonModalDialog', layerId);
@@ -2398,6 +2402,13 @@ var layerviewer = (function ($) {
 					return layerviewer.showCurrentData (layerId, data, apiData, requestSerialised);
 				}
 			});
+		},
+
+
+		// Function to parse data spinner and replace layerId, if necessary
+		parseDataSpinnerSelector: function (layerId)
+		{
+			return (_settings.dataLoadingSpinnerSelector.replace ('{layerId}', layerId));
 		},
 		
 		
