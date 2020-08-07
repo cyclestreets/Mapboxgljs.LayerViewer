@@ -3121,28 +3121,29 @@ var layerviewer = (function ($) {
 						marker.style.zIndex = markerZindexOffsets[fieldValue];
 					}
 					
-					// Create the popup, as we cannot use the native popup handler in the standard renderer
+					// Generate popupHTML
 					var popupContentHtml = layerviewer.renderDetailsHtml (feature, popupHtmlTemplate, layerId);
 
+					// Initiate the popup
 					var popup = new mapboxgl.Popup ({className: layerId})
-					.setHTML (popupContentHtml);					
-					//var popup = new mapboxgl.Popup ({className: 'popup photomap'})
+						.setHTML (popupContentHtml);					
 		
 					// Add the marker to the map
 					marker = new mapboxgl.Marker (marker)
 						.setLngLat (feature.geometry.coordinates)
 						.setPopup (popup)
 						.addTo (_map);
-	
+					
+					// If we have a callback, store each marker's popupHtml 
 					if (_layerConfig[layerId].hasOwnProperty ('popupCallback')) 
 					{	
-						// Set the popupHTML as marker property
+						// Create a marker property __popupHTML, unofficially overloading the published data structure
 						var template = _layerConfig[layerId].popupHtml;
-						marker['popupHtml'] = layerviewer.renderDetailsHtml (feature, template, layerId);
+						marker.__popupHtml = layerviewer.renderDetailsHtml (feature, template, layerId);
 
 						// Add a custom click listener, which will ignore the default popup action
 						marker.getElement().addEventListener('click', function (event) {
-							_layerConfig[layerId].popupCallback (marker['popupHtml']);
+							_layerConfig[layerId].popupCallback (marker.__popupHtml);
 							
 							event.preventDefault ();
 							event.stopImmediatePropagation ();
