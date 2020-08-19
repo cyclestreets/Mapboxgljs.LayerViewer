@@ -119,7 +119,7 @@ var layerviewer = (function ($) {
 				attribution: 'Contains Ordnance Survey data &copy; Crown copyright and database right 2010',
 				tileSize: 256,
 				label: 'OS Open Data',
-				description: "The OS's most detailed, street-level mapping product available, using open data."
+				description: "The OS's most detailed, street-level mapping product available, using open data sources."
 			},
 			bartholomew: {
 				tiles: 'https://{s}.tile.cyclestreets.net/bartholomew/{z}/{x}/{y}@2x.png',
@@ -1807,8 +1807,8 @@ var layerviewer = (function ($) {
 					};
 				}
 
-				_map.on('locationfound', function(e) {
-					_map.fitBounds(e.bounds);
+				_map.on ('locationfound', function(e) {
+					_map.fitBounds (e.bounds);
 				});
 
 				$('.mapboxgl-ctrl').hide ();
@@ -1816,23 +1816,24 @@ var layerviewer = (function ($) {
 		},
 
 
-		// "Getter" to trigger geolocation, accessible externally
-		triggerGeolocation: function ()
-		{
+		// Trigger geolocation, accessible externally
+		triggerGeolocation: function () {
 			_geolocate.trigger ();
 		},
 
-		getGeolocation: function ()
-		{
+		
+		// Getter for the user's geolocation
+		getGeolocation: function () {
 			return _geolocate;
 		},
+
 
 		// Function to add style (background layer) switching
 		// https://www.mapbox.com/mapbox-gl-js/example/setstyle/
 		// https://bl.ocks.org/ryanbaumann/7f9a353d0a1ae898ce4e30f336200483/96bea34be408290c161589dcebe26e8ccfa132d7
 		styleSwitcher: function ()
 		{
-			
+
 			// Load a style from the cookie, if it exists
 			if ($.cookie('map-style')) {
 				var styleId = $.cookie('map-style');
@@ -2586,19 +2587,34 @@ var layerviewer = (function ($) {
 						return (prev ? prev[curr] : undefined);
 					}, obj || self);
 				};
+
+				// Convert data-src into src
+				if (template.indexOf ('data-src') >= 0) {
+					var templateElement = $.parseHTML (template);
+					var dataSrcElements = $('[data-src]', templateElement);
+					
+					var elementOriginalStr;
+					var templatisedString;
+					$.each (dataSrcElements, function (indexInArray, element) { 
+						// Make a copy of the string of the original element
+						elementOriginalStr = $(element)[0].outerHTML;
+						
+						// Using jQuery to convert the string into a element, replace the src with data-src
+						$(element).prop ('src', $(element).data ('src'));
+						
+						// Convert this element into a string
+						templatisedString = $(element)[0].outerHTML;
+						
+						// Find the original string in the template, and replace it with the templatised string
+						template = template.replace(elementOriginalStr, templatisedString);
+					});
+				}
 				
 				// Convert Street View macro
 				if (template.indexOf ('{%streetview}') >= 0) {
 					template = template.replace ('{%streetview}', layerviewer.streetViewTemplate (feature));
 				}
 				
-				// Convert OSM edit link macro
-				if (template.indexOf ('{%osmeditlink}') >= 0) {
-					var centroid = layerviewer.polygonCentroid (feature);
-					var zoom = 19;	// #!# Need equivalent of getBoundsZoom, to replace this fixed value
-					var osmEditUrl = 'https://www.openstreetmap.org/edit#map=' + zoom + '/' + centroid.lat.toFixed(5) + '/' + centroid.lng.toFixed(5);
-					template = template.replace ('{%osmeditlink}', '<a class="edit" target="_blank" href="' + osmEditUrl + '">Edit in OSM</a>');
-				}
 				
 				// If any property is null, show '?' instead
 				$.each (feature.properties, function (key, value) {
@@ -2608,9 +2624,24 @@ var layerviewer = (function ($) {
 				});
 				
 				// Replace template placeholders; see: https://stackoverflow.com/a/378000
-				html = template.replace (/\{[^{}]+\}/g, function(path){
-					return Object.resolve ( path.replace(/[{}]+/g, '') , feature);
+				template = template.replace (/\{[^{}]+\}/g, function (path){
+					var resolvedPlaceholderText = Object.resolve (path.replace(/[{}]+/g, '') , feature);
+					if (resolvedPlaceholderText == undefined && _layerConfig[layerId].hasOwnProperty ('emptyPlaceholderText')) {
+						return _layerConfig[layerId].emptyPlaceholderText;
+					} else {
+						return resolvedPlaceholderText;
+					}
 				});
+				
+				// Convert OSM edit link macro
+				if (template.indexOf ('{%osmeditlink}') >= 0) {
+					var centroid = layerviewer.polygonCentroid (feature);
+					var zoom = 19;	// #!# Need equivalent of getBoundsZoom, to replace this fixed value
+					var osmEditUrl = 'https://www.openstreetmap.org/edit#map=' + zoom + '/' + centroid.lat.toFixed(5) + '/' + centroid.lng.toFixed(5);
+					template = template.replace (/{%osmeditlink}/g, '<a class="edit" target="_blank" href="' + osmEditUrl + '">Edit in OSM</a>');
+				}
+
+				html = template;
 				
 				// Support 'yearstable' macro, which generates a table of fields for each year, with parameters: first year, last year, fieldslist split by semicolon, labels for each field split by semicolon
 				var matches = html.match (/\[macro:yearstable\((.+), (.+), (.+), (.+)\)\]/);
