@@ -2740,7 +2740,7 @@ var layerviewer = (function ($) {
 			}
 
 			// Assemble and return the HTML
-			return '<iframe id="streetview" src="/streetview.html?latitude=' + latitude + '&longitude=' + longitude + '">Street View loading &hellip;</div>';
+			return '<iframe id="streetview" src="/streetview.html?latitude=' + latitude + '&longitude=' + longitude + '">Street View loading &hellip;</div></td></tr></table></div></iframe>';
 		},
 		
 		
