@@ -2638,7 +2638,7 @@ var layerviewer = (function ($) {
 					var centroid = layerviewer.polygonCentroid (feature);
 					var zoom = 19;	// #!# Need equivalent of getBoundsZoom, to replace this fixed value
 					var osmEditUrl = 'https://www.openstreetmap.org/edit#map=' + zoom + '/' + centroid.lat.toFixed(5) + '/' + centroid.lng.toFixed(5);
-					template = template.replace (/{%osmeditlink}/g, '<a class="edit" target="_blank" href="' + osmEditUrl + '">Edit in OSM</a>');
+					template = template.replace (/{%osmeditlink}/g, '<a class="edit" target="_blank" href="' + osmEditUrl + '">Add in OSM</a>');
 				}
 
 				html = template;
