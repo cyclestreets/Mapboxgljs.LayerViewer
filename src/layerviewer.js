@@ -1816,6 +1816,7 @@ var layerviewer = (function ($) {
 				}
 
 				_map.on ('locationfound', function(e) {
+					routing.setGeolocationAvailability (true);
 					_map.fitBounds (e.bounds);
 				});
 
@@ -1843,7 +1844,6 @@ var layerviewer = (function ($) {
 		// https://bl.ocks.org/ryanbaumann/7f9a353d0a1ae898ce4e30f336200483/96bea34be408290c161589dcebe26e8ccfa132d7
 		styleSwitcher: function ()
 		{
-
 			// Load a style from the cookie, if it exists
 			if ($.cookie('map-style')) {
 				var styleId = $.cookie('map-style');
