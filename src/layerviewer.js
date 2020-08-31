@@ -1780,7 +1780,8 @@ var layerviewer = (function ($) {
 			// Create a tracking control
 			_geolocate = new mapboxgl.GeolocateControl ({
 				positionOptions: {
-					enableHighAccuracy: true
+					enableHighAccuracy: true,
+					timeout: 2000
 				},
 				trackUserLocation: trackUser
 			});
@@ -1794,11 +1795,19 @@ var layerviewer = (function ($) {
 				layerviewer.setPanningIndicator ();
 			});
 
+			// Set an event listener that fires when an error event occurs.
+			_geolocate.on ('error', function () {
+				console.log ('An error event has occurred.')
+				vex.dialog.alert ('Location information is unavailable.');	
+				routing.setGeolocationAvailability (false);
+			});
+
 			
 			if (geolocationElementId) {
 				var alternativeGeolocate = document.getElementById (geolocationElementId);
 				if (!navigator.geolocation) {
 					alternativeGeolocate.innerHTML = 'Geolocation is not available';
+					routing.setGeolocationAvailability (false);
 				} else {
 					alternativeGeolocate.onclick = function (e) {
 						e.preventDefault ();
