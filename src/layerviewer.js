@@ -1798,7 +1798,6 @@ var layerviewer = (function ($) {
 			// Set an event listener that fires when an error event occurs.
 			_geolocate.on ('error', function () {
 				console.log ('An error event has occurred.')
-				vex.dialog.alert ('Location information is unavailable.');	
 				routing.setGeolocationAvailability (false);
 			});
 
