@@ -1825,13 +1825,15 @@ var layerviewer = (function ($) {
 
 
 		// Trigger geolocation, accessible externally
-		triggerGeolocation: function () {
+		triggerGeolocation: function () 
+		{
 			_geolocate.trigger ();
 		},
 
 		
 		// Getter for the user's geolocation
-		getGeolocation: function () {
+		getGeolocation: function () 
+		{
 			return _geolocate;
 		},
 
