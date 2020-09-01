@@ -1797,7 +1797,7 @@ var layerviewer = (function ($) {
 
 			// Set an event listener that fires when an error event occurs.
 			_geolocate.on ('error', function () {
-				console.log ('An error event has occurred.')
+				console.log ('A geolocation error event has occurred.')
 				routing.setGeolocationAvailability (false);
 			});
 
@@ -1828,6 +1828,11 @@ var layerviewer = (function ($) {
 		// Trigger geolocation, accessible externally
 		triggerGeolocation: function () 
 		{
+			// Display error message if we haven't got permission
+			if (!routing.getGeolocationAvailability ()) {
+				vex.dialog.alert ('Please allow the browser to access your location, by refreshing the page or changing privacy settings.');	
+			}
+
 			_geolocate.trigger ();
 		},
 
