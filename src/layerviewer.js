@@ -1771,6 +1771,58 @@ var layerviewer = (function ($) {
 			});
 		},
 		
+
+		// Function to ascertain the geolocation status of the brwoser
+		// Accepts an onSuccess function to be called if geolocation is found
+		checkForGeolocationStatus (onSuccess)
+		{
+			// On startup, check the geolocation status of the browser
+			function getLocation () {
+				
+				var options = {
+					enableHighAccuracy: false,
+					timeout: 2000,
+					maximumAge: Infinity
+				};
+				  
+				if (navigator.geolocation) {
+					navigator.geolocation.getCurrentPosition (showPosition, showError, options);
+				} else {
+					vex.dialog.alert ('Geolocation is not supported by this browser.');
+					routing.setGeolocationAvailability (false);
+				}
+			}
+
+			function showPosition (position) {
+				console.log (position);
+				routing.setGeolocationAvailability (true);
+				onSuccess ();
+			}
+
+			function showError (error) {
+				// Set geolocation as unavailable 
+				routing.setGeolocationAvailability (false);
+				
+				// Display a user message
+				switch (error.code) {
+					case error.PERMISSION_DENIED:
+						vex.dialog.alert ('Please allow the browser to access your location, by refreshing the page or changing privacy settings.');	
+						break;
+					case error.POSITION_UNAVAILABLE:
+						vex.dialog.alert ('Location information is unavailable.');	
+						break;
+					case error.TIMEOUT:
+						vex.dialog.alert ('The request to get user location timed out.');
+						break;
+					case error.UNKNOWN_ERROR:
+						vex.dialog.alert ('An unknown error occurred.');
+						break;
+				}
+			}
+
+			getLocation ();
+		},
+
 		
 		// Function to add a geolocation control
 		// https://www.mapbox.com/mapbox-gl-js/example/locate-user/
@@ -1811,7 +1863,7 @@ var layerviewer = (function ($) {
 					alternativeGeolocate.onclick = function (e) {
 						e.preventDefault ();
 						e.stopPropagation ();
-						_geolocate.trigger ();
+						layerviewer.triggerGeolocation ();
 					};
 				}
 
