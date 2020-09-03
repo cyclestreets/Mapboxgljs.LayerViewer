@@ -181,7 +181,16 @@ var layerviewer = (function ($) {
 		hideExtraMapControls: false,
 
 		// Custom data loading spinner selector for layerviewer. For layer specific spinner, should contain layerId
-		dataLoadingSpinnerSelector: '.selector li. {layerId} img.loading'
+		dataLoadingSpinnerSelector: '.selector li. {layerId} img.loading',
+
+		// Custom panning control element
+		panningControlElement: '<p><a id="panning" href="#">Panning: disabled</a></p>',
+
+		// Custom panning control element insertion point (will be prepended to this element)
+		panningControlInsertionElement: '#styleswitcher ul',
+
+		// Determine whether to enable layerviewer's text based panning status indication
+		setPanningIndicator: true,
 	};
 	
 	// Layer definitions, which should be overriden by being supplied as an argument by the calling application
@@ -1628,8 +1637,7 @@ var layerviewer = (function ($) {
 			if (!_isTouchDevice) {return;}
 			
 			// Add panning control
-			var html = '<p><a id="panning" href="#">Panning: disabled</a></p>';
-			$('#styleswitcher ul').prepend (html);
+			$(_settings.panningControlInsertionElement).prepend (_settings.panningControlElement);
 			
 			// Handle panning control UI
 			layerviewer.controlPanning ();
@@ -1681,6 +1689,9 @@ var layerviewer = (function ($) {
 		// Set text for panning control
 		setPanningIndicator: function ()
 		{
+			// Don't run if disabled
+			if (!_settings.setPanningIndicator){return;}
+
 			var text = (_panningEnabled ? 'Panning: enabled' : 'Panning: disabled');
 			$('#panning').text (text);
 		},
