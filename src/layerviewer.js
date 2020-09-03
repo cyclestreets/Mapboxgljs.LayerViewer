@@ -357,7 +357,7 @@ var layerviewer = (function ($) {
 	var _message = {};
 	var _geolocate = null; // Store the geolocation element
 	var _geolocationAvailable = false; // Store geolocation availability, to automatically disable location tracking if user has not selected the right permissions
-	
+	var _customPanningIndicatorAction = false; // Custom function that can be run when toggling panning on and off, i.e. to control the visual state of a custom panning button
 	
 	return {
 		
@@ -1661,6 +1661,14 @@ var layerviewer = (function ($) {
 		},
 		
 		
+		// Externally accessible setter to define a custom action to be run when toggling panning on and off
+		// This will replace the default action.
+		setCustomPanningIndicatorAction: function (customAction)
+		{
+			_customPanningIndicatorAction = customAction;
+		},
+
+
 		// Control panning
 		controlPanning: function ()
 		{
@@ -1689,11 +1697,13 @@ var layerviewer = (function ($) {
 		// Set text for panning control
 		setPanningIndicator: function ()
 		{
-			// Don't run if disabled
-			if (!_settings.setPanningIndicator){return;}
-
-			var text = (_panningEnabled ? 'Panning: enabled' : 'Panning: disabled');
-			$('#panning').text (text);
+			// Run custom panning indicator if available
+			if (_customPanningIndicatorAction){
+				_customPanningIndicatorAction (_panningEnabled);
+			} else {
+				var text = (_panningEnabled ? 'Panning: enabled' : 'Panning: disabled');
+				$('#panning').text (text);
+			}
 		},
 		
 		
@@ -1826,10 +1836,10 @@ var layerviewer = (function ($) {
 			function showPosition (position) 
 			{
 				layerviewer.setGeolocationAvailability (true);
+				
+				// If there is a success callback
 				if (onSuccess){
 					onSuccess ();
-				} else {
-					//_map.fitBounds (e.bounds);
 				}
 			}
 
