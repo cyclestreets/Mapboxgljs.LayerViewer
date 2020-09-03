@@ -197,6 +197,9 @@ var layerviewer = (function ($) {
 
 		// Whether to use MapboxGL JS's default geolocation control
 		hideDefaultGeolocationControl: false,
+
+		// Load Tabs class toggle, used when loading a parameterised URL. This CSS class will be added to the enabled parent li elements (i.e., 'checked', or 'selected')
+		loadTabsClassToggle: 'selected',
 	};
 	
 	// Layer definitions, which should be overriden by being supplied as an argument by the calling application
@@ -672,6 +675,7 @@ var layerviewer = (function ($) {
 						_embedMode = true;
 					}
 				}
+
 			}
 			
 			// Obtain query string parameters, which are used for presetting form values
@@ -868,8 +872,7 @@ var layerviewer = (function ($) {
 		// Function to load the tabs
 		loadTabs: function (defaultLayers)
 		{
-			return; // While integrating; this should be revisited later
-		
+			
 			// Set each default layer and add background
 			$.each (defaultLayers, function (index, layerId) {
 				
@@ -880,6 +883,9 @@ var layerviewer = (function ($) {
 				$('nav input#show_' + layerId).click();
 			});
 			
+			//return; // While integrating; this should be revisited later
+			
+			/*
 			// Enable tabbing of main menu
 			$('nav').tabs();
 			
@@ -888,12 +894,13 @@ var layerviewer = (function ($) {
 				var index = $('nav li.' + defaultLayers[0]).index();
 				$('nav').tabs('option', 'active', index);
 			}
+			*/
 			
 			// Handle selection/deselection of section checkboxes
-			$('nav #selector input').change (function() {
+			$('nav #selector input').change (function () {
 				
 				// Add background highlight to this tab
-				$(this).parent('li').toggleClass('selected', this.checked);
+				$(this).parent ('li').toggleClass (_settings.loadTabsClassToggle, this.checked);
 				
 				// Update the URL using HTML5 History pushState
 				layerviewer.determineLayerStatus ();
@@ -901,15 +908,14 @@ var layerviewer = (function ($) {
 				
 				// If enabling, switch to its tab contents (controls)
 				if (this.checked) {
-					var index = $(this).parent().index();
+					var index = $(this).parent ().index ();
 					$('nav').tabs('option', 'active', index);
 				}
 			});
 			
 			// Allow double-clicking of each menu item (surrounding each checkbox) as implicit selection of its checkbox
-			$('nav #selector li a').dblclick(function() {
-				$(this).parent().find('input').click();
-				
+			$('nav #selector li a').dblclick(function () {
+				$(this).parent ().find ('input').click ();
 			});
 			
 			// Allow any form change within a layer as implicit selection of its checkbox
@@ -927,7 +933,7 @@ var layerviewer = (function ($) {
 		{
 			var layerId = $(changedInputPath).closest('#sections > div').attr('id');	// Assumes #sections contains layer DIVs directly
 			if ($('nav input#show_' + layerId).prop ('checked') != true) {
-				$('nav input#show_' + layerId).click();
+				$('nav input#show_' + layerId).click ();
 			}
 		},
 		
