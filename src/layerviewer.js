@@ -1774,7 +1774,10 @@ var layerviewer = (function ($) {
 
 		// Function to ascertain the geolocation status of the brwoser
 		// Accepts an onSuccess function to be called if geolocation is found
-		checkForGeolocationStatus (onSuccess)
+		// If the geolocationAvailability flag has been set to false, this function will not run
+		// However, if an argument (force = boolean) is set to true, it will try nevertheless to find a location
+		// force = true should be used carefully to avoid displaying repetitive error messages to the user
+		checkForGeolocationStatus (onSuccess = false, force = false, surpressErrorMessages = false)
 		{
 			// On startup, check the geolocation status of the browser
 			function getLocation () {
@@ -1788,39 +1791,55 @@ var layerviewer = (function ($) {
 				if (navigator.geolocation) {
 					navigator.geolocation.getCurrentPosition (showPosition, showError, options);
 				} else {
-					vex.dialog.alert ('Geolocation is not supported by this browser.');
+					if (!surpressErrorMessages) {
+						vex.dialog.alert ('Geolocation is not supported by this browser.');
+					}
 					routing.setGeolocationAvailability (false);
 				}
 			}
 
 			function showPosition (position) {
-				console.log (position);
+				console.log (position); //position.coords.latitude, position.coords.longitude
 				routing.setGeolocationAvailability (true);
-				onSuccess ();
+				if (onSuccess){
+					onSuccess ();
+				} else {
+					//_map.fitBounds (e.bounds);
+				}
 			}
 
-			function showError (error) {
-				// Set geolocation as unavailable 
-				routing.setGeolocationAvailability (false);
-				
-				// Display a user message
+			function showError (error) {				
+				// Display a user message and in certain cases set geolocation availability flag to false
 				switch (error.code) {
 					case error.PERMISSION_DENIED:
-						vex.dialog.alert ('Please allow the browser to access your location, by refreshing the page or changing privacy settings.');	
+						routing.setGeolocationAvailability (false);
+						if (!surpressErrorMessages) {
+							vex.dialog.alert ('Please allow the browser to access your location, by refreshing the page or changing privacy settings.');	
+						}
 						break;
 					case error.POSITION_UNAVAILABLE:
-						vex.dialog.alert ('Location information is unavailable.');	
+						if (!surpressErrorMessages) {
+							vex.dialog.alert ('Location information is unavailable.');
+						}
 						break;
 					case error.TIMEOUT:
-						vex.dialog.alert ('The request to get user location timed out.');
+						if (!surpressErrorMessages) {
+							vex.dialog.alert ('The request to get user location timed out.');
+						}
 						break;
 					case error.UNKNOWN_ERROR:
-						vex.dialog.alert ('An unknown error occurred.');
+						if (!surpressErrorMessages) {
+							vex.dialog.alert ('An unknown error occurred.');
+						}
 						break;
 				}
 			}
 
-			getLocation ();
+			if (routing.getGeolocationAvailability () || force){
+				getLocation ();
+			} else {
+				return false;
+			}
 		},
 
 		
@@ -1853,25 +1872,21 @@ var layerviewer = (function ($) {
 				routing.setGeolocationAvailability (false);
 			});
 
-			
+			// Click handler for new geolocation element
 			if (geolocationElementId) {
-				var alternativeGeolocate = document.getElementById (geolocationElementId);
-				if (!navigator.geolocation) {
-					alternativeGeolocate.innerHTML = 'Geolocation is not available';
-					routing.setGeolocationAvailability (false);
-				} else {
-					alternativeGeolocate.onclick = function (e) {
-						e.preventDefault ();
-						e.stopPropagation ();
-						layerviewer.triggerGeolocation ();
-					};
-				}
+				$('#' + geolocationElementId).on ('click', function (e){
+					e.preventDefault ();
+					e.stopPropagation ();
+					layerviewer.triggerGeolocation ();
+				});
 
 				_map.on ('locationfound', function(e) {
 					routing.setGeolocationAvailability (true);
+					console.log (e);
 					_map.fitBounds (e.bounds);
 				});
 
+				// Hide default control
 				$('.mapboxgl-ctrl').hide ();
 			}
 		},
