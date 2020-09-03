@@ -2723,6 +2723,11 @@ var layerviewer = (function ($) {
 		renderDetailsHtml: function (feature, template /* optional */, layerId)
 		{
 
+			// If template is an object, get the HTML
+			if (template.popupHtmlSelector) {
+				template = $(template.popupHtmlSelector).prop ('outerHTML');
+			}
+			
 			// Use a template if this has been defined in the layer config
 			var html;
 			if (template) {
