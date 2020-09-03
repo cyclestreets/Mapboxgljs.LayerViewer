@@ -191,6 +191,9 @@ var layerviewer = (function ($) {
 
 		// Determine whether to enable layerviewer's text based panning status indication
 		setPanningIndicator: true,
+
+		// Whether to use MapboxGL JS's default navigation controls
+		useDefaultNavigationControls: true,
 	};
 	
 	// Layer definitions, which should be overriden by being supplied as an argument by the calling application
@@ -357,7 +360,9 @@ var layerviewer = (function ($) {
 	var _message = {};
 	var _geolocate = null; // Store the geolocation element
 	var _geolocationAvailable = false; // Store geolocation availability, to automatically disable location tracking if user has not selected the right permissions
-	var _customPanningIndicatorAction = false; // Custom function that can be run when toggling panning on and off, i.e. to control the visual state of a custom panning button
+	var _customPanningIndicatorAction = false; // Custom function that can be run on click action panning on and off, i.e. to control the visual state of a custom panning button
+	var _customGeolocationButtonAction = false; // Custom function that can be run on click event on geolocation control, i.e. to control the visual state of a custom geolocation control
+	var _geolocationEnabled = false; // Track whether the Mapbox GL JS geolocation function is enabled
 	
 	return {
 		
@@ -1432,7 +1437,9 @@ var layerviewer = (function ($) {
 			_currentStyleId = defaultTileLayer;
 			
 			// Enable zoom in/out buttons
-			_map.addControl (new mapboxgl.NavigationControl (), 'bottom-right');
+			if (_settings.useDefaultNavigationControls) {
+				_map.addControl (new mapboxgl.NavigationControl (), 'bottom-right');
+			}
 			
 			// Add buildings
 			layerviewer.addBuildings ();
@@ -1894,13 +1901,12 @@ var layerviewer = (function ($) {
 			_geolocate = new mapboxgl.GeolocateControl ({
 				positionOptions: {
 					enableHighAccuracy: true,
-					timeout: 2000
 				},
 				trackUserLocation: trackUser
 			});
 			
 			// Add to the map
-			_map.addControl (_geolocate, 'top-left');
+			_map.addControl (_geolocate, 'top-right');
 			
 			// Disable tilt on click
 			_geolocate.on ('geolocate', function () {
@@ -1913,7 +1919,12 @@ var layerviewer = (function ($) {
 				$('#' + geolocationElementId).on ('click', function (e){
 					e.preventDefault ();
 					e.stopPropagation ();
+					
 					layerviewer.triggerGeolocation ();
+
+					if (_customGeolocationButtonAction){
+						_customGeolocationButtonAction ();
+					}
 				});
 
 				_map.on ('locationfound', function(e) {
@@ -1923,10 +1934,16 @@ var layerviewer = (function ($) {
 				});
 
 				// Hide default control
-				$('.mapboxgl-ctrl').hide ();
+				//$('.mapboxgl-ctrl').hide ();
 			}
 		},
 
+		
+		// Setter for custom geolocation button action
+		setCustomGeolocationButtonAction: function (customAction)
+		{
+			_customGeolocationButtonAction = customAction;
+		},
 
 		// Trigger geolocation, accessible externally
 		triggerGeolocation: function () 
