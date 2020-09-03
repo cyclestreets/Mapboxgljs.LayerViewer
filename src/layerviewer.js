@@ -347,6 +347,7 @@ var layerviewer = (function ($) {
 	var _betaMode = false;
 	var _message = {};
 	var _geolocate = null; // Store the geolocation element
+	var _geolocationAvailable = false; // Store geolocation availability, to automatically disable location tracking if user has not selected the right permissions
 	
 	
 	return {
@@ -1770,6 +1771,18 @@ var layerviewer = (function ($) {
 				self.dpPoint = null;
 			});
 		},
+
+
+		// Set geolocation availability
+		setGeolocationAvailability: function (boolean) {
+			_geolocationAvailable = boolean;
+		},
+
+
+		// Get geolocation availability
+		getGeolocationAvailability: function () {
+			return _geolocationAvailable;
+		},
 		
 
 		// Function to ascertain the geolocation status of the brwoser
@@ -1777,7 +1790,7 @@ var layerviewer = (function ($) {
 		// If the geolocationAvailability flag has been set to false, this function will not run
 		// However, if an argument (force = boolean) is set to true, it will try nevertheless to find a location
 		// force = true should be used carefully to avoid displaying repetitive error messages to the user
-		checkForGeolocationStatus (onSuccess = false, force = false, surpressErrorMessages = false)
+		checkForGeolocationStatus (onSuccess = false, onError = false, force = false, surpressErrorMessages = false)
 		{
 			// On startup, check the geolocation status of the browser
 			function getLocation () {
@@ -1794,25 +1807,32 @@ var layerviewer = (function ($) {
 					if (!surpressErrorMessages) {
 						vex.dialog.alert ('Geolocation is not supported by this browser.');
 					}
-					routing.setGeolocationAvailability (false);
+					layerviewer.setGeolocationAvailability (false);
 				}
 			}
 
 			function showPosition (position) {
 				console.log (position); //position.coords.latitude, position.coords.longitude
-				routing.setGeolocationAvailability (true);
+				layerviewer.setGeolocationAvailability (true);
 				if (onSuccess){
 					onSuccess ();
 				} else {
 					//_map.fitBounds (e.bounds);
 				}
+
+				
 			}
 
 			function showError (error) {				
+				// If there is an error callback
+				if (onError) {
+					onError ();
+				}
+				
 				// Display a user message and in certain cases set geolocation availability flag to false
 				switch (error.code) {
 					case error.PERMISSION_DENIED:
-						routing.setGeolocationAvailability (false);
+						layerviewer.setGeolocationAvailability (false);
 						if (!surpressErrorMessages) {
 							vex.dialog.alert ('Please allow the browser to access your location, by refreshing the page or changing privacy settings.');	
 						}
@@ -1835,7 +1855,8 @@ var layerviewer = (function ($) {
 				}
 			}
 
-			if (routing.getGeolocationAvailability () || force){
+			// Main entrance to this function
+			if (layerviewer.getGeolocationAvailability () || force){
 				getLocation ();
 			} else {
 				return false;
@@ -1869,7 +1890,7 @@ var layerviewer = (function ($) {
 			// Set an event listener that fires when an error event occurs.
 			_geolocate.on ('error', function () {
 				console.log ('A geolocation error event has occurred.')
-				routing.setGeolocationAvailability (false);
+				layerviewer.setGeolocationAvailability (false);
 			});
 
 			// Click handler for new geolocation element
@@ -1881,7 +1902,7 @@ var layerviewer = (function ($) {
 				});
 
 				_map.on ('locationfound', function(e) {
-					routing.setGeolocationAvailability (true);
+					layerviewer.setGeolocationAvailability (true);
 					console.log (e);
 					_map.fitBounds (e.bounds);
 				});
@@ -1896,7 +1917,7 @@ var layerviewer = (function ($) {
 		triggerGeolocation: function () 
 		{
 			// Display error message if we haven't got permission
-			if (!routing.getGeolocationAvailability ()) {
+			if (!layerviewer.getGeolocationAvailability ()) {
 				vex.dialog.alert ('Please allow the browser to access your location, by refreshing the page or changing privacy settings.');	
 			}
 
