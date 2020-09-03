@@ -194,6 +194,9 @@ var layerviewer = (function ($) {
 
 		// Whether to use MapboxGL JS's default navigation controls
 		useDefaultNavigationControls: true,
+
+		// Whether to use MapboxGL JS's default geolocation control
+		hideDefaultGeolocationControl: false,
 	};
 	
 	// Layer definitions, which should be overriden by being supplied as an argument by the calling application
@@ -1900,7 +1903,6 @@ var layerviewer = (function ($) {
 			// Create a tracking control
 			_geolocate = new mapboxgl.GeolocateControl ({
 				positionOptions: {
-					timeout: 2000,
 					enableHighAccuracy: true,
 				},
 				trackUserLocation: trackUser
@@ -1928,15 +1930,13 @@ var layerviewer = (function ($) {
 					}
 				});
 
-				_map.on ('locationfound', function(e) {
-					layerviewer.setGeolocationAvailability (true);
-					_map.fitBounds (e.bounds);
-				});
-
-				// Hide default control
-				//$('.mapboxgl-ctrl').hide ();
+				if (_settings.hideDefaultGeolocationControl) {
+					// Hide default control
+					$('.mapboxgl-ctrl-geolocate').hide ();
+				}
 			}
 
+			// Listener for setting geolocation availability and setting map bounds
 			_map.on ('locationfound', function(e) {
 				layerviewer.setGeolocationAvailability (true);
 				_map.fitBounds (e.bounds);
