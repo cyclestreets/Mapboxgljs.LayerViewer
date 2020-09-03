@@ -1846,7 +1846,7 @@ var layerviewer = (function ($) {
 				
 				// If there is a success callback
 				if (onSuccess){
-					onSuccess ();
+					onSuccess (position);
 				}
 			}
 
