@@ -1797,15 +1797,16 @@ var layerviewer = (function ($) {
 		
 
 		// Function to ascertain the geolocation status of the brwoser
-		// Accepts an onSuccess function to be called if geolocation is found
-		// If the geolocationAvailability flag has been set to false, this function will not run
-		// However, if an argument (force = boolean) is set to true, it will try nevertheless to find a location
-		// force = true should be used carefully to avoid displaying repetitive error messages to the user
+		// If the class geolocationAvailability flag has been set to false, this function will not attempt to geolocate
+		// @param onSuccess: function to be called if geolocation is found
+		// @param onError: function to be called if geolocation is unavailable, or an error occurs doing search
+		// @param force: boolean determining whether to force find a location (ignore geolocationAvailability flag)
+		// @param surpressErrorMessages: boolean determining whether to show user error messages and prompts (i.e. to change privacy settings)
 		checkForGeolocationStatus (onSuccess = false, onError = false, force = false, surpressErrorMessages = false)
 		{
 			// On startup, check the geolocation status of the browser
-			function getLocation () {
-				
+			function getLocation () 
+			{
 				var options = {
 					enableHighAccuracy: false,
 					timeout: 2000,
@@ -1822,19 +1823,18 @@ var layerviewer = (function ($) {
 				}
 			}
 
-			function showPosition (position) {
-				console.log (position); //position.coords.latitude, position.coords.longitude
+			function showPosition (position) 
+			{
 				layerviewer.setGeolocationAvailability (true);
 				if (onSuccess){
 					onSuccess ();
 				} else {
 					//_map.fitBounds (e.bounds);
 				}
-
-				
 			}
 
-			function showError (error) {				
+			function showError (error) 
+			{				
 				// If there is an error callback
 				if (onError) {
 					onError ();
@@ -1875,7 +1875,7 @@ var layerviewer = (function ($) {
 		},
 
 		
-		// Function to add a geolocation control
+		// Function to add a geolocation control and associated events
 		// https://www.mapbox.com/mapbox-gl-js/example/locate-user/
 		// https://github.com/mapbox/mapbox-gl-js/issues/5464
 		geolocation: function (geolocationElementId = false, trackUser = false)
@@ -1896,12 +1896,6 @@ var layerviewer = (function ($) {
 			_geolocate.on ('geolocate', function () {
 				_panningEnabled = false;
 				layerviewer.setPanningIndicator ();
-			});
-
-			// Set an event listener that fires when an error event occurs.
-			_geolocate.on ('error', function () {
-				console.log ('A geolocation error event has occurred.')
-				layerviewer.setGeolocationAvailability (false);
 			});
 
 			// Click handler for new geolocation element
