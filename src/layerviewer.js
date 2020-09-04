@@ -200,6 +200,9 @@ var layerviewer = (function ($) {
 
 		// Load Tabs class toggle, used when loading a parameterised URL. This CSS class will be added to the enabled parent li elements (i.e., 'checked', or 'selected')
 		loadTabsClassToggle: 'selected',
+
+		// Use jQuery tabs to tabify main menu
+		useJqueryTabsRendering: true,
 	};
 	
 	// Layer definitions, which should be overriden by being supplied as an argument by the calling application
@@ -877,24 +880,23 @@ var layerviewer = (function ($) {
 			$.each (defaultLayers, function (index, layerId) {
 				
 				// Add background highlight to this tab
-				$('nav li.' + layerId).addClass('selected');
+				$('nav li.' + layerId).addClass(_settings.loadTabsClassToggle);
 				
 				// Enable checkbox
 				$('nav input#show_' + layerId).click();
 			});
 			
-			//return; // While integrating; this should be revisited later
-			
-			/*
-			// Enable tabbing of main menu
-			$('nav').tabs();
-			
-			// If a default tab is defined (or several, in which case use the first), switch to its contents (controls); see: https://stackoverflow.com/a/7916955/180733
-			if (defaultLayers[0]) {
-				var index = $('nav li.' + defaultLayers[0]).index();
-				$('nav').tabs('option', 'active', index);
+			if (_settings.useJqueryTabsRendering) 
+			{
+				// Enable tabbing of main menu
+				$('nav').tabs();
+				
+				// If a default tab is defined (or several, in which case use the first), switch to its contents (controls); see: https://stackoverflow.com/a/7916955/180733
+				if (defaultLayers[0]) {
+					var index = $('nav li.' + defaultLayers[0]).index();
+					$('nav').tabs('option', 'active', index);
+				}
 			}
-			*/
 			
 			// Handle selection/deselection of section checkboxes
 			$('nav #selector input').change (function () {
