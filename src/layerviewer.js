@@ -908,10 +908,12 @@ var layerviewer = (function ($) {
 				layerviewer.determineLayerStatus ();
 				layerviewer.updateUrl ();
 				
-				// If enabling, switch to its tab contents (controls)
-				if (this.checked) {
-					var index = $(this).parent ().index ();
-					$('nav').tabs('option', 'active', index);
+				if (_settings.useJqueryTabsRendering) {
+					// If enabling, switch to its tab contents (controls)
+					if (this.checked) {
+						var index = $(this).parent ().index ();
+						$('nav').tabs('option', 'active', index);
+					}
 				}
 			});
 			
