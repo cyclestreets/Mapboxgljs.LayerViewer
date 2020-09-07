@@ -420,7 +420,7 @@ var layerviewer = (function ($) {
 			
 			// Parse the URL
 			var urlParameters = layerviewer.parseUrl ();
-			
+
 			// Set the initial location and tile layer
 			var defaultLocation = (urlParameters.defaultLocation || _settings.defaultLocation);
 			var defaultTileLayer = (urlParameters.defaultTileLayer || _settings.defaultTileLayer);
@@ -520,6 +520,9 @@ var layerviewer = (function ($) {
 					}
 				});
 			});
+
+			// If an ID is supplied in the URL, load it 
+			layerviewer.loadIdFromUrl (urlParameters);
 			
 			// Toggle map data layers on/off when checkboxes changed
 			$('.selector input[type="checkbox"]').change (function(event) {
@@ -682,13 +685,18 @@ var layerviewer = (function ($) {
 				// Register the form parameters
 				urlParameters.formParameters = formParameters;
 				
+				// Register non-form components (i.e., Photomap popup)
+				if (pathComponents[1]) {
+					urlParameters.id = pathComponents[1];
+				}	
+				
 				// Obtain embed mode if present
+				// #¡# Needs to recognise whether embed is the last (but not the first) parameter
 				if (pathComponents[1]) {
 					if (pathComponents[1] == 'embed') {
 						_embedMode = true;
 					}
 				}
-
 			}
 			
 			// Obtain query string parameters, which are used for presetting form values
@@ -2216,7 +2224,59 @@ var layerviewer = (function ($) {
 				});
 			}
 		},
-		
+
+
+		// Function to load IDs from URL parameters
+		loadIdFromUrl: function (urlParameters)
+		{
+			// Read the variables to obtain section and ID
+			// #!# This should eventually loop through each section and get all IDs
+			var layerId = urlParameters.sections[0];
+			var id = urlParameters.id;
+
+			// Do not run if no definition of the functionality
+			if (!_layerConfig[layerId].hasOwnProperty ('apiCallId')) {return;}
+
+			// Do not run if there is no URL parameter
+			if (!urlParameters.hasOwnProperty ('id')) {return;}
+			
+			// Start API data parameters and add in the ID
+			var apiData = layerviewer.assembleBaseApiData (layerId, true);
+			apiData['id'] = id;
+
+			// Determine the API URL to use
+			var apiUrl = _layerConfig[layerId].apiCallId.apiCall;
+			if (! (/https?:\/\//).test (apiUrl)) {
+				apiUrl = _settings.apiBaseUrl + apiUrl;
+			}
+			
+			// Get the data via AJAX
+			$.ajax ({
+				dataType: 'json',
+				type: 'GET',
+				url: apiUrl,
+				data: apiData,
+				success: function (response) 
+				{
+					// If there is a popup callback, create the popup
+					if (_layerConfig[layerId].hasOwnProperty ('popupCallback')) {
+						
+						// Generate popupHTML
+						var template = _layerConfig[layerId].popupHtml;
+						var popupContentHtml = layerviewer.renderDetailsHtml (response.features[0], template, layerId);
+
+						// Display the popup using the callback
+						_layerConfig[layerId].popupCallback (popupContentHtml, _layerConfig[layerId].apiCallId.popupAnimation);
+					}
+
+					// If there is no popup callback, the popup should be generated with standard HTML
+					// #!# It is assumed that the main API call will create a marker, as here we only create the popup
+				}
+			});
+
+			
+		},
+
 		
 		// Marker setting handling
 		setMarkerHandling: function (layerId)
