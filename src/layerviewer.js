@@ -296,6 +296,17 @@ var layerviewer = (function ($) {
 			
 			// Polygon style; currently supported values are 'grid' (blue boxes with dashed lines, intended for tessellating data), 'green', 'red', 'blue'
 			polygonStyle: 'grid',
+
+			// A secondary API call, used to get a specific ID
+			apiCallId: {
+				apiCall: '/path/to/secondaryApi',
+				idParameter: 'id',
+				apiFixedParameters: {
+					key: 'value',
+					foo: 'bar'			
+				},
+				popupAnimation: 'true',
+			},
 			
 			// Code for popups; placeholders can be used to reference data in the GeoJSON; if using sublayerParameter, this is specified as a hashmap
 			popupHtml:
