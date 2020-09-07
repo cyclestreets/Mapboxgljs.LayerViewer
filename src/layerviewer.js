@@ -435,8 +435,7 @@ var layerviewer = (function ($) {
 			*/
 			
 			// If cookie state is provided, use that to select the sections
-			
-			var state = Cookies.getJSON('state');
+			var state = Cookies.getJSON ('state');
 			var initialLayersCookies = [];
 			if (state) {
 				$.each (state, function (layerId, parameters) {
@@ -2395,20 +2394,7 @@ var layerviewer = (function ($) {
 			}
 			
 			// Start API data parameters
-			var apiData = {};
-			
-			// Add the key, unless disabled
-			var sendApiKey = (_layerConfig[layerId].hasOwnProperty('apiKey') ? _layerConfig[layerId].apiKey : true);
-			if (sendApiKey) {
-				apiData.key = _settings.apiKey;
-			}
-			
-			// Add fixed parameters if present
-			if (_layerConfig[layerId].apiFixedParameters) {
-				$.each(_layerConfig[layerId].apiFixedParameters, function (field, value) {
-					apiData[field] = value;
-				});
-			}
+			var apiData = layerviewer.assembleBaseApiData (layerId);
 			
 			// If required for this layer, reformat a drawn boundary, leaving it unchanged for other layers
 			if (parameters.boundary) {
@@ -2553,6 +2539,26 @@ var layerviewer = (function ($) {
 					return layerviewer.showCurrentData (layerId, data, apiData, requestSerialised);
 				}
 			});
+		},
+
+		assembleBaseApiData (layerId) 
+		{
+			var apiData = {};
+	
+			// Add the key, unless disabled
+			var sendApiKey = (_layerConfig[layerId].hasOwnProperty ('apiKey') ? _layerConfig[layerId].apiKey : true);
+			if (sendApiKey) {
+				apiData.key = _settings.apiKey;
+			}
+	
+			// Add fixed parameters if present
+			if (_layerConfig[layerId].apiFixedParameters) {
+				$.each(_layerConfig[layerId].apiFixedParameters, function (field, value) {
+					apiData[field] = value;
+				});
+			}
+			
+			return apiData;
 		},
 
 
