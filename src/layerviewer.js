@@ -2232,6 +2232,8 @@ var layerviewer = (function ($) {
 			// Read the variables to obtain section and ID
 			// #!# This should eventually loop through each section and get all IDs
 			var layerId = urlParameters.sections[0];
+			if (!layerId) {return;}
+			
 			var id = urlParameters.id;
 
 			// Do not run if no definition of the functionality
@@ -2273,8 +2275,6 @@ var layerviewer = (function ($) {
 					// #!# It is assumed that the main API call will create a marker, as here we only create the popup
 				}
 			});
-
-			
 		},
 
 		
@@ -4026,6 +4026,4 @@ var layerviewer = (function ($) {
 			return s.join(dec);
 		}
 	};
-	
 } (jQuery));
-
