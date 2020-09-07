@@ -2612,7 +2612,10 @@ var layerviewer = (function ($) {
 			});
 		},
 
-		assembleBaseApiData (layerId) 
+
+		// Function to assemble the base API data by reading the apiCallFixedParameters from the layer definitions
+		// @param apiCallId: boolean. The function will attempt to use apiCallId properties instead
+		assembleBaseApiData (layerId, apiCallId = false) 
 		{
 			var apiData = {};
 	
@@ -2623,12 +2626,19 @@ var layerviewer = (function ($) {
 			}
 	
 			// Add fixed parameters if present
-			if (_layerConfig[layerId].apiFixedParameters) {
-				$.each(_layerConfig[layerId].apiFixedParameters, function (field, value) {
-					apiData[field] = value;
-				});
+			if (apiCallId) {
+				if (_layerConfig[layerId].apiCallId.apiFixedParameters) {
+					$.each(_layerConfig[layerId].apiCallId.apiFixedParameters, function (field, value) {
+						apiData[field] = value;
+					});
+				}
+			} else {
+				if (_layerConfig[layerId].apiFixedParameters) {
+					$.each(_layerConfig[layerId].apiFixedParameters, function (field, value) {
+						apiData[field] = value;
+					});
+				}
 			}
-			
 			return apiData;
 		},
 
