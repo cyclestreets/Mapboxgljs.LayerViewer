@@ -545,7 +545,7 @@ var layerviewer = (function ($) {
 		toggleDataLayer: function (target)
 		{
 			// Add class "enabled" to display the eye icon
-			$(target).closest('li').toggleClass ('enabled');
+			$(target).closest('li').toggleClass (_settings.loadTabsClassToggle);
 			var layerId = target.id.replace('show_', '');
 			if (target.checked) {
 				_layers[layerId] = true;
