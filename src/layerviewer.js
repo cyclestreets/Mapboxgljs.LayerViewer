@@ -1939,10 +1939,12 @@ var layerviewer = (function ($) {
 			_map.addControl (_geolocate, 'top-right');
 			
 			// Disable tilt on click
-			_geolocate.on ('geolocate', function () {
+			/*
+			_geolocate.on ('geolocate', function (event) {
 				_panningEnabled = false;
 				layerviewer.setPanningIndicator ();
 			});
+			*/
 
 			// Click handler for new geolocation element
 			if (geolocationElementId) {
