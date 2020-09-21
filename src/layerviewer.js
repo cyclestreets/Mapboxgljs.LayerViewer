@@ -557,7 +557,6 @@ var layerviewer = (function ($) {
 				}
 				layerviewer.removeLayer (layerId);
 				layerviewer.clearLegend ();
-				layerviewer.setStateCookie ();	// Update to catch deletion of cache entry
 			}
 		},
 		
@@ -2813,7 +2812,6 @@ var layerviewer = (function ($) {
 		// Function to construct the popup/overlay content HTML
 		renderDetailsHtml: function (feature, template /* optional */, layerId)
 		{
-
 			// If template is an object, get the HTML
 			if (template.popupHtmlSelector) {
 				template = $(template.popupHtmlSelector).prop ('outerHTML');
@@ -3635,6 +3633,15 @@ var layerviewer = (function ($) {
 		// Function to remove a layer
 		removeLayer: function (layerId)
 		{
+			// Remove the layerId from the _requestCache object
+			// This is performing a similar task to the requestSerialised block in getData
+			if (_requestCache.hasOwnProperty (layerId)) {
+				delete _requestCache[layerId];
+			}
+
+			// Cache this deletion
+			layerviewer.setStateCookie ();
+
 			// If the layer is a tile layer rather than an API call, remove it and end
 			if (_layerConfig[layerId].tileLayer) {
 				if (_tileOverlayLayer) {
