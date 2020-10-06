@@ -1409,11 +1409,10 @@ var layerviewer = (function ($) {
 		
 		// Function to create a message area, and provide methods to manipulate it
 		messageArea: function ()
-		{
-			if (_settings.hideExtraMapControls) {return;}
-			
+		{	
 			// Create the control
 			layerviewer.createControl ('message', 'bottom-left');
+			$('#message').hide ();
 			
 			// Register a method to set and show the message
 			_message.show = function (html) {
