@@ -382,7 +382,6 @@ var layerviewer = (function ($) {
 	var _geolocationAvailable = false; // Store geolocation availability, to automatically disable location tracking if user has not selected the right permissions
 	var _customPanningIndicatorAction = false; // Custom function that can be run on click action panning on and off, i.e. to control the visual state of a custom panning button
 	var _customGeolocationButtonAction = false; // Custom function that can be run on click event on geolocation control, i.e. to control the visual state of a custom geolocation control
-	var _geolocationEnabled = false; // Track whether the Mapbox GL JS geolocation function is enabled
 	
 	return {
 		
