@@ -365,8 +365,6 @@ var layerviewer = (function ($) {
 	var _currentStyleId;
 	var _markers = [];
 	var _popups = [];
-	var _action;
-	var _currentDataLayer = {};
 	var _tileOverlayLayer = false;
 	var _isTouchDevice;
 	var _panningEnabled = false;
