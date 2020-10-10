@@ -176,34 +176,34 @@ var layerviewer = (function ($) {
 		
 		// Password protection, as an SHA-256 hash
 		password: false,
-
+		
 		// Hide default LayerViewer message area and legend
 		hideExtraMapControls: false,
-
+		
 		// Custom data loading spinner selector for layerviewer. For layer specific spinner, should contain layerId
 		dataLoadingSpinnerSelector: '.selector li. {layerId} img.loading',
 		
-		// Style switcher container, as a selector path
-		styleSwitcherContainer: '#styleswitcher',
+		// Style switcher, either false to create a default Leaflet-style basic switcher, or a selector path for a div that will contain a graphical switcher
+		styleSwitcherGraphical: false,
 		
 		// Custom panning control element
 		panningControlElement: '<p><a id="panning" href="#">Panning: disabled</a></p>',
-
+		
 		// Custom panning control element insertion point (will be prepended to this element)
 		panningControlInsertionElement: '#styleswitcher ul',
-
+		
 		// Determine whether to enable layerviewer's text based panning status indication
 		setPanningIndicator: true,
-
+		
 		// Whether to use MapboxGL JS's default navigation controls
 		useDefaultNavigationControls: true,
-
+		
 		// Whether to use MapboxGL JS's default geolocation control
 		hideDefaultGeolocationControl: false,
-
+		
 		// Load Tabs class toggle, used when loading a parameterised URL. This CSS class will be added to the enabled parent li elements (i.e., 'checked', or 'selected')
 		loadTabsClassToggle: 'selected',
-
+		
 		// Use jQuery tabs to tabify main menu
 		useJqueryTabsRendering: true,
 	};
@@ -1974,6 +1974,12 @@ var layerviewer = (function ($) {
 		// https://bl.ocks.org/ryanbaumann/7f9a353d0a1ae898ce4e30f336200483/96bea34be408290c161589dcebe26e8ccfa132d7
 		styleSwitcher: function ()
 		{
+			// Add style switcher UI, unless creating a graphical container in a defined container
+			if (!_settings.styleSwitcherGraphical) {
+				var containerId = 'styleswitcher';
+				layerviewer.createControl (containerId, 'bottom-left', 'expandable');
+			}
+			
 			// Load a style from the cookie, if it exists
 			if (Cookies.get ('mapstyle')) {
 				var styleId = Cookies.get ('mapstyle');
@@ -1987,28 +1993,33 @@ var layerviewer = (function ($) {
 				layerviewer.styleChanged ();
 			}
 			
+			// Determine the container path
+			var container = _settings.styleSwitcherGraphical || '#' + containerId;
+			
 			// Construct HTML for style switcher
-			var styleSwitcherHtml = '<ul id="styleswitcher">';
+			var styleSwitcherHtml = '<ul>';
 			var name;
 			var description;
 			var image;
+			var labelContent;
 			$.each (_styles, function (styleId, style) {
 				name = (_settings.tileUrls[styleId].label ? _settings.tileUrls[styleId].label : layerviewer.ucfirst (styleId));
 				description = (_settings.tileUrls[styleId].description ? _settings.tileUrls[styleId].description : '');
 				image = '/images/maps-' + styleId + '.png';
+				if (_settings.styleSwitcherGraphical) {
+					labelContent  = '<img src="' + image + '" alt="' + name + '" />';
+					labelContent += '<span>' + name + '</span>';
+					labelContent += '<p>' + description + '</p>';
+				} else {
+					labelContent = '<abbr title="' + description + '">' + name + '</abbr>';
+				}
 				styleSwitcherHtml += '<li><input id="' + styleId + '" type="radio" name="styleswitcher" value="' + styleId + '"' + (styleId == _settings.defaultTileLayer ? ' checked="checked"' : '') + '>';
-				styleSwitcherHtml += '<label for="' + styleId + '">';
-				styleSwitcherHtml += '<img src="' + image + '" alt="' + name + '" />';
-				styleSwitcherHtml += '<span>' + name + '</span>';
-				styleSwitcherHtml += '<p>' + description + '</p>';
-				styleSwitcherHtml += '</label></li>';
+				styleSwitcherHtml += '<label for="' + styleId + '">' + labelContent + '</label></li>';
 			});
 			styleSwitcherHtml += '</ul>';
-			$(_settings.styleSwitcherContainer).append (styleSwitcherHtml);
+			$(container).append (styleSwitcherHtml);
 			
 			// Switch to selected style
-			var styleList = document.getElementById ('styleswitcher');
-			var inputs = styleList.getElementsByTagName ('input');
 			function switchStyle (style) {
 				var styleId = style.target.id;
 				var style = _styles[styleId];
@@ -2023,6 +2034,7 @@ var layerviewer = (function ($) {
 				// Fire an event; see: https://javascript.info/dispatch-events
 				layerviewer.styleChanged ();
 			};
+			var inputs = $(container + ' ul input');
 			for (var i = 0; i < inputs.length; i++) {
 				inputs[i].onclick = switchStyle;
 			}
