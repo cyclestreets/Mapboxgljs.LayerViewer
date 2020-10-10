@@ -1496,9 +1496,6 @@ var layerviewer = (function ($) {
 			// Add style (backround layer) switching
 			layerviewer.styleSwitcher ();
 			
-			// Enable pitch gestures
-			layerviewer.enablePitchGestures ();
-			
 			// Enable tilt and direction
 			layerviewer.enableTilt ();
 			
@@ -1802,54 +1799,6 @@ var layerviewer = (function ($) {
 		},
 		
 		
-		// Enable pitch gesture handling
-		// See: https://github.com/mapbox/mapbox-gl-js/issues/3405#issuecomment-449059564
-		enablePitchGestures: function ()
-		{
-			// Only enable on a touch device
-			if (!_isTouchDevice) {return;}
-			
-			// Two-finger gesture on mobile for pitch; see: https://github.com/mapbox/mapbox-gl-js/issues/3405#issuecomment-449059564
-			_map.on ('touchstart', function (data) {
-				if (data.points.length == 2) {
-					var diff = Math.abs(data.points[0].y - data.points[1].y);
-					if (diff <= 50) {
-						data.originalEvent.preventDefault();	//prevent browser refresh on pull down
-						_map.touchZoomRotate.disable();	 //disable native touch controls
-						_map.dragPan.disable();
-						self.dpPoint = data.point;
-						self.dpPitch = _map.getPitch();
-					}
-				}
-			});
-			
-			_map.on ('touchmove', function (data) {
-				if (self.dpPoint) {
-					data.preventDefault();
-					data.originalEvent.preventDefault();
-					var diff = (self.dpPoint.y - data.point.y) * 0.5;
-					_map.setPitch(self.dpPitch + diff);
-				}
-			});
-			
-			_map.on ('touchend', function (data) {
-				 if (self.dpPoint) {
-					_map.touchZoomRotate.enable();
-					_map.dragPan.enable();
-				}
-				self.dpPoint = null;
-			});
-			
-			_map.on ('touchcancel', function (data) {
-				if (self.dpPoint) {
-					_map.touchZoomRotate.enable();
-					_map.dragPan.enable();
-				}
-				self.dpPoint = null;
-			});
-		},
-
-
 		// Set geolocation availability
 		setGeolocationAvailability: function (boolean) {
 			_geolocationAvailable = boolean;
