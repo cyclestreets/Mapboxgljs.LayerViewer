@@ -182,7 +182,10 @@ var layerviewer = (function ($) {
 
 		// Custom data loading spinner selector for layerviewer. For layer specific spinner, should contain layerId
 		dataLoadingSpinnerSelector: '.selector li. {layerId} img.loading',
-
+		
+		// Style switcher container, as a selector path
+		styleSwitcherContainer: '#styleswitcher',
+		
 		// Custom panning control element
 		panningControlElement: '<p><a id="panning" href="#">Panning: disabled</a></p>',
 
@@ -2001,7 +2004,7 @@ var layerviewer = (function ($) {
 				styleSwitcherHtml += '</label></li>';
 			});
 			styleSwitcherHtml += '</ul>';
-			$('.panel.map-style').append (styleSwitcherHtml);
+			$(_settings.styleSwitcherContainer).append (styleSwitcherHtml);
 			
 			// Switch to selected style
 			var styleList = document.getElementById ('styleswitcher');
