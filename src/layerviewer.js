@@ -1972,8 +1972,8 @@ var layerviewer = (function ($) {
 		styleSwitcher: function ()
 		{
 			// Load a style from the cookie, if it exists
-			if (Cookies.get ('map-style')) {
-				var styleId = Cookies.get ('map-style');
+			if (Cookies.get ('mapstyle')) {
+				var styleId = Cookies.get ('mapstyle');
 				var style = _styles[styleId];
 				_map.setStyle (style);
 				
@@ -2012,7 +2012,7 @@ var layerviewer = (function ($) {
 				_map.setStyle (style);
 
 				// Save this style as a cookie
-				Cookies.set ('map-style', styleId)
+				Cookies.set ('mapstyle', styleId)
 				
 				// Set the style flag to the new ID
 				_currentStyleId = styleId;
