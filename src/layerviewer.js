@@ -1928,7 +1928,7 @@ var layerviewer = (function ($) {
 			// Create a tracking control
 			_geolocate = new mapboxgl.GeolocateControl ({
 				positionOptions: {
-					enableHighAccuracy: true,
+					enableHighAccuracy: true
 				},
 				trackUserLocation: trackUser
 			});
