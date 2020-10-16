@@ -951,7 +951,7 @@ var layerviewer = (function ($) {
 			});
 			$('form#data #sections div :text, form#data #sections div input[type="search"]').on ('input', function() {
 				layerviewer.formChangeImplicitCheckbox (this);
-                        });
+			});
 		},
 		
 		
@@ -2185,8 +2185,8 @@ var layerviewer = (function ($) {
 			}
 			
 			// Reload the data for this layer, using a rescan of the form parameters for the layer, when any change is made
-			var rescanPath = layerviewer.parseSettingSelector ('formRescanPath', layerId);
-			rescanPath += ' :input';
+			var rescanPathBase = layerviewer.parseSettingSelector ('formRescanPath', layerId);
+			var rescanPath = rescanPathBase + ' :input';
 			
 			// Also scan drawing area if enabled
 			if (_settings.enableDrawing) {
@@ -2198,8 +2198,7 @@ var layerviewer = (function ($) {
 				layerviewer.updateUrl ();
 				layerviewer.getData (layerId, _parameters[layerId]);
 			});
-			//$('form#data #' + layerId + ' :text, form#data #' + layerId + ' input[type="search"]').on ('input', function() {	// Also include text input changes as-you-type; see: https://gist.github.com/brandonaaskov/1596867
-			$('.' + layerId + ' form :text, .' + layerId + ' form input[type="search"]').on ('input', function() {	// Also include text input changes as-you-type; see: https://gist.github.com/brandonaaskov/1596867
+			$(rescanPathBase + ' :text, ' + rescanPathBase + ' input[type="search"]').on ('input', function() {	// Also include text input changes as-you-type; see: https://gist.github.com/brandonaaskov/1596867
 				_parameters[layerId] = layerviewer.parseFormValues (layerId);
 				layerviewer.updateUrl ();
 				layerviewer.getData (layerId, _parameters[layerId]);
@@ -2347,8 +2346,8 @@ var layerviewer = (function ($) {
 			var processing = {};
 			var processingStrategy;
 			
-			$('.' + layerId + ' form :input').each(function() {
-			//$('form#data #' + layerId + ' :input').each(function() {
+			var rescanPathBase = layerviewer.parseSettingSelector ('formRescanPath', layerId);
+			$(rescanPathBase + ' :input').each(function() {
 				
 				// Determine the input type
 				var tagName = this.tagName.toLowerCase();	// Examples: 'input', 'select'
