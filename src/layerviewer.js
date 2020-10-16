@@ -2533,7 +2533,7 @@ var layerviewer = (function ($) {
 			}
 			
 			// Start data loading spinner for this layer
-			var dataLoadingSpinnerSelector = layerviewer.parseDataSpinnerSelector (layerId);
+			var dataLoadingSpinnerSelector = layerviewer.parseSettingSelector ('dataLoadingSpinnerSelector', layerId);
 			$(dataLoadingSpinnerSelector).show();
 			
 			// Fetch data
@@ -2629,10 +2629,10 @@ var layerviewer = (function ($) {
 		},
 
 
-		// Function to parse data spinner and replace layerId, if necessary
-		parseDataSpinnerSelector: function (layerId)
+		// Function to parse a setting for a dynamic layerId
+		parseSettingSelector: function (setting, layerId)
 		{
-			return (_settings.dataLoadingSpinnerSelector.replace ('{layerId}', layerId));
+			return (_settings[setting].replace ('{layerId}', layerId));
 		},
 		
 		
