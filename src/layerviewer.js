@@ -2184,11 +2184,12 @@ var layerviewer = (function ($) {
 			// Reload the data for this layer, using a rescan of the form parameters for the layer, when any change is made
 			//var rescanPath = 'form#data #' + layerId + ' :input';
 			var rescanPath = '.' + layerId + ' form :input';
-
+			
+			// Also scan drawing area if enabled
 			if (_settings.enableDrawing) {
-				//rescanPath += ', form#data #drawing :input';
 				rescanPath =+ ', form #drawing :input';
 			}
+			
 			$(document).on ('change', rescanPath, function () {
 				_parameters[layerId] = layerviewer.parseFormValues (layerId);
 				layerviewer.updateUrl ();
