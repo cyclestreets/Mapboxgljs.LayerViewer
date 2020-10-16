@@ -181,7 +181,7 @@ var layerviewer = (function ($) {
 		hideExtraMapControls: false,
 		
 		// Custom data loading spinner selector for layerviewer. For layer specific spinner, should contain layerId
-		dataLoadingSpinnerSelector: '.selector li. {layerId} img.loading',
+		dataLoadingSpinnerSelector: '#selector li. {layerId} img.loading',
 		
 		// Style switcher, either false to create a default Leaflet-style basic switcher, or a selector path for a div that will contain a graphical switcher
 		styleSwitcherGraphical: false,
@@ -527,7 +527,7 @@ var layerviewer = (function ($) {
 			layerviewer.loadIdFromUrl (urlParameters);
 			
 			// Toggle map data layers on/off when checkboxes changed
-			$('.selector input[type="checkbox"]').change (function(event) {
+			$('#selector input[type="checkbox"]').change (function(event) {
 				layerviewer.toggleDataLayer (event.target);
 			});
 			
@@ -1139,7 +1139,7 @@ var layerviewer = (function ($) {
 		// Function to get the layer name from its ID
 		layerNameFromId: function (layerId)
 		{
-			return $('.selector li.' + layerId + ' a').text();
+			return $('#selector li.' + layerId + ' a').text();
 		},
 		
 		
@@ -1462,7 +1462,7 @@ var layerviewer = (function ($) {
 			});
 			
 			// Create a list of the enabled layers
-			$('.selector input:checked').map (function () {
+			$('#selector input:checked').map (function () {
 				var layerId = this.id.replace('show_', '');
 				_layers[layerId] = true;
 			});
@@ -2137,8 +2137,8 @@ var layerviewer = (function ($) {
 		enableLayer: function (layerId)
 		{
 			// If the layer is not available, give a dialog
-			if ($('.selector li.' + layerId).hasClass('unavailable')) {
-				vex.dialog.alert ('Sorry, the ' + $('.selector li.' + layerId + ' a').text().toLowerCase() + ' layer is not available yet.');
+			if ($('#selector li.' + layerId).hasClass('unavailable')) {
+				vex.dialog.alert ('Sorry, the ' + $('#selector li.' + layerId + ' a').text().toLowerCase() + ' layer is not available yet.');
 				$('nav li.' + layerId + ' input').prop('checked', false);
 				return;
 			}
@@ -2322,10 +2322,10 @@ var layerviewer = (function ($) {
 					var message = 'Zoom in to show all ' + layerviewer.layerNameFromId (layerId).toLowerCase() + ' markers - only a selection are shown due to the volume.';
 				}
 				_message.show (message);
-				$('.selector li.' + layerId + ' p.total').hide();
+				$('#selector li.' + layerId + ' p.total').hide();
 			} else {
 				_message.hide ();
-				$('.selector li.' + layerId + ' p.total').show();
+				$('#selector li.' + layerId + ' p.total').show();
 			}
 		},
 		
@@ -3314,7 +3314,7 @@ var layerviewer = (function ($) {
 			var totalItems = Object.keys(features).length;
 			
 			// Update the total count in the menu
-			$('.selector li.' + layerId + ' p.total').html(totalItems);
+			$('#selector li.' + layerId + ' p.total').html(totalItems);
 			
 			// Add the export link button(s) if not currently present
 			if ( $('#sections #' + layerId + ' div.export p a').length == 0) {	// i.e. currently unlinked
@@ -3655,7 +3655,7 @@ var layerviewer = (function ($) {
 			}
 			
 			// Remove the total count
-			$('.selector li.' + layerId + ' p.total').html('');
+			$('#selector li.' + layerId + ' p.total').html('');
 			
 			// Remove/reset the export link, and its count
 			if ($('#sections #' + layerId + ' div.export p a').length) {	// i.e. currently linked
