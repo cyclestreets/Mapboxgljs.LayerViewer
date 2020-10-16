@@ -544,10 +544,12 @@ var layerviewer = (function ($) {
 		},
 
 
+		// Function to toggle map data layers on/off when checkboxes changed
 		toggleDataLayer: function (target)
 		{
-			// Add class "enabled" to display the eye icon
+			// Add class to facilitate display of an icon
 			$(target).closest('li').toggleClass (_settings.loadTabsClassToggle);
+			
 			var layerId = target.id.replace('show_', '');
 			if (target.checked) {
 				_layers[layerId] = true;
@@ -894,7 +896,6 @@ var layerviewer = (function ($) {
 		// Function to load the tabs
 		loadTabs: function (defaultLayers)
 		{
-			
 			// Set each default layer and add background
 			$.each (defaultLayers, function (index, layerId) {
 				
@@ -905,8 +906,8 @@ var layerviewer = (function ($) {
 				$('nav input#show_' + layerId).click();
 			});
 			
-			if (_settings.useJqueryTabsRendering) 
-			{
+			if (_settings.useJqueryTabsRendering) {
+				
 				// Enable tabbing of main menu
 				$('nav').tabs();
 				
