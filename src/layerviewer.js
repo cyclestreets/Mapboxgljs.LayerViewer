@@ -180,6 +180,9 @@ var layerviewer = (function ($) {
 		// Hide default LayerViewer message area and legend
 		hideExtraMapControls: false,
 		
+		// Form rescan path
+		formRescanPath: 'form#data #{layerId}',
+		
 		// Custom data loading spinner selector for layerviewer. For layer specific spinner, should contain layerId
 		dataLoadingSpinnerSelector: '#selector li.{layerId} img.loading',
 		
@@ -2182,8 +2185,8 @@ var layerviewer = (function ($) {
 			}
 			
 			// Reload the data for this layer, using a rescan of the form parameters for the layer, when any change is made
-			//var rescanPath = 'form#data #' + layerId + ' :input';
-			var rescanPath = '.' + layerId + ' form :input';
+			var rescanPath = layerviewer.parseSettingSelector ('formRescanPath', layerId);
+			rescanPath += ' :input';
 			
 			// Also scan drawing area if enabled
 			if (_settings.enableDrawing) {
