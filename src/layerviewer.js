@@ -2190,7 +2190,7 @@ var layerviewer = (function ($) {
 			
 			// Also scan drawing area if enabled
 			if (_settings.enableDrawing) {
-				rescanPath =+ ', form #drawing :input';
+				rescanPath += ', form #drawing :input';
 			}
 			
 			$(document).on ('change', rescanPath, function () {
