@@ -181,7 +181,7 @@ var layerviewer = (function ($) {
 		hideExtraMapControls: false,
 		
 		// Custom data loading spinner selector for layerviewer. For layer specific spinner, should contain layerId
-		dataLoadingSpinnerSelector: '#selector li. {layerId} img.loading',
+		dataLoadingSpinnerSelector: '#selector li.{layerId} img.loading',
 		
 		// Style switcher, either false to create a default Leaflet-style basic switcher, or a selector path for a div that will contain a graphical switcher
 		styleSwitcherGraphical: false,
