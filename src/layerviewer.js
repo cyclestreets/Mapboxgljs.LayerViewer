@@ -2538,10 +2538,13 @@ var layerviewer = (function ($) {
 			var dataLoadingSpinnerSelector = layerviewer.parseSettingSelector ('dataLoadingSpinnerSelector', layerId);
 			$(dataLoadingSpinnerSelector).show();
 			
+			// Set the data type
+			var dataType = (_layerConfig[layerId].dataType ? _layerConfig[layerId].dataType : (layerviewer.browserSupportsCors () ? 'json' : 'jsonp'));		// Fall back to JSON-P for IE9
+			
 			// Fetch data
 			_xhrRequests[layerId] = $.ajax({
 				url: apiUrl,
-				dataType: (_layerConfig[layerId].dataType ? _layerConfig[layerId].dataType : (layerviewer.browserSupportsCors () ? 'json' : 'jsonp')),		// Fall back to JSON-P for IE9
+				dataType: dataType,
 				crossDomain: true,	// Needed for IE<=9; see: https://stackoverflow.com/a/12644252/180733
 				data: apiData,
 				error: function (jqXHR, error, exception) {
