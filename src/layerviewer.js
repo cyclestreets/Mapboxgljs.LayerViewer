@@ -3366,8 +3366,18 @@ var layerviewer = (function ($) {
 				// Consider only points
 				if (feature.geometry.type == 'Point') {
 					
-					// Determine whether to use a local fixed icon, a local icon set, or an icon field in the data
+					// Generate popupHTML
+					var popupContentHtml = layerviewer.renderDetailsHtml (feature, popupHtmlTemplate, layerId);
+
+					// Initiate the popup
+					var popup = new mapboxgl.Popup ({className: layerId})
+						.setHTML (popupContentHtml);
+					
+					// Determine whether to use a local fixed icon, a local icon set, or an icon field in the data, or no marker at all (if no iconUrl)
 					var iconUrl = layerviewer.getIconUrl (layerId, feature);
+					
+					// End if no icon
+					if (!iconUrl) {return false;}	/* i.e. break */
 					
 					// Determine icon size
 					var iconSize = layerviewer.getIconSize (layerId, feature);
@@ -3381,18 +3391,13 @@ var layerviewer = (function ($) {
 						marker.style.zIndex = markerZindexOffsets[fieldValue];
 					}
 					
-					// Generate popupHTML
-					var popupContentHtml = layerviewer.renderDetailsHtml (feature, popupHtmlTemplate, layerId);
-
-					// Initiate the popup
-					var popup = new mapboxgl.Popup ({className: layerId})
-						.setHTML (popupContentHtml);					
-		
 					// Add the marker to the map
-					marker = new mapboxgl.Marker (marker)
-						.setLngLat (feature.geometry.coordinates)
-						.setPopup (popup)
-						.addTo (_map);
+					if (marker) {
+						marker = new mapboxgl.Marker (marker)
+							.setLngLat (feature.geometry.coordinates)
+							.setPopup (popup)
+							.addTo (_map);
+					}
 					
 					// If we have a callback, store each marker's popupHtml 
 					if (_layerConfig[layerId].hasOwnProperty ('popupCallback')) 
@@ -3410,7 +3415,6 @@ var layerviewer = (function ($) {
 						});
 					}
 					
-
 					// Register the marker so it can be removed on redraw
 					_markers[layerId].push (marker);
 				}
