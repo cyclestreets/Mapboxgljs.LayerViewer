@@ -2541,6 +2541,11 @@ var layerviewer = (function ($) {
 			// Set the data type
 			var dataType = (_layerConfig[layerId].dataType ? _layerConfig[layerId].dataType : (layerviewer.browserSupportsCors () ? 'json' : 'jsonp'));		// Fall back to JSON-P for IE9
 			
+			// KML: use XML for data type
+			if (_layerConfig[layerId].dataType && _layerConfig[layerId].dataType == 'kml') {
+				dataType = 'xml';
+			}
+			
 			// Fetch data
 			_xhrRequests[layerId] = $.ajax({
 				url: apiUrl,
@@ -3052,6 +3057,11 @@ var layerviewer = (function ($) {
 			if (_layerConfig[layerId].flatJson) {
 				data = GeoJSON.parse(data, {Point: _layerConfig[layerId].flatJson});
 				//console.log(data);
+			}
+			
+			// Convert from KML to GeoJSON if required; see: https://github.com/mapbox/togeojson
+			if (_layerConfig[layerId].dataType && _layerConfig[layerId].dataType == 'kml') {
+				data = toGeoJSON.kml (data);
 			}
 			
 			// Determine line colour field and stops
