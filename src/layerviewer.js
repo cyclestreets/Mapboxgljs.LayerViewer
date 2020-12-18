@@ -1903,7 +1903,10 @@ var layerviewer = (function ($) {
 			// Create a tracking control
 			_geolocate = new mapboxgl.GeolocateControl ({
 				positionOptions: {
-					enableHighAccuracy: true
+					enableHighAccuracy: true,
+				},
+				fitBoundsOptions: {
+					duration: 1500
 				},
 				trackUserLocation: trackUser
 			});
@@ -1941,7 +1944,7 @@ var layerviewer = (function ($) {
 			// Listener for setting geolocation availability and setting map bounds
 			_map.on ('locationfound', function(e) {
 				layerviewer.setGeolocationAvailability (true);
-				_map.fitBounds (e.bounds);
+				_map.fitBounds (e.bounds, {duration: 1500});
 			});
 		},
 
@@ -2111,7 +2114,7 @@ var layerviewer = (function ($) {
 				sourceUrl: geocoderApiUrl,
 				select: function (event, ui) {
 					var bbox = ui.item.feature.properties.bbox.split(',');	// W,S,E,N
-					_map.fitBounds(bbox, {maxZoom: 16});
+					_map.fitBounds(bbox, {maxZoom: 16, duration: 1500});
 					
 					event.preventDefault();
 				}
