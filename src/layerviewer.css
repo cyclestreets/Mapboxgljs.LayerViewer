@@ -85,12 +85,16 @@ body .mapboxgl-map {line-height: 1.4;}
 .embed #drawing, .embed #selector, .embed .export {display: none;}
 
 /* Button style for export */
-#sections .button {height: 20px;}
-#sections .button p {line-height: 20px; opacity: 0.2; border: 1px solid gray; padding: 2px 5px; float: right; margin: 0; font-size: 0.9em;}
+#sections .button {margin: 10px 0; clear: both;}
+#sections .button p {line-height: 20px; opacity: 0.2; border: 1px solid gray; padding: 2px 5px; margin: 0; font-size: 0.9em;}
+#sections .button.aside, #sections .button.export {float: right;}
 #sections .button p.enabled {opacity: 1;}
-#sections .button p a {text-decoration: none;}
+#sections .button p a {text-decoration: none; border-bottom: 0;}
 #sections .button p img {vertical-align: middle;}
 #sections .button p span.symbol {font-size: 1.4em;}
+
+/* Filters */
+#sections .filters {clear: both;}
 
 /* Legend */
 .info {padding: 15px 12px; font: 14px/16px Arial, Helvetica, sans-serif; background: white; background: rgba(255,255,255,0.9); box-shadow: 0 0 15px rgba(0,0,0,0.2); border-radius: 5px;}

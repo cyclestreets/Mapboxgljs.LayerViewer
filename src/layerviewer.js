@@ -176,31 +176,37 @@ var layerviewer = (function ($) {
 		
 		// Password protection, as an SHA-256 hash
 		password: false,
-
+		
 		// Hide default LayerViewer message area and legend
 		hideExtraMapControls: false,
-
+		
+		// Form rescan path
+		formRescanPath: 'form#data #{layerId}',
+		
 		// Custom data loading spinner selector for layerviewer. For layer specific spinner, should contain layerId
-		dataLoadingSpinnerSelector: '.selector li. {layerId} img.loading',
-
+		dataLoadingSpinnerSelector: '#selector li.{layerId} img.loading',
+		
+		// Style switcher, either false to create a default Leaflet-style basic switcher, or a selector path for a div that will contain a graphical switcher
+		styleSwitcherGraphical: false,
+		
 		// Custom panning control element
 		panningControlElement: '<p><a id="panning" href="#">Panning: disabled</a></p>',
-
+		
 		// Custom panning control element insertion point (will be prepended to this element)
 		panningControlInsertionElement: '#styleswitcher ul',
-
+		
 		// Determine whether to enable layerviewer's text based panning status indication
 		setPanningIndicator: true,
-
+		
 		// Whether to use MapboxGL JS's default navigation controls
 		useDefaultNavigationControls: true,
-
+		
 		// Whether to use MapboxGL JS's default geolocation control
 		hideDefaultGeolocationControl: false,
-
+		
 		// Load Tabs class toggle, used when loading a parameterised URL. This CSS class will be added to the enabled parent li elements (i.e., 'checked', or 'selected')
 		loadTabsClassToggle: 'selected',
-
+		
 		// Use jQuery tabs to tabify main menu
 		useJqueryTabsRendering: true,
 	};
@@ -522,7 +528,7 @@ var layerviewer = (function ($) {
 			layerviewer.loadIdFromUrl (urlParameters);
 			
 			// Toggle map data layers on/off when checkboxes changed
-			$('.selector input[type="checkbox"]').change (function(event) {
+			$('#selector input[type="checkbox"]').change (function(event) {
 				layerviewer.toggleDataLayer (event.target);
 			});
 			
@@ -539,10 +545,12 @@ var layerviewer = (function ($) {
 		},
 
 
+		// Function to toggle map data layers on/off when checkboxes changed
 		toggleDataLayer: function (target)
 		{
-			// Add class "enabled" to display the eye icon
+			// Add class to facilitate display of an icon
 			$(target).closest('li').toggleClass (_settings.loadTabsClassToggle);
+			
 			var layerId = target.id.replace('show_', '');
 			if (target.checked) {
 				_layers[layerId] = true;
@@ -889,7 +897,6 @@ var layerviewer = (function ($) {
 		// Function to load the tabs
 		loadTabs: function (defaultLayers)
 		{
-			
 			// Set each default layer and add background
 			$.each (defaultLayers, function (index, layerId) {
 				
@@ -900,8 +907,8 @@ var layerviewer = (function ($) {
 				$('nav input#show_' + layerId).click();
 			});
 			
-			if (_settings.useJqueryTabsRendering) 
-			{
+			if (_settings.useJqueryTabsRendering) {
+				
 				// Enable tabbing of main menu
 				$('nav').tabs();
 				
@@ -942,7 +949,7 @@ var layerviewer = (function ($) {
 			});
 			$('form#data #sections div :text, form#data #sections div input[type="search"]').on ('input', function() {
 				layerviewer.formChangeImplicitCheckbox (this);
-                        });
+			});
 		},
 		
 		
@@ -1133,7 +1140,7 @@ var layerviewer = (function ($) {
 		// Function to get the layer name from its ID
 		layerNameFromId: function (layerId)
 		{
-			return $('.selector li.' + layerId + ' a').text();
+			return $('#selector li.' + layerId + ' a').text();
 		},
 		
 		
@@ -1180,6 +1187,27 @@ var layerviewer = (function ($) {
 					html += '<option value="' + unixtime + '">' + year + '</option>';
 				}
 				$(this).append(html);
+			});
+			
+			// Support for "data-yearly-range-{since|until}-sqldate" macros which populate a select with an option list of each year in a comma-separated range, expressed as SQL time
+			var sqltimeMacros = {
+				'yearly-range-since-sqldate': '-01-01',
+				'yearly-range-until-sqldate': '-12-31'
+			};
+			$.each (sqltimeMacros, function (macroName, monthDateString) {
+				$('select[data-' + macroName + ']').val(function() {
+					var yearRange = $(this).data(macroName).split (',');
+					var startYear = yearRange[0];
+					var finishYear = yearRange[1];
+					var html = '';
+					var year;
+					var sqldate;
+					for (year = finishYear; year >= startYear; year--) {	// See: https://stackoverflow.com/a/26511699
+						sqldate = year + monthDateString;
+						html += '<option value="' + sqldate + '">' + year + '</option>';
+					}
+					$(this).append(html);
+				});
 			});
 		},
 		
@@ -1435,7 +1463,7 @@ var layerviewer = (function ($) {
 			});
 			
 			// Create a list of the enabled layers
-			$('.selector input:checked').map (function () {
+			$('#selector input:checked').map (function () {
 				var layerId = this.id.replace('show_', '');
 				_layers[layerId] = true;
 			});
@@ -1472,9 +1500,6 @@ var layerviewer = (function ($) {
 			
 			// Add style (backround layer) switching
 			layerviewer.styleSwitcher ();
-			
-			// Enable pitch gestures
-			layerviewer.enablePitchGestures ();
 			
 			// Enable tilt and direction
 			layerviewer.enableTilt ();
@@ -1779,54 +1804,6 @@ var layerviewer = (function ($) {
 		},
 		
 		
-		// Enable pitch gesture handling
-		// See: https://github.com/mapbox/mapbox-gl-js/issues/3405#issuecomment-449059564
-		enablePitchGestures: function ()
-		{
-			// Only enable on a touch device
-			if (!_isTouchDevice) {return;}
-			
-			// Two-finger gesture on mobile for pitch; see: https://github.com/mapbox/mapbox-gl-js/issues/3405#issuecomment-449059564
-			_map.on ('touchstart', function (data) {
-				if (data.points.length == 2) {
-					var diff = Math.abs(data.points[0].y - data.points[1].y);
-					if (diff <= 50) {
-						data.originalEvent.preventDefault();	//prevent browser refresh on pull down
-						_map.touchZoomRotate.disable();	 //disable native touch controls
-						_map.dragPan.disable();
-						self.dpPoint = data.point;
-						self.dpPitch = _map.getPitch();
-					}
-				}
-			});
-			
-			_map.on ('touchmove', function (data) {
-				if (self.dpPoint) {
-					data.preventDefault();
-					data.originalEvent.preventDefault();
-					var diff = (self.dpPoint.y - data.point.y) * 0.5;
-					_map.setPitch(self.dpPitch + diff);
-				}
-			});
-			
-			_map.on ('touchend', function (data) {
-				 if (self.dpPoint) {
-					_map.touchZoomRotate.enable();
-					_map.dragPan.enable();
-				}
-				self.dpPoint = null;
-			});
-			
-			_map.on ('touchcancel', function (data) {
-				if (self.dpPoint) {
-					_map.touchZoomRotate.enable();
-					_map.dragPan.enable();
-				}
-				self.dpPoint = null;
-			});
-		},
-
-
 		// Set geolocation availability
 		setGeolocationAvailability: function (boolean) {
 			_geolocationAvailable = boolean;
@@ -1926,7 +1903,7 @@ var layerviewer = (function ($) {
 			// Create a tracking control
 			_geolocate = new mapboxgl.GeolocateControl ({
 				positionOptions: {
-					enableHighAccuracy: true,
+					enableHighAccuracy: true
 				},
 				trackUserLocation: trackUser
 			});
@@ -1999,9 +1976,15 @@ var layerviewer = (function ($) {
 		// https://bl.ocks.org/ryanbaumann/7f9a353d0a1ae898ce4e30f336200483/96bea34be408290c161589dcebe26e8ccfa132d7
 		styleSwitcher: function ()
 		{
+			// Add style switcher UI, unless creating a graphical container in a defined container
+			if (!_settings.styleSwitcherGraphical) {
+				var containerId = 'styleswitcher';
+				layerviewer.createControl (containerId, 'bottom-left', 'expandable');
+			}
+			
 			// Load a style from the cookie, if it exists
-			if ($.cookie('map-style')) {
-				var styleId = $.cookie('map-style');
+			if (Cookies.get ('mapstyle')) {
+				var styleId = Cookies.get ('mapstyle');
 				var style = _styles[styleId];
 				_map.setStyle (style);
 				
@@ -2012,35 +1995,40 @@ var layerviewer = (function ($) {
 				layerviewer.styleChanged ();
 			}
 			
+			// Determine the container path
+			var container = _settings.styleSwitcherGraphical || '#' + containerId;
+			
 			// Construct HTML for style switcher
-			var styleSwitcherHtml = '<ul id="styleswitcher">';
+			var styleSwitcherHtml = '<ul>';
 			var name;
 			var description;
 			var image;
+			var labelContent;
 			$.each (_styles, function (styleId, style) {
 				name = (_settings.tileUrls[styleId].label ? _settings.tileUrls[styleId].label : layerviewer.ucfirst (styleId));
 				description = (_settings.tileUrls[styleId].description ? _settings.tileUrls[styleId].description : '');
 				image = '/images/maps-' + styleId + '.png';
+				if (_settings.styleSwitcherGraphical) {
+					labelContent  = '<img src="' + image + '" alt="' + name + '" />';
+					labelContent += '<span>' + name + '</span>';
+					labelContent += '<p>' + description + '</p>';
+				} else {
+					labelContent = '<abbr title="' + description + '">' + name + '</abbr>';
+				}
 				styleSwitcherHtml += '<li><input id="' + styleId + '" type="radio" name="styleswitcher" value="' + styleId + '"' + (styleId == _settings.defaultTileLayer ? ' checked="checked"' : '') + '>';
-				styleSwitcherHtml += '<label for="' + styleId + '">';
-				styleSwitcherHtml += '<img src="' + image + '" alt="' + name + '" />';
-				styleSwitcherHtml += '<span>' + name + '</span>';
-				styleSwitcherHtml += '<p>' + description + '</p>';
-				styleSwitcherHtml += '</label></li>';
+				styleSwitcherHtml += '<label for="' + styleId + '">' + labelContent + '</label></li>';
 			});
 			styleSwitcherHtml += '</ul>';
-			$('.panel.map-style').append (styleSwitcherHtml);
+			$(container).append (styleSwitcherHtml);
 			
 			// Switch to selected style
-			var styleList = document.getElementById ('styleswitcher');
-			var inputs = styleList.getElementsByTagName ('input');
 			function switchStyle (style) {
 				var styleId = style.target.id;
 				var style = _styles[styleId];
 				_map.setStyle (style);
 
 				// Save this style as a cookie
-				$.cookie('map-style', styleId);
+				Cookies.set ('mapstyle', styleId)
 				
 				// Set the style flag to the new ID
 				_currentStyleId = styleId;
@@ -2048,6 +2036,7 @@ var layerviewer = (function ($) {
 				// Fire an event; see: https://javascript.info/dispatch-events
 				layerviewer.styleChanged ();
 			};
+			var inputs = $(container + ' ul input');
 			for (var i = 0; i < inputs.length; i++) {
 				inputs[i].onclick = switchStyle;
 			}
@@ -2149,8 +2138,8 @@ var layerviewer = (function ($) {
 		enableLayer: function (layerId)
 		{
 			// If the layer is not available, give a dialog
-			if ($('.selector li.' + layerId).hasClass('unavailable')) {
-				vex.dialog.alert ('Sorry, the ' + $('.selector li.' + layerId + ' a').text().toLowerCase() + ' layer is not available yet.');
+			if ($('#selector li.' + layerId).hasClass('unavailable')) {
+				vex.dialog.alert ('Sorry, the ' + $('#selector li.' + layerId + ' a').text().toLowerCase() + ' layer is not available yet.');
 				$('nav li.' + layerId + ' input').prop('checked', false);
 				return;
 			}
@@ -2194,20 +2183,20 @@ var layerviewer = (function ($) {
 			}
 			
 			// Reload the data for this layer, using a rescan of the form parameters for the layer, when any change is made
-			//var rescanPath = 'form#data #' + layerId + ' :input';
-			var rescanPath = '.' + layerId + ' form :input';
-
+			var rescanPathBase = layerviewer.parseSettingSelector ('formRescanPath', layerId);
+			var rescanPath = rescanPathBase + ' :input';
+			
+			// Also scan drawing area if enabled
 			if (_settings.enableDrawing) {
-				//rescanPath += ', form#data #drawing :input';
-				rescanPath =+ ', form #drawing :input';
+				rescanPath += ', form #drawing :input';
 			}
+			
 			$(document).on ('change', rescanPath, function () {
 				_parameters[layerId] = layerviewer.parseFormValues (layerId);
 				layerviewer.updateUrl ();
 				layerviewer.getData (layerId, _parameters[layerId]);
 			});
-			//$('form#data #' + layerId + ' :text, form#data #' + layerId + ' input[type="search"]').on ('input', function() {	// Also include text input changes as-you-type; see: https://gist.github.com/brandonaaskov/1596867
-			$('.' + layerId + ' form :text, .' + layerId + ' form input[type="search"]').on ('input', function() {	// Also include text input changes as-you-type; see: https://gist.github.com/brandonaaskov/1596867
+			$(rescanPathBase + ' :text, ' + rescanPathBase + ' input[type="search"]').on ('input', function() {	// Also include text input changes as-you-type; see: https://gist.github.com/brandonaaskov/1596867
 				_parameters[layerId] = layerviewer.parseFormValues (layerId);
 				layerviewer.updateUrl ();
 				layerviewer.getData (layerId, _parameters[layerId]);
@@ -2334,10 +2323,10 @@ var layerviewer = (function ($) {
 					var message = 'Zoom in to show all ' + layerviewer.layerNameFromId (layerId).toLowerCase() + ' markers - only a selection are shown due to the volume.';
 				}
 				_message.show (message);
-				$('.selector li.' + layerId + ' p.total').hide();
+				$('#selector li.' + layerId + ' p.total').hide();
 			} else {
 				_message.hide ();
-				$('.selector li.' + layerId + ' p.total').show();
+				$('#selector li.' + layerId + ' p.total').show();
 			}
 		},
 		
@@ -2355,8 +2344,8 @@ var layerviewer = (function ($) {
 			var processing = {};
 			var processingStrategy;
 			
-			$('.' + layerId + ' form :input').each(function() {
-			//$('form#data #' + layerId + ' :input').each(function() {
+			var rescanPathBase = layerviewer.parseSettingSelector ('formRescanPath', layerId);
+			$(rescanPathBase + ' :input').each(function() {
 				
 				// Determine the input type
 				var tagName = this.tagName.toLowerCase();	// Examples: 'input', 'select'
@@ -2520,6 +2509,7 @@ var layerviewer = (function ($) {
 			}
 			
 			// If no change (e.g. map move while boundary set, and no other changes), avoid re-requesting data
+			// This also means that KML and other static datasets will not get re-requested
 			var requestSerialised = $.param(apiData);
 			if (_requestCache[layerId]) {
 				if (requestSerialised == _requestCache[layerId]) {
@@ -2544,13 +2534,21 @@ var layerviewer = (function ($) {
 			}
 			
 			// Start data loading spinner for this layer
-			var dataLoadingSpinnerSelector = layerviewer.parseDataSpinnerSelector (layerId);
+			var dataLoadingSpinnerSelector = layerviewer.parseSettingSelector ('dataLoadingSpinnerSelector', layerId);
 			$(dataLoadingSpinnerSelector).show();
+			
+			// Set the data type
+			var dataType = (_layerConfig[layerId].dataType ? _layerConfig[layerId].dataType : (layerviewer.browserSupportsCors () ? 'json' : 'jsonp'));		// Fall back to JSON-P for IE9
+			
+			// KML: use XML for data type
+			if (_layerConfig[layerId].dataType && _layerConfig[layerId].dataType == 'kml') {
+				dataType = 'xml';
+			}
 			
 			// Fetch data
 			_xhrRequests[layerId] = $.ajax({
 				url: apiUrl,
-				dataType: (_layerConfig[layerId].dataType ? _layerConfig[layerId].dataType : (layerviewer.browserSupportsCors () ? 'json' : 'jsonp')),		// Fall back to JSON-P for IE9
+				dataType: dataType,
 				crossDomain: true,	// Needed for IE<=9; see: https://stackoverflow.com/a/12644252/180733
 				data: apiData,
 				error: function (jqXHR, error, exception) {
@@ -2640,10 +2638,10 @@ var layerviewer = (function ($) {
 		},
 
 
-		// Function to parse data spinner and replace layerId, if necessary
-		parseDataSpinnerSelector: function (layerId)
+		// Function to parse a setting for a dynamic layerId
+		parseSettingSelector: function (setting, layerId)
 		{
-			return (_settings.dataLoadingSpinnerSelector.replace ('{layerId}', layerId));
+			return (_settings[setting].replace ('{layerId}', layerId));
 		},
 		
 		
@@ -3060,6 +3058,11 @@ var layerviewer = (function ($) {
 				//console.log(data);
 			}
 			
+			// Convert from KML to GeoJSON if required; see: https://github.com/mapbox/togeojson
+			if (_layerConfig[layerId].dataType && _layerConfig[layerId].dataType == 'kml') {
+				data = toGeoJSON.kml (data);
+			}
+			
 			// Determine line colour field and stops
 			var lineColourField = layerviewer.sublayerableConfig ('lineColourField', layerId, requestData);
 			var lineColourStops = layerviewer.sublayerableConfig ('lineColourStops', layerId, requestData);
@@ -3326,7 +3329,7 @@ var layerviewer = (function ($) {
 			var totalItems = Object.keys(features).length;
 			
 			// Update the total count in the menu
-			$('.selector li.' + layerId + ' p.total').html(totalItems);
+			$('#selector li.' + layerId + ' p.total').html(totalItems);
 			
 			// Add the export link button(s) if not currently present
 			if ( $('#sections #' + layerId + ' div.export p a').length == 0) {	// i.e. currently unlinked
@@ -3337,7 +3340,7 @@ var layerviewer = (function ($) {
 			}
 			
 			// Enable/update CSV/GeoJSON export link(s), if there are items, and show the count
-			var exportUrlCsv = (_layerConfig[layerId].apiCall.match (/^https?:\/\//) ? '' : _settings.apiBaseUrl) + _layerConfig[layerId].apiCall + '?' + requestSerialised + '&format=csv';
+			var exportUrlCsv = (_layerConfig[layerId].apiCall.match (/^https?:\/\//) ? '' : _settings.apiBaseUrl) + _layerConfig[layerId].apiCall + '?' + requestSerialised + '&format=csv&export=csv';		// Both parameter types supported
 			var exportUrlGeojson = (_layerConfig[layerId].apiCall.match (/^https?:\/\//) ? '' : _settings.apiBaseUrl) + _layerConfig[layerId].apiCall.replace(/.json$/, '.geojson') + '?' + requestSerialised;
 			$('#sections #' + layerId + ' div.export p span').text ('(' + totalItems + ')');
 			$('#sections #' + layerId + ' div.export .csv').parent('a').attr('href', exportUrlCsv);
@@ -3375,8 +3378,18 @@ var layerviewer = (function ($) {
 				// Consider only points
 				if (feature.geometry.type == 'Point') {
 					
-					// Determine whether to use a local fixed icon, a local icon set, or an icon field in the data
+					// Generate popupHTML
+					var popupContentHtml = layerviewer.renderDetailsHtml (feature, popupHtmlTemplate, layerId);
+
+					// Initiate the popup
+					var popup = new mapboxgl.Popup ({className: layerId})
+						.setHTML (popupContentHtml);
+					
+					// Determine whether to use a local fixed icon, a local icon set, or an icon field in the data, or no marker at all (if no iconUrl)
 					var iconUrl = layerviewer.getIconUrl (layerId, feature);
+					
+					// End if no icon
+					if (!iconUrl) {return false;}	/* i.e. break */
 					
 					// Determine icon size
 					var iconSize = layerviewer.getIconSize (layerId, feature);
@@ -3390,18 +3403,13 @@ var layerviewer = (function ($) {
 						marker.style.zIndex = markerZindexOffsets[fieldValue];
 					}
 					
-					// Generate popupHTML
-					var popupContentHtml = layerviewer.renderDetailsHtml (feature, popupHtmlTemplate, layerId);
-
-					// Initiate the popup
-					var popup = new mapboxgl.Popup ({className: layerId})
-						.setHTML (popupContentHtml);					
-		
 					// Add the marker to the map
-					marker = new mapboxgl.Marker (marker)
-						.setLngLat (feature.geometry.coordinates)
-						.setPopup (popup)
-						.addTo (_map);
+					if (marker) {
+						marker = new mapboxgl.Marker (marker)
+							.setLngLat (feature.geometry.coordinates)
+							.setPopup (popup)
+							.addTo (_map);
+					}
 					
 					// If we have a callback, store each marker's popupHtml 
 					if (_layerConfig[layerId].hasOwnProperty ('popupCallback')) 
@@ -3419,7 +3427,6 @@ var layerviewer = (function ($) {
 						});
 					}
 					
-
 					// Register the marker so it can be removed on redraw
 					_markers[layerId].push (marker);
 				}
@@ -3667,7 +3674,7 @@ var layerviewer = (function ($) {
 			}
 			
 			// Remove the total count
-			$('.selector li.' + layerId + ' p.total').html('');
+			$('#selector li.' + layerId + ' p.total').html('');
 			
 			// Remove/reset the export link, and its count
 			if ($('#sections #' + layerId + ' div.export p a').length) {	// i.e. currently linked
