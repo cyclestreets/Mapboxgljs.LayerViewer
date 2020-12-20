@@ -549,8 +549,6 @@ var layerviewer = (function ($) {
 		toggleDataLayer: function (target)
 		{
 			// Add class to facilitate display of an icon
-			$(target).closest('li').toggleClass (_settings.loadTabsClassToggle);
-			
 			var layerId = target.id.replace('show_', '');
 			if (target.checked) {
 				_layers[layerId] = true;
