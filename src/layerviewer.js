@@ -1739,6 +1739,7 @@ var layerviewer = (function ($) {
 			
 			// Toggle panning on/off, and update the control
 			$('#panning').on ('click', function () {
+				
 				_panningEnabled = !_panningEnabled;
 				layerviewer.setPanningIndicator ();
 				
@@ -1771,6 +1772,8 @@ var layerviewer = (function ($) {
 		// https://www.w3.org/2008/geolocation/wiki/images/e/e0/Device_Orientation_%27alpha%27_Calibration-_Implementation_Status_and_Challenges.pdf
 		implementTilt: function ()
 		{
+			layerviewer.monitorDragging();
+			
 			// Obtain a new *world-oriented* Full Tilt JS DeviceOrientation Promise
 			var promise = FULLTILT.getDeviceOrientation ({ 'type': 'world' });
 			
@@ -1800,8 +1803,40 @@ var layerviewer = (function ($) {
 				console.log (errorMessage);
 			});
 		},
-		
-		
+
+
+		// Disactivate FULLTILE when map is being dragged, as it blocks panning otherwise
+		monitorDragging: function () {
+			var isDragging = false;
+			var panningWasEnabled = false
+
+			$('#map')
+				.tapstart(function () {
+					if (_panningEnabled) {
+						panningWasEnabled = _panningEnabled;
+						_panningEnabled = false;
+						isDragging = false;
+						layerviewer.setPanningIndicator();
+					}
+				})
+				.tapmove(function () {
+					isDragging = true;
+					layerviewer.setPanningIndicator();
+				})
+				.tapend(function () {
+					if (panningWasEnabled) {
+						panningWasEnabled = false;
+						var wasDragging = isDragging;
+						isDragging = false;
+						if (wasDragging) {
+							_panningEnabled = true;
+							layerviewer.setPanningIndicator();
+						}
+					}
+				});
+		},
+
+
 		// Set geolocation availability
 		setGeolocationAvailability: function (boolean) {
 			_geolocationAvailable = boolean;
@@ -2032,7 +2067,7 @@ var layerviewer = (function ($) {
 				Cookies.set ('mapstyle', styleId)
 				
 				// Set the style flag to the new ID
-				_currentStyleId = styleId;
+				_currentStyleId = styleId;	
 				
 				// Fire an event; see: https://javascript.info/dispatch-events
 				layerviewer.styleChanged ();
