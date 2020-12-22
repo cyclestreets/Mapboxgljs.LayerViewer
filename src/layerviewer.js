@@ -1820,8 +1820,10 @@ var layerviewer = (function ($) {
 					}
 				})
 				.tapmove(function () {
-					isDragging = true;
-					layerviewer.setPanningIndicator();
+					if (panningWasEnabled) {
+						isDragging = true;
+						layerviewer.setPanningIndicator();
+					}
 				})
 				.tapend(function () {
 					if (panningWasEnabled) {
