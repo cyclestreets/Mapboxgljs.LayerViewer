@@ -44,7 +44,10 @@ var layerviewer = (function ($) {
 
 		poisApiUrl: '{%apiBaseUrl}/v2/pois.types?icons=32?key={%apiKey}',
 		
-		// Enable/disabled drawing feature
+		// Enable/disable 3D terrain (Mapbox GL JS v.2.0.0+)
+		enable3dTerrain: false,
+		
+		// Enable/disable drawing feature
 		enableDrawing: true,
 		
 		// Map scale
@@ -1496,6 +1499,11 @@ var layerviewer = (function ($) {
 			// Add buildings
 			layerviewer.addBuildings ();
 			
+			// Add 3D terrain
+			if (_settings.enable3dTerrain) {
+				layerviewer.add3dTerrain ();
+			}
+			
 			// Add style (backround layer) switching
 			layerviewer.styleSwitcher ();
 			
@@ -1683,6 +1691,37 @@ var layerviewer = (function ($) {
 			
 			// Not found
 			return false;
+		},
+		
+		
+		// 3D terrain; see: https://docs.mapbox.com/mapbox-gl-js/example/add-terrain/
+		add3dTerrain: function ()
+		{
+			// Enable the layer
+			_map.on ('load', function () {
+				
+				// Add the DEM
+				_map.addSource ('mapbox-dem', {
+					'type': 'raster-dem',
+					'url': 'mapbox://mapbox.mapbox-terrain-dem-v1',
+					'tileSize': 512,
+					'maxzoom': 14
+				});
+				
+				// Add the DEM source as a terrain layer with exaggerated height
+				_map.setTerrain ({ 'source': 'mapbox-dem', 'exaggeration': 1.5 });
+				 
+				// Add a sky layer that will show when the map is highly pitched
+				_map.addLayer ({
+					'id': 'sky',
+					'type': 'sky',
+					'paint': {
+						'sky-type': 'atmosphere',
+						'sky-atmosphere-sun': [0.0, 0.0],
+						'sky-atmosphere-sun-intensity': 15
+					}
+				});
+			});
 		},
 		
 		
