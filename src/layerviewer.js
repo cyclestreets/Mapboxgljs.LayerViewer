@@ -1805,7 +1805,7 @@ var layerviewer = (function ($) {
 		},
 
 
-		// Disactivate FULLTILE when map is being dragged, as it blocks panning otherwise
+		// Disactivate FULLTILT when map is being dragged, as it blocks panning otherwise
 		monitorDragging: function () {
 			var isDragging = false;
 			var panningWasEnabled = false
