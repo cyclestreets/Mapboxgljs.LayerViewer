@@ -1709,7 +1709,7 @@ var layerviewer = (function ($) {
 				});
 				
 				// Add the DEM source as a terrain layer with exaggerated height
-				_map.setTerrain ({ 'source': 'mapbox-dem', 'exaggeration': 1.5 });
+				_map.setTerrain ({ 'source': 'mapbox-dem', 'exaggeration': 2.5 });
 				 
 				// Add a sky layer that will show when the map is highly pitched
 				_map.addLayer ({
