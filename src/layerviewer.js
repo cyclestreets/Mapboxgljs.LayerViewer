@@ -2323,6 +2323,12 @@ var layerviewer = (function ($) {
 				data: apiData,
 				success: function (response) 
 				{
+					// Convert using a callback if required
+					if (_layerConfig[layerId].convertData) {
+						response = _layerConfig[layerId].convertData (response);
+						//console.log(data);
+					}
+					
 					// If there is a popup callback, create the popup
 					if (_layerConfig[layerId].hasOwnProperty ('popupCallback')) {
 						
