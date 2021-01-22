@@ -1184,7 +1184,7 @@ var layerviewer = (function ($) {
 				var year;
 				var unixtime;
 				for (year = yearToday; year >= sinceYear; year--) {	// See: https://stackoverflow.com/a/26511699
-					unixtime = parseInt((new Date(year + '.01.01').getTime() / 1000).toFixed(0));	// https://stackoverflow.com/a/28683720/180733
+					unixtime = parseInt((new Date(year, 1, 1).getTime() / 1000).toFixed(0));	// https://stackoverflow.com/a/28683720/180733
 					html += '<option value="' + unixtime + '">' + year + '</option>';
 				}
 				$(this).append(html);
