@@ -171,6 +171,7 @@ var layerviewer = (function ($) {
 		regionsField: false,
 		regionsSubstitutionToken: false,
 		regionSwitcherPosition: 'top-right',
+		regionSwitcherNullText: 'Move to area',
 		
 		// Initial view of all regions; will use regionsFile
 		initialRegionsView: false,
@@ -3954,7 +3955,7 @@ var layerviewer = (function ($) {
 					
 					// Create a droplist
 					var html = '<select>';
-					html += '<option value="">Move to area:</option>';
+					html += '<option value="">' + _settings.regionSwitcherNullText + ':</option>';
 					$.each (names, function (index, name) {
 						html += '<option value="' + layerviewer.htmlspecialchars (name) + '">' + layerviewer.htmlspecialchars (layerviewer.ucfirst (name)) + '</option>';
 					});
