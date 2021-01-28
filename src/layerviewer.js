@@ -68,9 +68,12 @@ var layerviewer = (function ($) {
 		// Enable hover for all (line-based) layers
 		hover: true,
 
+		// Geolocation position
+		geolocationPosition: 'top-right',
+
 		// Use existing geolocation button instead of Mapbox's
 		geolocationElementId: false,
-
+		
 		// Display a dot that tracks user location (usual design language on mobile)
 		trackUser: true,
 		
@@ -1988,7 +1991,7 @@ var layerviewer = (function ($) {
 			});
 			
 			// Add to the map
-			_map.addControl (_geolocate, 'top-right');
+			_map.addControl (_geolocate, _settings.geolocationPosition);
 			
 			// Disable tilt on click
 			/*
