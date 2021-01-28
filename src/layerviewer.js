@@ -166,6 +166,7 @@ var layerviewer = (function ($) {
 		// Region switcher, with areas defined as a GeoJSON file
 		regionsFile: false,
 		regionsField: false,
+		regionsSubstitutionToken: false,
 		
 		// Initial view of all regions; will use regionsFile
 		initialRegionsView: false,
@@ -2609,7 +2610,19 @@ var layerviewer = (function ($) {
 			if (! (/https?:\/\//).test (apiUrl)) {
 				apiUrl = _settings.apiBaseUrl + apiUrl;
 			}
-			
+
+			// If there is a region selected in the dropdown, and there is a space for a token in the apiUrl, swap it out
+			if (_settings.regionsSubstitutionToken) {
+				if (apiUrl.includes(_settings.regionsSubstitutionToken)) {
+					var selectedOption = $('#regionswitcher option:selected').val();
+					if (!selectedOption) {
+						selectedOption = $($('#regionswitcher option')[1]).val()
+					}
+					var region = (selectedOption == null ? $('#regionswitcher option').first().val() : selectedOption);
+					apiUrl = apiUrl.replace(_settings.regionsSubstitutionToken, region);
+				}
+			}
+
 			// If an outstanding layer request is still active, cancel it
 			if (_xhrRequests[layerId] != null) {
 				_xhrRequests[layerId].abort();
