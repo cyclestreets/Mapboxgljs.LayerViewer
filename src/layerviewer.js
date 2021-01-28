@@ -343,7 +343,7 @@ var layerviewer = (function ($) {
 			// Overlay code, as per popupHtml, but for the follow-on overlay data
 			overlayHtml: '<p>{properties.caption}</p>',
 			
-			// Retrieval strategy - 'bbox' (default) sends w,s,e,n; 'polygon' sends as sw.lat,sw.lng:se.lat,se.lng:ne.lat,ne.lng:nw.lat,nw.lng:sw.lat,sw.lng
+			// Retrieval strategy - 'bbox' (default) sends w,s,e,n; 'polygon' sends as sw.lat,sw.lng:se.lat,se.lng:ne.lat,ne.lng:nw.lat,nw.lng:sw.lat,sw.lng, 'none' sends neither (i.e. static)
 			retrievalStrategy: 'bbox',
 			
 			// Boundary parameter name (most likely to be useful in polygon retrievalStrategy mode), defaulting to 'boundary'
@@ -2545,7 +2545,7 @@ var layerviewer = (function ($) {
 				}
 			}
 			
-			// Determine which retrieval strategy is needed - bbox (default) or lat/lon
+			// Determine which retrieval strategy is needed - bbox (default) or lat/lon or none
 			var retrievalStrategy = _layerConfig[layerId].retrievalStrategy || 'bbox';
 			
 			// Unless a boundary is drawn in, supply a bbox or lat/lon
@@ -2566,6 +2566,9 @@ var layerviewer = (function ($) {
 					var nw = _map.getBounds().getNorthWest();
 					parameters.boundary = sw.lat + ',' + sw.lng + ':' + se.lat + ',' + se.lng + ':' + ne.lat + ',' + ne.lng + ':' + nw.lat + ',' + nw.lng + ':' + sw.lat + ',' + sw.lng;
 				}
+				
+				// If none, send neither of the above
+				// if (retrievalStrategy == 'none') {}
 			}
 			
 			// If required, rename the boundary field, as some APIs use a different fieldname to 'boundary'
