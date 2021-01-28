@@ -167,6 +167,7 @@ var layerviewer = (function ($) {
 		regionsFile: false,
 		regionsField: false,
 		regionsSubstitutionToken: false,
+		regionSwitcherPosition: 'top-right',
 		
 		// Initial view of all regions; will use regionsFile
 		initialRegionsView: false,
@@ -3954,7 +3955,7 @@ var layerviewer = (function ($) {
 					html += '</select>';
 					
 					// Add to the map
-					layerviewer.createControl ('regionswitcher', 'top-right', 'info');
+					layerviewer.createControl ('regionswitcher', _settings.regionSwitcherPosition, 'info');
 					$('#regionswitcher').html (html);
 					
 					// Add a handler
