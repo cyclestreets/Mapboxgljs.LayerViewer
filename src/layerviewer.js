@@ -309,9 +309,10 @@ var layerviewer = (function ($) {
 			// Legend, either array of values (as same format as lineColourStops), or boolean true to use lineColourStops if that exists
 			legend: true,
 			
-			// Polygon style; currently supported values are 'grid' (blue boxes with dashed lines, intended for tessellating data), 'green', 'red', 'blue'
+			// Polygon style; currently supported values are 'grid' (blue boxes with dashed lines, intended for tessellating data), 'green', 'red', 'blue', or key/value pairs giving named colours if a polygonStyleField is supplied
 			polygonStyle: 'grid',
-
+			polygonColourField: false,
+			
 			// A secondary API call, used to get a specific ID
 			apiCallId: {
 				apiCall: '/path/to/secondaryApi',
@@ -3263,7 +3264,20 @@ var layerviewer = (function ($) {
 			}
 			
 			// Set polygon style if required
-			if (_layerConfig[layerId].polygonStyle) {
+			if (_layerConfig[layerId].polygonColourField) {
+				
+				// Construct the style definition; see e.g. https://stackoverflow.com/a/49611427 and https://docs.mapbox.com/mapbox-gl-js/example/cluster-html/
+				var styleDefinition = [];
+				styleDefinition.push ('case');
+				$.each (_layerConfig[layerId].polygonStyle, function (key, value) {
+					styleDefinition.push (['==', ['get', _layerConfig[layerId].polygonColourField], key]);
+					styleDefinition.push (value);
+				});
+				styleDefinition.push (/* fallback: */ '#03f');
+				styles['Polygon']['paint']['fill-color'] = styleDefinition;
+				
+			// Set polygon style if required: grid / fixed styles
+			} else if (_layerConfig[layerId].polygonStyle) {
 				switch (_layerConfig[layerId].polygonStyle) {
 					
 					// Blue boxes with dashed lines, intended for data that is likely to tessellate, e.g. adjacent box grid
