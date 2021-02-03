@@ -96,6 +96,11 @@ var layerviewer = (function ($) {
 				label: 'Streets',
 				description: 'A general-purpose map that emphasizes legible styling of road and transit networks.'
 			},
+			light: {
+				vectorTiles: 'mapbox://styles/mapbox/light-v10',
+				label: 'Light',
+				description: 'A light-fade background map.',
+			},
 			night: {
 				vectorTiles: 'mapbox://styles/mapbox/dark-v10',
 				label: 'Night',
