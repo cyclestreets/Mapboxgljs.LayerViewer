@@ -3989,13 +3989,23 @@ var layerviewer = (function ($) {
 						if (this.value) {
 							var selectedRegion = this.value;
 							_map.fitBounds (regions[selectedRegion]);
+							
+							// Store selected region as a cookie
+							Cookies.set('selectedRegion', selectedRegion, {expires: 7});
 						}
 						
 						// #!# IE bug workaround: need to move the focus to something else, otherwise change works first time but not after that
 						if (navigator.appVersion.indexOf('Trident/') !== -1) {
-							$('.regionswitcher select').focus();
+							$('#regionswitcher select').focus();
 						}
 					});
+
+					// If we have a cookie saved with a region, load that region
+					if (names.includes (Cookies.get('selectedRegion'))) {
+						$('#regionswitcher select').val(Cookies.get('selectedRegion'));
+						$('#regionswitcher select').trigger('change');
+					}
+
 				}
 			});
 		},
