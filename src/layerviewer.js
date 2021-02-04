@@ -344,10 +344,15 @@ var layerviewer = (function ($) {
 				myField: function (value, feature) {return string;},
 				...
 			},
-			
+
 			// Make lookups (Popups / line colour stops) dependent on the value of a specified request parameter
 			sublayerParameter: false,
 			
+			// Replace auto-generated keys in popup with pretty titles or descriptions
+			fieldLabelsCsv: 'csvUrl',
+			csvNamesField: 'names',
+			csvHumanReadableField: 'descriptions',
+
 			// Labels for auto-popups
 			popupLabels: {},
 			
@@ -532,6 +537,11 @@ var layerviewer = (function ($) {
 			// Determine the initial form state as specified in the fixed HTML, for all layers
 			$.each (_layers, function (layerId, layerEnabled) {
 				_virginFormState[layerId] = layerviewer.parseFormValues (layerId);
+			});
+
+			// Populate each layer with popupLabels if fieldLabelsCsv is provided
+			$.each (_layers, function (layerId, layerEnable) {
+				layerviewer.populateFieldLabels (layerId);
 			});
 			
 			// Load the data, and add map interactions and form interactions
@@ -2919,6 +2929,36 @@ var layerviewer = (function ($) {
 		},
 		
 		
+		// Function to populate a layer's field labels from a CSV file
+		populateFieldLabels: function (layerId)
+		{
+			// Exit immediately if this layer has no associated CSV file
+			if (!_layerConfig[layerId].hasOwnProperty ('fieldLabelsCsv')) {
+				return;
+			}
+
+			// Initialise blank populLabels object if necessary
+			if (!_layerConfig[layerId].hasOwnProperty('popupLabels')) {
+				_layerConfig[layerId].popupLabels = {};
+			};
+
+			// Stream and parse the CSV file
+			Papa.parse(_layerConfig[layerId].fieldLabelsCsv, {
+				header: true,
+				download: true,
+
+				complete: function (results) {
+					$.each(results.data, function (indexInArray, nameDescriptionObject) {
+						var key = nameDescriptionObject[_layerConfig[layerId].csvNamesField];
+						var description = nameDescriptionObject[_layerConfig[layerId].csvHumanReadableField];
+
+						_layerConfig[layerId].popupLabels[key] = description;
+					});
+				}
+			})
+		},
+
+
 		// Function to construct the popup/overlay content HTML
 		renderDetailsHtml: function (feature, template /* optional */, layerId)
 		{
