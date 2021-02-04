@@ -2937,7 +2937,7 @@ var layerviewer = (function ($) {
 				return;
 			}
 
-			// Initialise blank populLabels object if necessary
+			// Initialise blank popupLabels property if necessary
 			if (!_layerConfig[layerId].hasOwnProperty('popupLabels')) {
 				_layerConfig[layerId].popupLabels = {};
 			};
