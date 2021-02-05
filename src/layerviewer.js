@@ -349,10 +349,11 @@ var layerviewer = (function ($) {
 			sublayerParameter: false,
 			
 			// Replace auto-generated keys in popup with pretty titles or descriptions
-			fieldLabelsCsv: 'csvUrl',
-			csvNamesField: 'names',
-			csvHumanReadableField: 'descriptions',
-
+			fieldLabelsCsv: false,
+			fieldLabelsCsvField: 'field',
+			fieldLabelsCsvTitle: 'title',
+			fieldLabelsCsvDescription: 'description',
+			
 			// Labels for auto-popups
 			popupLabels: {},
 			
@@ -2933,26 +2934,31 @@ var layerviewer = (function ($) {
 		populateFieldLabels: function (layerId)
 		{
 			// Exit immediately if this layer has no associated CSV file
-			if (!_layerConfig[layerId].hasOwnProperty ('fieldLabelsCsv')) {
+			if (!_layerConfig[layerId].fieldLabelsCsv) {
 				return;
 			}
-
+			
 			// Initialise blank popupLabels property if necessary
 			if (!_layerConfig[layerId].hasOwnProperty('popupLabels')) {
 				_layerConfig[layerId].popupLabels = {};
 			};
-
+			
+			// Default fields
+			// #!# This should really be done at the layer initialisation
+			var fieldColumn = _layerConfig[layerId].fieldLabelsCsvField || 'field';
+			var titleColumn = _layerConfig[layerId].fieldLabelsCsvTitle || 'title';
+			
 			// Stream and parse the CSV file
-			Papa.parse(_layerConfig[layerId].fieldLabelsCsv, {
+			Papa.parse (_layerConfig[layerId].fieldLabelsCsv, {
 				header: true,
 				download: true,
-
-				complete: function (results) {
-					$.each(results.data, function (indexInArray, nameDescriptionObject) {
-						var key = nameDescriptionObject[_layerConfig[layerId].csvNamesField];
-						var description = nameDescriptionObject[_layerConfig[layerId].csvHumanReadableField];
-
-						_layerConfig[layerId].popupLabels[key] = description;
+				complete: function (fields) {
+					var key;
+					var title;
+					$.each (fields.data, function (index, fieldLabels) {
+						key = fieldLabels[fieldColumn];
+						title = fieldLabels[titleColumn];
+						_layerConfig[layerId].popupLabels[key] = title;
 					});
 				}
 			})
