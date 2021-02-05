@@ -32,6 +32,7 @@ body .mapboxgl-map {line-height: 1.4;}
 #map .mapboxgl-popup-content a.edit {float: right;}
 #map .mapboxgl-popup-content a.edit {color: #ccc; text-decoration: none;}
 #map .mapboxgl-popup {z-index: 2;}
+#map .mapboxgl-popup abbr {text-decoration: none;}
 
 /* Geocoder */
 #geocoder {position: absolute; top: 10px; left: 55px; z-index: 1001;}

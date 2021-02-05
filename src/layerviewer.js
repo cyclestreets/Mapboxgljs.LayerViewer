@@ -355,8 +355,9 @@ var layerviewer = (function ($) {
 			fieldLabelsCsvTitle: 'title',
 			fieldLabelsCsvDescription: 'description',
 			
-			// Labels for auto-popups
+			// Labels and descriptions for auto-popups
 			popupLabels: {},
+			popupDescriptions: {},
 			
 			// Field that contains a follow-on API URL where more details of the feature can be requested
 			detailsOverlay: 'apiUrl',
@@ -1283,6 +1284,11 @@ var layerviewer = (function ($) {
 		{
 			// Use jQuery tooltips; see: https://jqueryui.com/tooltip/
 			$('nav').tooltip ({
+				track: true
+			});
+			
+			// Apply to map <abbr> titles also; this is applied on #map as the rest is late-bound
+			$('#map').tooltip ({
 				track: true
 			});
 		},
@@ -2946,10 +2952,16 @@ var layerviewer = (function ($) {
 				_layerConfig[layerId].popupLabels = {};
 			};
 			
+			// Initialise blank popupDescriptions property if necessary
+			if (!_layerConfig[layerId].hasOwnProperty('popupDescriptions')) {
+				_layerConfig[layerId].popupDescriptions = {};
+			};
+			
 			// Default fields
 			// #!# This should really be done at the layer initialisation
 			var fieldColumn = _layerConfig[layerId].fieldLabelsCsvField || 'field';
 			var titleColumn = _layerConfig[layerId].fieldLabelsCsvTitle || 'title';
+			var descriptionColumn = _layerConfig[layerId].fieldLabelsCsvDescription || 'description';
 			
 			// Stream and parse the CSV file
 			Papa.parse (_layerConfig[layerId].fieldLabelsCsv, {
@@ -2958,10 +2970,13 @@ var layerviewer = (function ($) {
 				complete: function (fields) {
 					var key;
 					var title;
+					var description;
 					$.each (fields.data, function (index, fieldLabels) {
 						key = fieldLabels[fieldColumn];
 						title = fieldLabels[titleColumn];
+						description = fieldLabels[descriptionColumn];
 						_layerConfig[layerId].popupLabels[key] = title;
+						_layerConfig[layerId].popupDescriptions[key] = description;
 					});
 				}
 			})
@@ -3053,6 +3068,7 @@ var layerviewer = (function ($) {
 				
 				html = '<table>';
 				var fieldLabel;
+				var fieldDescription;
 				$.each (feature.properties, function (key, value) {
 					
 					// Skip if value is an array/object
@@ -3069,6 +3085,14 @@ var layerviewer = (function ($) {
 					if (_layerConfig[layerId].popupLabels) {
 						if (_layerConfig[layerId].popupLabels[key]) {
 							fieldLabel = _layerConfig[layerId].popupLabels[key];
+						}
+					}
+					
+					// Description (i.e. <abbr> tag contents)
+					fieldDescription = false;
+					if (_layerConfig[layerId].popupDescriptions) {
+						if (_layerConfig[layerId].popupDescriptions[key]) {
+							fieldDescription = _layerConfig[layerId].popupDescriptions[key];
 						}
 					}
 					
@@ -3099,7 +3123,7 @@ var layerviewer = (function ($) {
 					}
 
 					// Compile the HTML
-					html += '<tr><td>' + fieldLabel + ':</td><td><strong>' + value + '</strong></td></tr>';
+					html += '<tr><td>' + (fieldDescription ? '<abbr title="' + fieldDescription + '">' : '') + fieldLabel + (fieldDescription ? '</abbr>' : '') + ':</td><td><strong>' + value + '</strong></td></tr>';
 				});
 				html += '</table>';
 				
