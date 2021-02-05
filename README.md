@@ -26,6 +26,7 @@ Layers and settings are defined using a simple, high-level, declarative structur
 - Mobile support
 - Region switcher, using a GeoJSON file
 - Page popup support
+- Popup label dictionary support, including tooltips
 - Basic password-protection
 - Automatic legend generation
 
