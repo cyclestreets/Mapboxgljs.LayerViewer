@@ -183,6 +183,7 @@ var layerviewer = (function ($) {
 		
 		// Initial view of all regions; will use regionsFile
 		initialRegionsView: false,
+		initialRegionsViewRemovalClick: true,	// Whether the regions are removed upon click
 		initialRegionsViewRemovalZoom: 10,	// or false to keep it; 10 is roughly size of a UK County
 		
 		// Whether to show layer errors in a (non-modal) corner dialog, rather than as a modal popup
@@ -829,15 +830,17 @@ var layerviewer = (function ($) {
 						});
 					}
 					
-					// Zoom to area and remove layer when clicked
-					_map.on ('click', 'regionsOverlay', function (e) {
-						var feature = e.features[0];
-						_map.fitBounds (geojsonExtent (feature));
-						_map.removeLayer ('regionsOverlay');
-						if (_settings.regionsField) {
-							popup.remove ();
-						}
-					});
+					// Zoom to area and remove layer when clicked, unless disabled
+					if (_settings.initialRegionsViewRemovalClick) {
+						_map.on ('click', 'regionsOverlay', function (e) {
+							var feature = e.features[0];
+							_map.fitBounds (geojsonExtent (feature));
+							_map.removeLayer ('regionsOverlay');
+							if (_settings.regionsField) {
+								popup.remove ();
+							}
+						});
+					}
 					
 					// Create a handler to remove the overlay automatically when zoomed in (but not explicitly clicked through)
 					if (_settings.initialRegionsViewRemovalZoom) {
