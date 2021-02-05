@@ -825,7 +825,7 @@ var layerviewer = (function ($) {
 								.setHTML (regionName)
 								.addTo (_map);
 						});
-						_map.on ('mouseleave', 'places', function (e) {
+						_map.on ('mouseleave', 'regionsOverlay', function (e) {
 							_map.getCanvas().style.cursor = '';
 							popup.remove ();
 						});
