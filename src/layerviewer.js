@@ -3358,6 +3358,7 @@ var layerviewer = (function ($) {
 				if (_layerConfig[layerId].fillOpacity) {
 					styles['Polygon']['paint']['fill-opacity'] = _layerConfig[layerId].fillOpacity;
 				}
+
 			// Set key,value colour field
 			} else if (_layerConfig[layerId].polygonColourField) {
 				// Construct the style definition; see e.g. https://stackoverflow.com/a/49611427 and https://docs.mapbox.com/mapbox-gl-js/example/cluster-html/
@@ -3418,7 +3419,7 @@ var layerviewer = (function ($) {
 			
 			// For line style, if hover is enabled, override hover style width in definition
 			if (_settings.hover || _layerConfig[layerId].hover) {
-				styles['LineString']['paint']['line-width'] = ['case', ['boolean', ['feature-state', 'hover'], false], 12, defaultStyles['LineString']['paint']['line-width'] ];
+				styles['LineString']['paint']['line-width'] = ['case', ['boolean', ['feature-state', 'hover'], false], 12, styles['LineString']['paint']['line-width'] ];
 			}
 			
 			// For a heatmap, ignore all the above styles and define directly; see: https://docs.mapbox.com/help/tutorials/make-a-heatmap-with-mapbox-gl-js/
