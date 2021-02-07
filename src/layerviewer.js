@@ -321,6 +321,12 @@ var layerviewer = (function ($) {
 			// Polygon style; currently supported values are 'grid' (blue boxes with dashed lines, intended for tessellating data), 'green', 'red', 'blue', or key/value pairs giving named colours if a polygonStyleField is supplied
 			polygonStyle: 'grid',
 			polygonColourField: false,
+			polygonStyleStops: [
+				[250, 10],
+				[100, 5],
+				[0, 1],
+			],
+			fillOpacity: 0.6
 			
 			// A secondary API call, used to get a specific ID
 			apiCallId: {
@@ -3345,9 +3351,15 @@ var layerviewer = (function ($) {
 				styles['LineString']['paint']['line-width'] = layerviewer.stopsExpression (_layerConfig[layerId].lineWidthField, _layerConfig[layerId].lineWidthStops.slice().reverse());	// Reverse the original definition: https://stackoverflow.com/a/30610528/180733
 			}
 			
-			// Set polygon style if required
-			if (_layerConfig[layerId].polygonColourField) {
-				
+			// If we have polygonColourStops (to be interpolated linearly)
+			if (_layerConfig[layerId].polygonStyleStops && _layerConfig[layerId].polygonColourField) {
+				console.log ('calculating stop');
+				styles['Polygon']['paint']['fill-color'] = layerviewer.stopsExpression (_layerConfig[layerId].polygonColourField, _layerConfig[layerId].polygonStyleStops.slice().reverse());	// Reverse the original definition: https://stackoverflow.com/a/30610528/180733
+				if (_layerConfig[layerId].fillOpacity) {
+					styles['Polygon']['paint']['fill-opacity'] = _layerConfig[layerId].fillOpacity;
+				}
+			// Set key,value colour field
+			} else if (_layerConfig[layerId].polygonColourField) {
 				// Construct the style definition; see e.g. https://stackoverflow.com/a/49611427 and https://docs.mapbox.com/mapbox-gl-js/example/cluster-html/
 				var styleDefinition = [];
 				styleDefinition.push ('case');
