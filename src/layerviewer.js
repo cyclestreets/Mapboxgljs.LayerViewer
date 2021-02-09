@@ -1381,7 +1381,7 @@ var layerviewer = (function ($) {
 		setLegend: function (layerId, sublayerIntervals, sublayerLineColourStops)
 		{
 			// Determine the intervalsand line colour stops for the current layer
-			var intervals = _layerConfig[layerId].intervals;
+			var intervals = _layerConfig[layerId].legend;
 			var lineColourStops = _layerConfig[layerId].lineColourStops;
 			
 			// In sublayer mode, do not display unless a sublayer is specified
@@ -1448,16 +1448,16 @@ var layerviewer = (function ($) {
 			html += labelsTable;
 			
 			// Set the HTML
-			$('.legend').show ();
-			$('.legend').html (html);
+			$('#legend').show ();
+			$('#legend').html (html);
 		},
 		
 		
 		// Function to clear the legend
 		clearLegend: function ()
 		{
-			$('.legend').hide ();
-			$('.legend').html ('');
+			$('#legend').hide ();
+			$('#legend').html ('');
 		},
 		
 		
@@ -3362,7 +3362,6 @@ var layerviewer = (function ($) {
 			
 			// If we have polygonColourStops (to be interpolated linearly)
 			if (_layerConfig[layerId].polygonColourField && _layerConfig[layerId].polygonColourStops) {
-				console.log ('calculating stop');
 				styles['Polygon']['paint']['fill-color'] = layerviewer.stopsExpression (_layerConfig[layerId].polygonColourField, _layerConfig[layerId].polygonColourStops.slice().reverse());	// Reverse the original definition: https://stackoverflow.com/a/30610528/180733
 				if (_layerConfig[layerId].fillOpacity) {
 					styles['Polygon']['paint']['fill-opacity'] = _layerConfig[layerId].fillOpacity;
