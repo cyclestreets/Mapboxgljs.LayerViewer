@@ -321,13 +321,13 @@ var layerviewer = (function ($) {
 			// Legend, either array of values (as same format as lineColourStops), or boolean true to use lineColourStops if that exists
 			legend: true,
 			
-			// Polygon style; currently supported values are 'grid' (blue boxes with dashed lines, intended for tessellating data), 'green', 'red', 'blue', or key/value pairs giving named colours if a polygonStyleField is supplied
+			// Polygon style; currently supported values are 'grid' (blue boxes with dashed lines, intended for tessellating data), 'green', 'red', 'blue', or key/value pairs giving named colours if a polygonColourField is supplied
 			polygonStyle: 'grid',
 			polygonColourField: false,
-			polygonStyleStops: [
-				[250, 10],
-				[100, 5],
-				[0, 1],
+			polygonColourStops: [
+				[200, '#ff0000'],
+				[50, '#e27474'],
+				[0, '#61fa61']
 			],
 			fillOpacity: 0.6
 			
@@ -3361,9 +3361,9 @@ var layerviewer = (function ($) {
 			}
 			
 			// If we have polygonColourStops (to be interpolated linearly)
-			if (_layerConfig[layerId].polygonStyleStops && _layerConfig[layerId].polygonColourField) {
+			if (_layerConfig[layerId].polygonColourField && _layerConfig[layerId].polygonColourStops) {
 				console.log ('calculating stop');
-				styles['Polygon']['paint']['fill-color'] = layerviewer.stopsExpression (_layerConfig[layerId].polygonColourField, _layerConfig[layerId].polygonStyleStops.slice().reverse());	// Reverse the original definition: https://stackoverflow.com/a/30610528/180733
+				styles['Polygon']['paint']['fill-color'] = layerviewer.stopsExpression (_layerConfig[layerId].polygonColourField, _layerConfig[layerId].polygonColourStops.slice().reverse());	// Reverse the original definition: https://stackoverflow.com/a/30610528/180733
 				if (_layerConfig[layerId].fillOpacity) {
 					styles['Polygon']['paint']['fill-opacity'] = _layerConfig[layerId].fillOpacity;
 				}
