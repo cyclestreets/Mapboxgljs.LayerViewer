@@ -318,7 +318,7 @@ var layerviewer = (function ($) {
 			// Enable hover for this layer (for line-based layers)
 			hover: true,
 			
-			// Legend, either array of values (as same format as lineColourStops), or boolean true to use lineColourStops if that exists
+			// Legend, either array of values (as same format as polygonColourStops/lineColourStops), or boolean true to use polygonColourStops/lineColourStops if either exists (in that order of precedence)
 			legend: true,
 			
 			// Polygon style; currently supported values are 'grid' (blue boxes with dashed lines, intended for tessellating data), 'green', 'red', 'blue', or key/value pairs giving named colours if a polygonColourField is supplied
@@ -1380,8 +1380,9 @@ var layerviewer = (function ($) {
 		// Function to set the legend contents
 		setLegend: function (layerId, sublayerIntervals, sublayerLineColourStops)
 		{
-			// Determine the intervalsand line colour stops for the current layer
+			// Determine the intervals and polygon/line colour stops for the current layer
 			var intervals = _layerConfig[layerId].legend;
+			var polygonColourStops = _layerConfig[layerId].polygonColourStops;
 			var lineColourStops = _layerConfig[layerId].lineColourStops;
 			
 			// In sublayer mode, do not display unless a sublayer is specified
@@ -1402,23 +1403,28 @@ var layerviewer = (function ($) {
 			if (!intervals) {return;}
 			
 			// If intervals is bool true, and lineColourStops is defined, use these as the intervals
-			if ((intervals === true) && lineColourStops) {
-				intervals = lineColourStops;
+			if (intervals === true) {
+				if (polygonColourStops) {
+					intervals = polygonColourStops;
+				} else if (lineColourStops) {
+					intervals = lineColourStops;
+				}
 			}
 			
-			// If intervals is 'range', and lineColourStops is defined, generate range labels from these
-			if ((intervals == 'range') && lineColourStops) {
+			// If intervals is 'range', and polygonColourStops/lineColourStops is defined, generate range labels from these
+			if ((intervals == 'range') && (polygonColourStops || lineColourStops)) {
 				intervals = [];
 				var label;
 				var colour;
 				var value;
-				$.each (lineColourStops, function (index, interval) {
+				var stops = polygonColourStops || lineColourStops;
+				$.each (stops, function (index, interval) {
 					colour = interval[1];
 					value = interval[0];
 					if (index == 0) {
 						label = value + '+';
 					} else {
-						label = value + '-' + lineColourStops[index - 1][0];
+						label = value + '-' + stops[index - 1][0];
 					}
 					intervals.push ([label, colour]);
 				});
