@@ -3055,6 +3055,14 @@ var layerviewer = (function ($) {
 					}
 				});
 				
+				// Convert OSM edit link macro
+				if (template.indexOf ('{%osmeditlink}') >= 0) {
+					var centroid = layerviewer.polygonCentroid (feature);
+					var zoom = 19;	// #!# Need equivalent of getBoundsZoom, to replace this fixed value
+					var osmEditUrl = 'https://www.openstreetmap.org/edit#map=' + zoom + '/' + centroid.lat.toFixed(5) + '/' + centroid.lng.toFixed(5);
+					template = template.replace (/{%osmeditlink}/g, '<a class="edit" target="_blank" href="' + osmEditUrl + '">Add in OSM</a>');
+				}
+				
 				// Replace template placeholders; see: https://stackoverflow.com/a/378000
 				template = template.replace (/\{[^{}]+\}/g, function (path){
 					var resolvedPlaceholderText = Object.resolve (path.replace(/[{}]+/g, '') , feature);
@@ -3065,14 +3073,6 @@ var layerviewer = (function ($) {
 					}
 				});
 				
-				// Convert OSM edit link macro
-				if (template.indexOf ('{%osmeditlink}') >= 0) {
-					var centroid = layerviewer.polygonCentroid (feature);
-					var zoom = 19;	// #!# Need equivalent of getBoundsZoom, to replace this fixed value
-					var osmEditUrl = 'https://www.openstreetmap.org/edit#map=' + zoom + '/' + centroid.lat.toFixed(5) + '/' + centroid.lng.toFixed(5);
-					template = template.replace (/{%osmeditlink}/g, '<a class="edit" target="_blank" href="' + osmEditUrl + '">Add in OSM</a>');
-				}
-
 				html = template;
 				
 				// Support 'yearstable' macro, which generates a table of fields for each year, with parameters: first year, last year, fieldslist split by semicolon, labels for each field split by semicolon
