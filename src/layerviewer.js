@@ -227,6 +227,9 @@ var layerviewer = (function ($) {
 		
 		// Use jQuery tabs to tabify main menu
 		useJqueryTabsRendering: true,
+		
+		// Rounding decimal places in popups
+		popupsRoundingDP: 0
 	};
 	
 	// Layer definitions, which should be overriden by being supplied as an argument by the calling application
@@ -351,7 +354,10 @@ var layerviewer = (function ($) {
 				myField: function (value, feature) {return string;},
 				...
 			},
-
+			
+			// Rounding decimal places in popups
+			popupsRoundingDP: 0,
+			
 			// Make lookups (Popups / line colour stops) dependent on the value of a specified request parameter
 			sublayerParameter: false,
 			
@@ -3072,6 +3078,9 @@ var layerviewer = (function ($) {
 			// Otherwise, create a simple key/value pair HTML table dynamically
 			} else {
 				
+				// Determine rounding decimal places in popups
+				var popupsRoundingDP = layerviewer.glocalVariable ('popupsRoundingDP', layerId);
+				
 				html = '<table>';
 				var fieldLabel;
 				var fieldDescription;
@@ -3116,7 +3125,7 @@ var layerviewer = (function ($) {
 					}
 					
 					// Apply number_format (if numeric)
-					value = layerviewer.number_format (value);
+					value = layerviewer.number_format (value, popupsRoundingDP);
 					
 					// Convert TRUE to tick
 					if (value == 'TRUE') {value = '&#10004;';}
