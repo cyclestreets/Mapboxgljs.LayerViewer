@@ -3456,6 +3456,7 @@ var layerviewer = (function ($) {
 			
 			// Add renderers for each different feature type; see: https://docs.mapbox.com/mapbox-gl-js/example/multiple-geometries/
 			var layer;
+			var layerVariantId;
 			$.each (styles, function (geometryType, style) {
 				
 				// Determine if there is an icon; if so, the marker has been rendered already, so a render icon is not needed
@@ -3464,8 +3465,9 @@ var layerviewer = (function ($) {
 					if (iconUrl) {return;}
 				}
 				
+				layerVariantId = layerviewer.layerVariantId (layerId, geometryType);
 				layer = {
-					id: layerId + '_' + geometryType.toLowerCase(),
+					id: layerVariantId,
 					source: layerId,
 					type: style.type,
 					paint: style.paint,
@@ -3493,10 +3495,11 @@ var layerviewer = (function ($) {
 				
 				// Set up handlers to give a cursor pointer over each feature; see: https://docs.mapbox.com/mapbox-gl-js/example/hover-styles/
 				$.each (styles, function (geometryType, style) {
-					_map.on ('mousemove', layerId + '_' + geometryType.toLowerCase(), function () {
+					layerVariantId = layerviewer.layerVariantId (layerId, geometryType);
+					_map.on ('mousemove', layerVariantId, function () {
 						_map.getCanvas().style.cursor = 'pointer';
 					});
-					_map.on ('mouseleave', layerId + '_' + geometryType.toLowerCase(), function() {
+					_map.on ('mouseleave', layerVariantId, function() {
 						_map.getCanvas().style.cursor = '';
 					});
 				});
@@ -3505,7 +3508,7 @@ var layerviewer = (function ($) {
 				var popup;
 				var popupFeatureId = null;
 				$.each (styles, function (geometryType, style) {
-					_map.on ('click', layerId + '_' + geometryType.toLowerCase(), function (e) {
+					_map.on ('click', layerviewer.layerVariantId (layerId, geometryType), function (e) {
 						var feature = e.features[0];
 						
 						// Remove the popup if already opened and clicked again (implied close)
@@ -3553,6 +3556,13 @@ var layerviewer = (function ($) {
 					});
 				});
 			}
+		},
+		
+		
+		// Function to create a layer variant ID from a layerId and geometry type, e.g. foo_point, foo_linestring, foo_polygon
+		layerVariantId (layerId, geometryType)
+		{
+			return layerId + '_' + geometryType.toLowerCase ();
 		},
 		
 		
