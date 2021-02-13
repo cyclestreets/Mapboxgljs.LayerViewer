@@ -377,6 +377,9 @@ var layerviewer = (function ($) {
 			// Overlay code, as per popupHtml, but for the follow-on overlay data
 			overlayHtml: '<p>{properties.caption}</p>',
 			
+			// Optimisation flag to state that the data is static, i.e. no change based on map location
+			static: false,
+			
 			// Retrieval strategy - 'bbox' (default) sends w,s,e,n; 'polygon' sends as sw.lat,sw.lng:se.lat,se.lng:ne.lat,ne.lng:nw.lat,nw.lng:sw.lat,sw.lng, 'none' sends neither (i.e. static)
 			retrievalStrategy: 'bbox',
 			
