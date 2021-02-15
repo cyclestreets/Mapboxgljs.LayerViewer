@@ -2650,34 +2650,21 @@ var layerviewer = (function ($) {
 				apiData['beta'] = 1;
 			}
 			
-			// If no change (e.g. map move while boundary set, and no other changes), avoid re-requesting data
-			// This also means that KML and other static datasets will not get re-requested
-			var requestSerialised = $.param(apiData);
-			if (_requestCache[layerId]) {
-				if (requestSerialised == _requestCache[layerId]) {
-					return;
-				}
-			}
-			_requestCache[layerId] = requestSerialised;     // Update cache
-			
-			// Set/update a cookie containing the full request state
-			layerviewer.setStateCookie ();
-			
 			// Determine the API URL to use
 			var apiUrl = _layerConfig[layerId].apiCall;
 			if (! (/https?:\/\//).test (apiUrl)) {
 				apiUrl = _settings.apiBaseUrl + apiUrl;
 			}
-
+			
 			// If there is a region selected in the dropdown, and there is a space for a token in the apiUrl, swap it out
 			if (_settings.regionsSubstitutionToken) {
-				if (apiUrl.includes(_settings.regionsSubstitutionToken)) {
+				if (apiUrl.includes (_settings.regionsSubstitutionToken)) {
 					var selectedOption = $('#regionswitcher option:selected').val();
 					if (!selectedOption) {
 						selectedOption = $($('#regionswitcher option')[1]).val()
 					}
 					var region = (selectedOption == null ? $('#regionswitcher option').first().val() : selectedOption);
-					apiUrl = apiUrl.replace(_settings.regionsSubstitutionToken, region);
+					apiUrl = apiUrl.replace (_settings.regionsSubstitutionToken, region);
 				}
 			}
 			
@@ -2692,6 +2679,19 @@ var layerviewer = (function ($) {
 					delete apiData[field];
 				});
 			}
+			
+			// If no change (e.g. map move while boundary set, and no other changes), avoid re-requesting data
+			// This also means that KML and other static datasets will not get re-requested
+			var requestSerialised = apiUrl + '?' + $.param (apiData);		// Note that the apiUrl is included, as this could have had placeholder replacement
+			if (_requestCache.hasOwnProperty (layerId)) {
+				if (requestSerialised == _requestCache[layerId]) {
+					return;
+				}
+			}
+			_requestCache[layerId] = requestSerialised;     // Update cache
+			
+			// Set/update a cookie containing the full request state
+			layerviewer.setStateCookie ();
 			
 			// If an outstanding layer request is still active, cancel it
 			if (_xhrRequests[layerId] != null) {
