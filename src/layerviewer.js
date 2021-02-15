@@ -2258,7 +2258,7 @@ var layerviewer = (function ($) {
 		{
 			// Substitute each placeholder
 			var placeholder;
-			$.each(supportedPlaceholders, function (index, field) {
+			$.each (supportedPlaceholders, function (index, field) {
 				placeholder = '{%' + field + '}';
 				string = string.replace(placeholder, _settings[field]);
 			});
@@ -2494,7 +2494,7 @@ var layerviewer = (function ($) {
 				// Obtain the element name and value
 				var name = $(this).attr('name');
 				var value = $(this).val();
-
+				
 				// For checkboxes, degroup them by creating/adding a value that is checked, split by the delimiter
 				if (tagName == 'input' && type == 'checkbox') {
 					if (this.checked) {
@@ -2533,7 +2533,6 @@ var layerviewer = (function ($) {
 				}
 				
 				// For all other input types, if there is a value, register it
-				
 				if (value.length > 0) {
 					parameters[name] = value;	// Set value
 					return;	// Continue to next input
@@ -2681,7 +2680,19 @@ var layerviewer = (function ($) {
 					apiUrl = apiUrl.replace(_settings.regionsSubstitutionToken, region);
 				}
 			}
-
+			
+			// If the URL has placeholders that match form parameters, substitute those instead of treating them as query string parameters
+			var placeholdersRegexp = /{%([^}]+)}/g;
+			var urlPlaceholders = apiUrl.match (placeholdersRegexp);
+			var field;
+			if (urlPlaceholders) {
+				$.each (urlPlaceholders, function (index, urlPlaceholder) {
+					field = urlPlaceholder.replace (/{%([^}]+)}/, '$1');
+					apiUrl = apiUrl.replace (urlPlaceholder, apiData[field]);	// It is assumed that all will be present
+					delete (apiData[field]);
+				});
+			}
+			
 			// If an outstanding layer request is still active, cancel it
 			if (_xhrRequests[layerId] != null) {
 				_xhrRequests[layerId].abort();
@@ -2703,9 +2714,9 @@ var layerviewer = (function ($) {
 			// Fetch data
 			_xhrRequests[layerId] = $.ajax({
 				url: apiUrl,
+				data: apiData,
 				dataType: dataType,
 				crossDomain: true,	// Needed for IE<=9; see: https://stackoverflow.com/a/12644252/180733
-				data: apiData,
 				error: function (jqXHR, error, exception) {
 					
 					// Deregister from the request registry
