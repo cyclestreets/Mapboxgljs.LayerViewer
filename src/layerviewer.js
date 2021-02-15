@@ -2689,7 +2689,7 @@ var layerviewer = (function ($) {
 				$.each (urlPlaceholders, function (index, urlPlaceholder) {
 					field = urlPlaceholder.replace (/{%([^}]+)}/, '$1');
 					apiUrl = apiUrl.replace (urlPlaceholder, apiData[field]);	// It is assumed that all will be present
-					delete (apiData[field]);
+					delete apiData[field];
 				});
 			}
 			
