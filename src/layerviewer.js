@@ -177,6 +177,7 @@ var layerviewer = (function ($) {
 		// Region switcher, with areas defined as a GeoJSON file
 		regionsFile: false,
 		regionsField: false,
+		regionsNameField: false,
 		regionsSubstitutionToken: false,
 		regionSwitcherPosition: 'top-right',
 		regionSwitcherNullText: 'Move to area',
@@ -832,8 +833,8 @@ var layerviewer = (function ($) {
 							var coordinates = layerviewer.polygonCentroid (feature);
 							
 							// Add the region name as the popup content
-							var regionName = feature.properties[_settings.regionsField];
-							regionName = layerviewer.htmlspecialchars (layerviewer.ucfirst (regionName));
+							var regionName = (_settings.regionsNameField ? feature.properties[_settings.regionsNameField] : layerviewer.ucfirst (feature.properties[_settings.regionsField]));
+							regionName = layerviewer.htmlspecialchars (regionName);
 							
 							// Populate the popup and set its coordinates based on the feature found
 							popup.setLngLat (coordinates)
@@ -4097,21 +4098,14 @@ var layerviewer = (function ($) {
 				},
 				success: function (data, textStatus, jqXHR) {
 					
-					// Parse the areas to centre-points
+					// Parse the areas to centre-points, and extract the names
 					var regions = layerviewer.regionsToList (data);
-					
-					// Order list
-					var names = [];
-					$.each (regions, function (name, bounds) {
-						names.push (name);
-					});
-					names.sort();
 					
 					// Create a droplist
 					var html = '<select>';
 					html += '<option value="">' + _settings.regionSwitcherNullText + ':</option>';
-					$.each (names, function (index, name) {
-						html += '<option value="' + layerviewer.htmlspecialchars (name) + '">' + layerviewer.htmlspecialchars (layerviewer.ucfirst (name)) + '</option>';
+					$.each (regions, function (index, region) {
+						html += '<option value="' + layerviewer.htmlspecialchars (region.key) + '">' + layerviewer.htmlspecialchars (region.name) + '</option>';
 					});
 					html += '</select>';
 					
@@ -4119,14 +4113,20 @@ var layerviewer = (function ($) {
 					layerviewer.createControl ('regionswitcher', _settings.regionSwitcherPosition, 'info');
 					$('#regionswitcher').html (html);
 					
+					// Create a lookup of region key to bounds
+					var regionBounds = {};
+					$.each (regions, function (index, region) {
+						regionBounds[region.key] = region.bounds;
+					});
+					
 					// Add a handler
 					$('#regionswitcher select').change (function () {
 						if (this.value) {
 							var selectedRegion = this.value;
-							_map.fitBounds (regions[selectedRegion]);
+							_map.fitBounds (regionBounds[selectedRegion]);
 							
 							// Store selected region as a cookie
-							Cookies.set('selectedRegion', selectedRegion, {expires: 7});
+							Cookies.set ('selectedRegion', selectedRegion, {expires: 7});
 						}
 						
 						// #!# IE bug workaround: need to move the focus to something else, otherwise change works first time but not after that
@@ -4134,11 +4134,13 @@ var layerviewer = (function ($) {
 							$('#regionswitcher select').focus();
 						}
 					});
-
+					
 					// If we have a cookie saved with a region, load that region
-					if (names.includes (Cookies.get('selectedRegion'))) {
-						$('#regionswitcher select').val(Cookies.get('selectedRegion'));
-						$('#regionswitcher select').trigger('change');
+					var regionKeys = Object.keys (regionBounds);
+					var selectedRegion = Cookies.get ('selectedRegion');
+					if (regionKeys.includes (selectedRegion)) {
+						$('#regionswitcher select').val (selectedRegion);
+						$('#regionswitcher select').trigger ('change');
 					}
 
 				}
@@ -4148,28 +4150,42 @@ var layerviewer = (function ($) {
 		
 		/* private */ regionsToList: function (data)
 		{
-			// Start a list of regions
-			var regions = {};
+			// Start an ordered array of regions
+			var regions = [];
 			
 			// Ensure basic GeoJSON structure
 			if (!data.type) {return regions;}
 			if (data.type != 'FeatureCollection') {return regions;}
 			if (!data.features) {return regions;}
 			
-			// Parse each feature for name and location
+			// Parse each feature for key, name and location
+			var key;
 			var name;
 			var bounds;
 			$.each (data.features, function (index, feature) {
 				
-				// Get the name, or skip if not present
+				// Get the key, or skip if not present in this feature
 				if (!feature.properties[_settings.regionsField]) {return false;}
-				name = feature.properties[_settings.regionsField];
+				key = feature.properties[_settings.regionsField];
+				
+				// Get the name
+				var name = (_settings.regionsNameField ? feature.properties[_settings.regionsNameField] : layerviewer.ucfirst (key));
 				
 				// Get location; see: https://github.com/mapbox/geojson-extent
 				bounds = geojsonExtent (feature);
 				
 				// Register region
-				regions[name] = bounds;
+				regions.push ({
+					key: key,
+					name: name,
+					bounds: bounds
+				});
+			});
+			
+			// Reorder by name
+			var sortBy = 'name';
+			regions.sort (function (a, b) {
+				return a[sortBy].localeCompare (b[sortBy])
 			});
 			
 			// Return the list
