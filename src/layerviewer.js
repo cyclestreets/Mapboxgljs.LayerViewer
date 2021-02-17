@@ -3014,8 +3014,8 @@ var layerviewer = (function ($) {
 				}
 			})
 		},
-
-
+		
+		
 		// Function to construct the popup/overlay content HTML
 		renderDetailsHtml: function (feature, template /* optional */, layerId)
 		{
@@ -3062,6 +3062,14 @@ var layerviewer = (function ($) {
 					template = template.replace ('{%streetview}', layerviewer.streetViewTemplate (feature));
 				}
 				
+				// Convert map position macro
+				// #!# Ideally this would be the exact located/clicked position, but that adds quite a bit more complexity
+				if (template.indexOf ('{%mapposition}') >= 0) {
+					var centre = _map.getCenter ();
+					var zoom = _map.getZoom ();
+					var mapPosition = zoom.toFixed(1) + '/' + centre.lat.toFixed(5) + '/' + centre.lng.toFixed(5);		// Should be the same as the hash, if the hash exists
+					template = template.replace ('{%mapposition}', mapPosition);
+				}
 				
 				// If any property is null, show '?' instead
 				$.each (feature.properties, function (key, value) {
