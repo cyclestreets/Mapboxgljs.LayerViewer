@@ -181,6 +181,7 @@ var layerviewer = (function ($) {
 		regionsSubstitutionToken: false,
 		regionSwitcherPosition: 'top-right',
 		regionSwitcherNullText: 'Move to area',
+		regionSwitcherCallback: false, // Called when the region switch is detected
 		
 		// Initial view of all regions; will use regionsFile
 		initialRegionsView: false,
@@ -4135,6 +4136,11 @@ var layerviewer = (function ($) {
 							
 							// Store selected region as a cookie
 							Cookies.set ('selectedRegion', selectedRegion, {expires: 7});
+
+							// Call any callback
+							if (_settings.regionSwitcherCallback) {
+								_settings.regionSwitcherCallback (selectedRegion);
+							}
 						}
 						
 						// #!# IE bug workaround: need to move the focus to something else, otherwise change works first time but not after that
