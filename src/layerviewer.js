@@ -203,6 +203,9 @@ var layerviewer = (function ($) {
 		// Form rescan path
 		formRescanPath: 'form#data #{layerId}',
 		
+		// Custom selector the for selector
+		selector: '#selector',
+		
 		// Custom data loading spinner selector for layerviewer. For layer specific spinner, should contain layerId
 		dataLoadingSpinnerSelector: '#selector li.{layerId} img.loading',
 		
@@ -577,7 +580,7 @@ var layerviewer = (function ($) {
 			layerviewer.loadIdFromUrl (urlParameters);
 			
 			// Toggle map data layers on/off when checkboxes changed
-			$('#selector input[type="checkbox"]').change (function(event) {
+			$(_settings.selector + ' input[type="checkbox"]').change (function(event) {
 				layerviewer.toggleDataLayer (event.target);
 			});
 			
@@ -969,7 +972,7 @@ var layerviewer = (function ($) {
 			}
 			
 			// Handle selection/deselection of section checkboxes
-			$('nav #selector input').change (function () {
+			$('nav ' + _settings.selector + ' input').change (function () {
 				
 				// Add background highlight to this tab
 				$(this).parent ('li').toggleClass (_settings.loadTabsClassToggle, this.checked);
@@ -988,7 +991,7 @@ var layerviewer = (function ($) {
 			});
 			
 			// Allow double-clicking of each menu item (surrounding each checkbox) as implicit selection of its checkbox
-			$('nav #selector li a').dblclick(function () {
+			$('nav ' + _settings.selector + ' li a').dblclick(function () {
 				$(this).parent ().find ('input').click ();
 			});
 			
@@ -1189,7 +1192,7 @@ var layerviewer = (function ($) {
 		// Function to get the layer name from its ID
 		layerNameFromId: function (layerId)
 		{
-			return $('#selector li.' + layerId + ' a').text();
+			return $(_settings.selector + ' li.' + layerId + ' a').text();
 		},
 		
 		
@@ -1523,7 +1526,7 @@ var layerviewer = (function ($) {
 			});
 			
 			// Create a list of the enabled layers
-			$('#selector input:checked').map (function () {
+			$(_settings.selector + ' input:checked').map (function () {
 				var layerId = this.id.replace('show_', '');
 				_layers[layerId] = true;
 			});
@@ -2274,8 +2277,8 @@ var layerviewer = (function ($) {
 		enableLayer: function (layerId)
 		{
 			// If the layer is not available, give a dialog
-			if ($('#selector li.' + layerId).hasClass('unavailable')) {
-				vex.dialog.alert ('Sorry, the ' + $('#selector li.' + layerId + ' a').text().toLowerCase() + ' layer is not available yet.');
+			if ($(_settings.selector + ' li.' + layerId).hasClass('unavailable')) {
+				vex.dialog.alert ('Sorry, the ' + $(_settings.selector + ' li.' + layerId + ' a').text().toLowerCase() + ' layer is not available yet.');
 				$('nav li.' + layerId + ' input').prop('checked', false);
 				return;
 			}
@@ -2465,10 +2468,10 @@ var layerviewer = (function ($) {
 					var message = 'Zoom in to show all ' + layerviewer.layerNameFromId (layerId).toLowerCase() + ' markers - only a selection are shown due to the volume.';
 				}
 				_message.show (message);
-				$('#selector li.' + layerId + ' p.total').hide();
+				$(_settings.selector + ' li.' + layerId + ' p.total').hide();
 			} else {
 				_message.hide ();
-				$('#selector li.' + layerId + ' p.total').show();
+				$(_settings.selector + ' li.' + layerId + ' p.total').show();
 			}
 		},
 		
@@ -3597,7 +3600,7 @@ var layerviewer = (function ($) {
 			var totalItems = Object.keys(features).length;
 			
 			// Update the total count in the menu
-			$('#selector li.' + layerId + ' p.total').html(totalItems);
+			$(_settings.selector + ' li.' + layerId + ' p.total').html(totalItems);
 			
 			// Add the export link button(s) if not currently present
 			if ( $('#sections #' + layerId + ' div.export p a').length == 0) {	// i.e. currently unlinked
@@ -3942,7 +3945,7 @@ var layerviewer = (function ($) {
 			}
 			
 			// Remove the total count
-			$('#selector li.' + layerId + ' p.total').html('');
+			$(_settings.selector + ' li.' + layerId + ' p.total').html('');
 			
 			// Remove/reset the export link, and its count
 			if ($('#sections #' + layerId + ' div.export p a').length) {	// i.e. currently linked
