@@ -68,7 +68,7 @@ var layerviewer = (function ($) {
 		// Enable hover for all (line-based) layers
 		hover: true,
 
-		// Geolocation position
+		// Geolocation position, or false for no geolocation element
 		geolocationPosition: 'top-right',
 
 		// Use existing geolocation button instead of Mapbox's
@@ -2036,6 +2036,11 @@ var layerviewer = (function ($) {
 		// https://github.com/mapbox/mapbox-gl-js/issues/5464
 		geolocation: function (geolocationElementId = false, trackUser = false)
 		{
+			// Exit if don't want a geolocation element
+			if (!_settings.geolocationPosition) {
+				return;
+			}
+			
 			// Create a tracking control
 			_geolocate = new mapboxgl.GeolocateControl ({
 				positionOptions: {
