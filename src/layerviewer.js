@@ -182,6 +182,7 @@ var layerviewer = (function ($) {
 		regionSwitcherPosition: 'top-right',
 		regionSwitcherNullText: 'Move to area',
 		regionSwitcherCallback: false, // Called when the region switch is detected
+		regionSwitcherDefaultRegion: false, // Default region to load if no region saved in cookie
 		
 		// Initial view of all regions; will use regionsFile
 		initialRegionsView: false,
@@ -4162,6 +4163,12 @@ var layerviewer = (function ($) {
 					var selectedRegion = Cookies.get ('selectedRegion');
 					if (regionKeys.includes (selectedRegion)) {
 						$('#regionswitcher select').val (selectedRegion);
+						$('#regionswitcher select').trigger ('change');
+					}
+
+					// If we have a default region stored in the settings, load that
+					if (_settings.regionSwitcherDefaultRegion) {
+						$('#regionswitcher select').val (_settings.regionSwitcherDefaultRegion);
 						$('#regionswitcher select').trigger ('change');
 					}
 
