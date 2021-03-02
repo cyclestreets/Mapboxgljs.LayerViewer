@@ -430,6 +430,7 @@ var layerviewer = (function ($) {
 	var _embedMode = false;
 	var _betaMode = false;
 	var _message = {};
+	var _regionBounds = {};
 	var _geolocate = null; // Store the geolocation element
 	var _geolocationAvailable = false; // Store geolocation availability, to automatically disable location tracking if user has not selected the right permissions
 	var _customPanningIndicatorAction = false; // Custom function that can be run on click action panning on and off, i.e. to control the visual state of a custom panning button
@@ -620,7 +621,14 @@ var layerviewer = (function ($) {
 		// Getter for map
 		getMap: function ()
 		{
-			return _map; 
+			return _map;
+		},
+		
+		
+		// Getter for region bounds
+		/* public */ getRegionBounds: function ()
+		{
+			return _regionBounds;
 		},
 		
 		
@@ -4132,16 +4140,15 @@ var layerviewer = (function ($) {
 					$('#regionswitcher').html (html);
 					
 					// Create a lookup of region key to bounds
-					var regionBounds = {};
 					$.each (regions, function (index, region) {
-						regionBounds[region.key] = region.bounds;
+						_regionBounds[region.key] = region.bounds;
 					});
 					
 					// Add a handler
 					$('#regionswitcher select').change (function () {
 						if (this.value) {
 							var selectedRegion = this.value;
-							_map.fitBounds (regionBounds[selectedRegion]);
+							_map.fitBounds (_regionBounds[selectedRegion]);
 							
 							// Store selected region as a cookie
 							Cookies.set ('selectedRegion', selectedRegion, {expires: 7});
@@ -4159,7 +4166,7 @@ var layerviewer = (function ($) {
 					});
 					
 					// If we have a cookie saved with a region, load that region
-					var regionKeys = Object.keys (regionBounds);
+					var regionKeys = Object.keys (_regionBounds);
 					var selectedRegion = Cookies.get ('selectedRegion');
 					if (regionKeys.includes (selectedRegion)) {
 						$('#regionswitcher select').val (selectedRegion);
