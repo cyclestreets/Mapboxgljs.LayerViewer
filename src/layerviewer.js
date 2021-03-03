@@ -266,6 +266,9 @@ var layerviewer = (function ($) {
 			// Callback for data conversion just after receiving the data
 			convertData: function (data) {return somefunction (data);},
 			
+			// Whether to fit the data within the map initially upon loading, adjusting the zoom accordingly
+			fitInitial: false,
+			
 			// Minimum zoom required for this layer
 			minZoom: false,
 			
@@ -426,6 +429,7 @@ var layerviewer = (function ($) {
 	var _parameters = {};
 	var _xhrRequests = {};
 	var _requestCache = {};
+	var _fitInitial = {};
 	var _title = false;
 	var _embedMode = false;
 	var _betaMode = false;
@@ -2312,6 +2316,11 @@ var layerviewer = (function ($) {
 			// #!# Ideally this would appear below the style switcher, but this does not seem to be controllable
 			layerviewer.setLegend (layerId, false, false);
 			
+			// If the data should initially be fit to the data extent, set a flag for first load
+			if (_layerConfig[layerId].fitInitial) {
+				_fitInitial[layerId] = true;
+			}
+			
 			// Fetch the data
 			layerviewer.getData (layerId, _parameters[layerId]);
 			
@@ -3486,6 +3495,13 @@ var layerviewer = (function ($) {
 						layout: {}
 					}
 				}
+			}
+			
+			// Perform initial fit of map extent, if required
+			if (_fitInitial[layerId]) {
+				var geojsonBounds = geojsonExtent (data);
+				_map.fitBounds (geojsonBounds, {padding: 20});
+				_fitInitial[layerId] = false;		// Disable for further map pannings; renabling the layer will reset
 			}
 			
 			// Define the data source; rather than use addLayer and specify the source directly, we have to split the source addition and the layer addition, as the layers can have different feature types (point/line/polygon), which need different renderers
