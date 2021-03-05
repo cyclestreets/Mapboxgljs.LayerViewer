@@ -437,6 +437,7 @@ var layerviewer = (function ($) {
 	var _betaMode = false;
 	var _message = {};
 	var _regionBounds = {};
+	var _regionSwitcherDefaultRegionFromUrl = false;
 	var _geolocate = null; // Store the geolocation element
 	var _geolocationAvailable = false; // Store geolocation availability, to automatically disable location tracking if user has not selected the right permissions
 	var _customPanningIndicatorAction = false; // Custom function that can be run on click action panning on and off, i.e. to control the visual state of a custom panning button
@@ -741,7 +742,7 @@ var layerviewer = (function ($) {
 			if (pathComponents) {
 				
 				if (_settings.regionSwitcherPermalinks) {
-					_settings.regionSwitcherDefaultRegion = pathComponents[0];
+					_regionSwitcherDefaultRegionFromUrl = pathComponents[0];
 					pathComponents.splice (0, 1);	// Shift from start, so that the indexes below work as normal
 				}
 				
@@ -4177,7 +4178,7 @@ var layerviewer = (function ($) {
 						_regionBounds[region.key] = region.bounds;
 					});
 					
-					// Add a handler
+					// Add a handler for changes to the select box
 					$('#regionswitcher select').change (function () {
 						if (this.value) {
 							
@@ -4209,20 +4210,33 @@ var layerviewer = (function ($) {
 						}
 					});
 					
-					// If we have a cookie saved with a region, load that region
+					// Start default region determination
+					var defaultRegion = false;
+					
+					// If we have a default region stored in the settings, set it as the default
+					if (_settings.regionSwitcherDefaultRegion) {
+						defaultRegion = _settings.regionSwitcherDefaultRegion;
+					}
+					
+					// If we have a cookie saved with a region, set it as the default
 					var regionKeys = Object.keys (_regionBounds);
 					var selectedRegion = Cookies.get ('selectedRegion');
 					if (regionKeys.includes (selectedRegion)) {
-						$('#regionswitcher select').val (selectedRegion);
+						defaultRegion = selectedRegion;
+					}
+					
+					// If region switcher permalinks have been enabled, and a region is specified, and it exists, set it as the default
+					if (_regionSwitcherDefaultRegionFromUrl) {
+						if (regionKeys.includes (_regionSwitcherDefaultRegionFromUrl)) {
+							defaultRegion = _regionSwitcherDefaultRegionFromUrl;
+						}
+					}
+					
+					// If a default region has now been set, change the region selector programmatically
+					if (defaultRegion) {
+						$('#regionswitcher select').val (defaultRegion);
 						$('#regionswitcher select').trigger ('change');
 					}
-
-					// If we have a default region stored in the settings, load that
-					if (_settings.regionSwitcherDefaultRegion) {
-						$('#regionswitcher select').val (_settings.regionSwitcherDefaultRegion);
-						$('#regionswitcher select').trigger ('change');
-					}
-
 				}
 			});
 		},
