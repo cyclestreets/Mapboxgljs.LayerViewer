@@ -184,6 +184,7 @@ var layerviewer = (function ($) {
 		regionSwitcherCallback: false, // Called when the region switch is detected
 		regionSwitcherDefaultRegion: false, // Default region to load if no region saved in cookie
 		regionSwitcherMaxZoom: false,
+		regionSwitcherUrlPersistency: false,
 		
 		// Initial view of all regions; will use regionsFile
 		initialRegionsView: false,
@@ -737,6 +738,11 @@ var layerviewer = (function ($) {
 			var pathComponents = window.location.pathname.split('/').slice(1);
 			if (pathComponents) {
 				
+				if (_settings.regionSwitcherUrlPersistency) {
+					_settings.regionSwitcherDefaultRegion = pathComponents[0];
+					pathComponents.splice (0, 1);	// Shift from start, so that the indexes below work as normal
+				}
+				
 				// Obtain the sections and form parameters from the URL
 				var formParameters = layerviewer.urlSlugToFormParameters (pathComponents[0]);
 				
@@ -1068,7 +1074,8 @@ var layerviewer = (function ($) {
 		
 		// Function to update the URL, to provide persistency when a link is circulated
 		// Format is /<baseUrl>/<layerId1>:<param1key>=<param1value>&[...],<layerId2>[...]/#<mapHashWithStyle>
-		updateUrl: function ()
+		// If the regionSwitcherUrlPersistency setting is on, this appears after the baseUrl as an extra component
+		updateUrl: function (region)
 		{
 			// End if not supported, e.g. IE9
 			if (!history.pushState) {return;}
@@ -1076,8 +1083,15 @@ var layerviewer = (function ($) {
 			// Obtain the URL slug
 			var urlSlug = layerviewer.formParametersToUrlSlug ();
 			
+			// Obtain the region component, if enabled
+			var regionComponent = '';
+			if (_settings.regionSwitcherUrlPersistency) {
+				regionComponent = region + '/';
+			}
+			
 			// Construct the URL
 			var url = _settings.baseUrl;	// Absolute URL
+			url += regionComponent;
 			url += urlSlug;
 			url += window.location.hash;
 			
@@ -4175,7 +4189,12 @@ var layerviewer = (function ($) {
 							
 							// Store selected region as a cookie
 							Cookies.set ('selectedRegion', selectedRegion, {expires: 7});
-
+							
+							// Update the URL if required
+							if (_settings.regionSwitcherUrlPersistency) {
+								layerviewer.updateUrl (selectedRegion);
+							}
+							
 							// Call any callback
 							if (_settings.regionSwitcherCallback) {
 								_settings.regionSwitcherCallback (selectedRegion);
