@@ -735,7 +735,9 @@ var layerviewer = (function ($) {
 			var urlParameters = {};
 			
 			// Split the path by slash; see: https://stackoverflow.com/a/8086637
-			var pathComponents = window.location.pathname.split('/').slice(1);
+			var url = window.location.pathname;
+			url = url.substr (_settings.baseUrl.length);	// Remove baseUrl from start
+			var pathComponents = url.split ('/');
 			if (pathComponents) {
 				
 				if (_settings.regionSwitcherPermalinks) {
