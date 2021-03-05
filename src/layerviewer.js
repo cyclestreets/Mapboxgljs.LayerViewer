@@ -183,6 +183,7 @@ var layerviewer = (function ($) {
 		regionSwitcherNullText: 'Move to area',
 		regionSwitcherCallback: false, // Called when the region switch is detected
 		regionSwitcherDefaultRegion: false, // Default region to load if no region saved in cookie
+		regionSwitcherMaxZoom: false,
 		
 		// Initial view of all regions; will use regionsFile
 		initialRegionsView: false,
@@ -4163,8 +4164,14 @@ var layerviewer = (function ($) {
 					// Add a handler
 					$('#regionswitcher select').change (function () {
 						if (this.value) {
+							
+							// Fit bounds
 							var selectedRegion = this.value;
-							_map.fitBounds (_regionBounds[selectedRegion]);
+							var options = {};
+							if (_settings.regionSwitcherMaxZoom) {
+								options.maxZoom = _settings.regionSwitcherMaxZoom;
+							}
+							_map.fitBounds (_regionBounds[selectedRegion], options);
 							
 							// Store selected region as a cookie
 							Cookies.set ('selectedRegion', selectedRegion, {expires: 7});
