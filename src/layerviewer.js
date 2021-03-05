@@ -2278,11 +2278,15 @@ var layerviewer = (function ($) {
 		// Wrapper function to add a geocoder control
 		geocoder: function ()
 		{
+			// End if control not present on the page
+			var geocoderSelector = '.geocoder input';
+			if (!$(geocoderSelector).length) {return;}
+			
 			// Geocoder URL; re-use of settings values is supported, represented as placeholders {%apiBaseUrl}, {%apiKey}, {%autocompleteBbox}
 			var geocoderApiUrl = layerviewer.settingsPlaceholderSubstitution (_settings.geocoderApiUrl, ['apiBaseUrl', 'apiKey', 'autocompleteBbox']);
 			
 			// Attach the autocomplete library behaviour to the location control
-			autocomplete.addTo ('.geocoder input', {
+			autocomplete.addTo (geocoderSelector, {
 				sourceUrl: geocoderApiUrl,
 				select: function (event, ui) {
 					var bbox = ui.item.feature.properties.bbox.split(',');	// W,S,E,N
