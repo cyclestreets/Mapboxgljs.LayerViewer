@@ -184,7 +184,7 @@ var layerviewer = (function ($) {
 		regionSwitcherCallback: false, // Called when the region switch is detected
 		regionSwitcherDefaultRegion: false, // Default region to load if no region saved in cookie
 		regionSwitcherMaxZoom: false,
-		regionSwitcherUrlPersistency: false,
+		regionSwitcherPermalinks: false,
 		
 		// Initial view of all regions; will use regionsFile
 		initialRegionsView: false,
@@ -738,7 +738,7 @@ var layerviewer = (function ($) {
 			var pathComponents = window.location.pathname.split('/').slice(1);
 			if (pathComponents) {
 				
-				if (_settings.regionSwitcherUrlPersistency) {
+				if (_settings.regionSwitcherPermalinks) {
 					_settings.regionSwitcherDefaultRegion = pathComponents[0];
 					pathComponents.splice (0, 1);	// Shift from start, so that the indexes below work as normal
 				}
@@ -1074,7 +1074,7 @@ var layerviewer = (function ($) {
 		
 		// Function to update the URL, to provide persistency when a link is circulated
 		// Format is /<baseUrl>/<layerId1>:<param1key>=<param1value>&[...],<layerId2>[...]/#<mapHashWithStyle>
-		// If the regionSwitcherUrlPersistency setting is on, this appears after the baseUrl as an extra component
+		// If the regionSwitcherPermalinks setting is on, this appears after the baseUrl as an extra component
 		updateUrl: function (region)
 		{
 			// End if not supported, e.g. IE9
@@ -1085,7 +1085,7 @@ var layerviewer = (function ($) {
 			
 			// Obtain the region component, if enabled
 			var regionComponent = '';
-			if (_settings.regionSwitcherUrlPersistency) {
+			if (_settings.regionSwitcherPermalinks) {
 				regionComponent = region + '/';
 			}
 			
@@ -4191,7 +4191,7 @@ var layerviewer = (function ($) {
 							Cookies.set ('selectedRegion', selectedRegion, {expires: 7});
 							
 							// Update the URL if required
-							if (_settings.regionSwitcherUrlPersistency) {
+							if (_settings.regionSwitcherPermalinks) {
 								layerviewer.updateUrl (selectedRegion);
 							}
 							
