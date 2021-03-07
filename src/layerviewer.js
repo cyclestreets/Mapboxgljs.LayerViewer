@@ -177,6 +177,7 @@ var layerviewer = (function ($) {
 		// Region switcher, with areas defined as a GeoJSON file
 		regionsFile: false,
 		regionsField: false,
+		regionPadding: false, // Padding when zooming to a region
 		regionsNameField: false,
 		regionsSubstitutionToken: false,
 		regionSwitcherPosition: 'top-right',
@@ -4192,6 +4193,12 @@ var layerviewer = (function ($) {
 							if (_settings.regionSwitcherMaxZoom) {
 								options.maxZoom = _settings.regionSwitcherMaxZoom;
 							}
+
+							// Add padding if necessary
+							if (_settings.regionPadding) {
+								options.padding = _settings.regionPadding;
+							}
+
 							_map.fitBounds (_regionBounds[selectedRegion], options);
 							
 							// Store selected region as a cookie
