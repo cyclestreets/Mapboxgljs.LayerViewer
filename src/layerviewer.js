@@ -3440,11 +3440,12 @@ var layerviewer = (function ($) {
 			
 			// If we have polygonColourStops (to be interpolated linearly)
 			if (_layerConfig[layerId].polygonColourField && _layerConfig[layerId].polygonColourStops) {
-				styles['Polygon']['paint']['fill-color'] = layerviewer.stopsExpression (_layerConfig[layerId].polygonColourField, _layerConfig[layerId].polygonColourStops.slice().reverse());	// Reverse the original definition: https://stackoverflow.com/a/30610528/180733
+				styles['Polygon']['paint']['fill-color'] = layerviewer.stopsExpression (_layerConfig[layerId].polygonColourField, _layerConfig[layerId].polygonColourStops.slice().reverse(), true);	// Reverse the original definition: https://stackoverflow.com/a/30610528/180733
+				styles['Polygon']['paint']['fill-outline-color'] = '#aaa';
 				if (_layerConfig[layerId].fillOpacity) {
 					styles['Polygon']['paint']['fill-opacity'] = _layerConfig[layerId].fillOpacity;
 				}
-
+				
 			// Set key,value colour field
 			} else if (_layerConfig[layerId].polygonColourField) {
 				// Construct the style definition; see e.g. https://stackoverflow.com/a/49611427 and https://docs.mapbox.com/mapbox-gl-js/example/cluster-html/
@@ -3865,7 +3866,7 @@ var layerviewer = (function ($) {
 		
 		
 		// Function to render a stops expression; see: https://github.com/mapbox/mapbox-gl-js/commit/9ac35b1059ed5f9f7798c37700b52259ce9a815d#diff-bde08934db09c688e8b1d2c0a4d2bce0
-		stopsExpression: function (property, stops)
+		stopsExpression: function (property, stops, supportNullTransparent)
 		{
 			// Start the expression
 			var expression = [
@@ -3878,6 +3879,16 @@ var layerviewer = (function ($) {
 			$.each (stops, function (key, value) {
 				expression.push (value[0], value[1]);
 			});
+			
+			// If support is enabled for a value of null being transparent, wrap the expression with a case; see: https://dev.to/laney/mapbox-how-to-conditionally-style-features-based-on-covid-19-data-h78
+			if (supportNullTransparent) {
+				expression = [
+					'case',
+						['==', ['get', property], null],
+							'transparent',
+						expression
+				];
+			}
 			
 			// Return the completed expression
 			return expression;
