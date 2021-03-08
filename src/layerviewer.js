@@ -438,6 +438,7 @@ var layerviewer = (function ($) {
 	var _message = {};
 	var _regionBounds = {};
 	var _regionSwitcherDefaultRegionFromUrl = false;
+	var _selectedRegion = false;
 	var _geolocate = null; // Store the geolocation element
 	var _geolocationAvailable = false; // Store geolocation availability, to automatically disable location tracking if user has not selected the right permissions
 	var _customPanningIndicatorAction = false; // Custom function that can be run on click action panning on and off, i.e. to control the visual state of a custom panning button
@@ -1078,7 +1079,7 @@ var layerviewer = (function ($) {
 		// Function to update the URL, to provide persistency when a link is circulated
 		// Format is /<baseUrl>/<layerId1>:<param1key>=<param1value>&[...],<layerId2>[...]/#<mapHashWithStyle>
 		// If the regionSwitcherPermalinks setting is on, this appears after the baseUrl as an extra component
-		updateUrl: function (region)
+		updateUrl: function ()
 		{
 			// End if not supported, e.g. IE9
 			if (!history.pushState) {return;}
@@ -1086,15 +1087,13 @@ var layerviewer = (function ($) {
 			// Obtain the URL slug
 			var urlSlug = layerviewer.formParametersToUrlSlug ();
 			
-			// Obtain the region component, if enabled
-			var regionComponent = '';
+			// Obtain the region component, if enabled, prefixing it to the URL slug
 			if (_settings.regionSwitcherPermalinks) {
-				regionComponent = region + '/';
+				urlSlug = _selectedRegion + '/' + urlSlug;
 			}
 			
 			// Construct the URL
 			var url = _settings.baseUrl;	// Absolute URL
-			url += regionComponent;
 			url += urlSlug;
 			url += window.location.hash;
 			
@@ -4198,25 +4197,25 @@ var layerviewer = (function ($) {
 						if (this.value) {
 							
 							// Fit bounds
-							var selectedRegion = this.value;
+							_selectedRegion = this.value;
 							var options = {};
 							if (_settings.regionSwitcherMaxZoom) {
 								options.maxZoom = _settings.regionSwitcherMaxZoom;
 							}
 							
-							_map.fitBounds (_regionBounds[selectedRegion], options);
+							_map.fitBounds (_regionBounds[_selectedRegion], options);
 							
 							// Store selected region as a cookie
-							Cookies.set ('selectedRegion', selectedRegion, {expires: 7});
+							Cookies.set ('selectedRegion', _selectedRegion, {expires: 7});
 							
 							// Update the URL if required
 							if (_settings.regionSwitcherPermalinks) {
-								layerviewer.updateUrl (selectedRegion);
+								layerviewer.updateUrl ();
 							}
 							
 							// Call any callback
 							if (_settings.regionSwitcherCallback) {
-								_settings.regionSwitcherCallback (selectedRegion);
+								_settings.regionSwitcherCallback (_selectedRegion);
 							}
 						}
 						
@@ -4250,6 +4249,7 @@ var layerviewer = (function ($) {
 					
 					// If a default region has now been set, change the region selector programmatically
 					if (defaultRegion) {
+						_selectedRegion = defaultRegion;
 						$('#regionswitcher select').val (defaultRegion);
 						$('#regionswitcher select').trigger ('change');
 					}
