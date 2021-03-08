@@ -596,7 +596,6 @@ var layerviewer = (function ($) {
 			
 			// Enable embed dialog handler
 			layerviewer.embedHandler ();
-
 		},
 
 
@@ -1020,7 +1019,7 @@ var layerviewer = (function ($) {
 			});
 			
 			// Allow any form change within a layer as implicit selection of its checkbox
-			$('form#data .filters :input').change (function () {
+			$('form#data .filters :input').click (function () {		// This uses click rather than change, so that clicking but not actually changing a dropdown is an implicit enable
 				layerviewer.formChangeImplicitCheckbox (this);
 			});
 			$('form#data #sections div :text, form#data #sections div input[type="search"]').on ('input', function() {
