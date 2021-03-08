@@ -976,21 +976,22 @@ var layerviewer = (function ($) {
 			$.each (defaultLayers, function (index, layerId) {
 				
 				// Add background highlight to this tab
-				$('nav li.' + layerId).addClass(_settings.loadTabsClassToggle);
+				$(_settings.selector + ' li.' + layerId).addClass(_settings.loadTabsClassToggle);
 				
 				// Enable checkbox
-				$('nav input#show_' + layerId).click();
+				$(_settings.selector + ' input#show_' + layerId).click ();
 			});
 			
+			// Add tabbing behaviour, if required
 			if (_settings.useJqueryTabsRendering) {
 				
 				// Enable tabbing of main menu
-				$('nav').tabs();
+				$('nav').tabs ();
 				
 				// If a default tab is defined (or several, in which case use the first), switch to its contents (controls); see: https://stackoverflow.com/a/7916955/180733
 				if (defaultLayers[0]) {
-					var index = $('nav li.' + defaultLayers[0]).index();
-					$('nav').tabs('option', 'active', index);
+					var index = $('nav li.' + defaultLayers[0]).index ();
+					$('nav').tabs ('option', 'active', index);
 				}
 			}
 			
@@ -1008,7 +1009,7 @@ var layerviewer = (function ($) {
 					// If enabling, switch to its tab contents (controls)
 					if (this.checked) {
 						var index = $(this).parent ().index ();
-						$('nav').tabs('option', 'active', index);
+						$('nav').tabs ('option', 'active', index);
 					}
 				}
 			});
@@ -1032,8 +1033,8 @@ var layerviewer = (function ($) {
 		formChangeImplicitCheckbox: function (changedInputPath)
 		{
 			var layerId = $(changedInputPath).closest('#sections > div').attr('id');	// Assumes #sections contains layer DIVs directly
-			if ($('nav input#show_' + layerId).prop ('checked') != true) {
-				$('nav input#show_' + layerId).click ();
+			if ($(_settings.selector + ' input#show_' + layerId).prop ('checked') != true) {
+				$(_settings.selector + ' input#show_' + layerId).click ();
 			}
 		},
 		
@@ -2315,9 +2316,9 @@ var layerviewer = (function ($) {
 		enableLayer: function (layerId)
 		{
 			// If the layer is not available, give a dialog
-			if ($(_settings.selector + ' li.' + layerId).hasClass('unavailable')) {
+			if ($(_settings.selector + ' li.' + layerId).hasClass ('unavailable')) {
 				vex.dialog.alert ('Sorry, the ' + $(_settings.selector + ' li.' + layerId + ' a').text().toLowerCase() + ' layer is not available yet.');
-				$('nav li.' + layerId + ' input').prop('checked', false);
+				$(_settings.selector + ' li.' + layerId + ' input').prop('checked', false);
 				return;
 			}
 			
