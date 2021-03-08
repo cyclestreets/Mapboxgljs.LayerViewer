@@ -995,7 +995,7 @@ var layerviewer = (function ($) {
 			}
 			
 			// Handle selection/deselection of section checkboxes
-			$('nav ' + _settings.selector + ' input').change (function () {
+			$(_settings.selector + ' input').change (function () {
 				
 				// Add background highlight to this tab
 				$(this).parent ('li').toggleClass (_settings.loadTabsClassToggle, this.checked);
@@ -1014,7 +1014,7 @@ var layerviewer = (function ($) {
 			});
 			
 			// Allow double-clicking of each menu item (surrounding each checkbox) as implicit selection of its checkbox
-			$('nav ' + _settings.selector + ' li a').dblclick(function () {
+			$(_settings.selector + ' li a').dblclick(function () {
 				$(this).parent ().find ('input').click ();
 			});
 			
