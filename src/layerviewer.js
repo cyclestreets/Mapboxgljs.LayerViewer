@@ -2731,7 +2731,7 @@ var layerviewer = (function ($) {
 			
 			// If no change (e.g. map move while boundary set, and no other changes), avoid re-requesting data
 			// This also means that KML and other static datasets will not get re-requested
-			var requestSerialised = apiUrl + '?' + $.param (apiData);		// Note that the apiUrl is included, as this could have had placeholder replacement
+			var requestSerialised = apiUrl + (!$.isEmptyObject (_settings.style) ? '?' + $.param (apiData) : '');		// Note that the apiUrl is included, as this could have had placeholder replacement
 			if (_requestCache.hasOwnProperty (layerId)) {
 				if (requestSerialised == _requestCache[layerId]) {
 					return;
