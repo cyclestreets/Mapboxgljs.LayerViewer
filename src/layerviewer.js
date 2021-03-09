@@ -370,6 +370,7 @@ var layerviewer = (function ($) {
 			popupsRoundingDP: 0,
 			
 			// Make lookups (Popups / line colour stops) dependent on the value of a specified request parameter
+			// Currently supported for: lineColourField, lineColourStops, popupHtml, intervals
 			sublayerParameter: false,
 			
 			// Replace auto-generated keys in popup with pretty titles or descriptions
@@ -2638,6 +2639,9 @@ var layerviewer = (function ($) {
 				return;		// No further action, e.g. API calls
 			}
 			
+			// Cache a clone of the original user-supplied parameters, so that an unmodified copy is available
+			var userSuppliedParameters = $.extend (true, {}, parameters);	// See: https://stackoverflow.com/a/12690181/180733
+			
 			// Start API data parameters
 			var apiData = layerviewer.assembleBaseApiData (layerId);
 			
@@ -2690,7 +2694,7 @@ var layerviewer = (function ($) {
 			}
 			
 			// Add in the parameters from the form
-			$.each(parameters, function (field, value) {
+			$.each (parameters, function (field, value) {
 				apiData[field] = value;
 			});
 			
@@ -2817,7 +2821,7 @@ var layerviewer = (function ($) {
 					}
 					
 					// Return the data successfully
-					return layerviewer.showCurrentData (layerId, data, apiData, requestSerialised);
+					return layerviewer.showCurrentData (layerId, data, parameters, requestSerialised);
 				}
 			});
 		},
@@ -3323,7 +3327,7 @@ var layerviewer = (function ($) {
 		
 		
 		// Function to show the data for a layer
-		showCurrentData: function (layerId, data, requestData, requestSerialised)
+		showCurrentData: function (layerId, data, userSuppliedParameters, requestSerialised)
 		{
 			// Convert using a callback if required
 			if (_layerConfig[layerId].convertData) {
@@ -3343,8 +3347,8 @@ var layerviewer = (function ($) {
 			}
 			
 			// Determine line colour field and stops
-			var lineColourField = layerviewer.sublayerableConfig ('lineColourField', layerId, requestData);
-			var lineColourStops = layerviewer.sublayerableConfig ('lineColourStops', layerId, requestData);
+			var lineColourField = layerviewer.sublayerableConfig ('lineColourField', layerId, userSuppliedParameters);
+			var lineColourStops = layerviewer.sublayerableConfig ('lineColourStops', layerId, userSuppliedParameters);
 			
 			// Fix up data
 			// #!# Fix GeoJSON feed upstream
@@ -3372,7 +3376,7 @@ var layerviewer = (function ($) {
 			layerviewer.updateTotals (data.features, layerId, requestSerialised);
 			
 			// Define the popupHtml template
-			var popupHtmlTemplate = layerviewer.sublayerableConfig ('popupHtml', layerId, requestData);
+			var popupHtmlTemplate = layerviewer.sublayerableConfig ('popupHtml', layerId, userSuppliedParameters);
 			
 			// If this layer already exists, update the data for its source
 			// The Leaflet.js approach of take down and redraw does not work for MapboxGL.js, as this would require handler destruction which is impractical to achieve; see: https://gis.stackexchange.com/a/252061/58752
@@ -3390,7 +3394,7 @@ var layerviewer = (function ($) {
 			}
 			
 			// Set the legend
-			var intervals = layerviewer.sublayerableConfig ('intervals', layerId, requestData);
+			var intervals = layerviewer.sublayerableConfig ('intervals', layerId, userSuppliedParameters);
 			layerviewer.setLegend (layerId, intervals, lineColourStops);
 			
 			// Define the geometry types and their default styles
@@ -3945,15 +3949,15 @@ var layerviewer = (function ($) {
 		
 		
 		// Function to obtain a value from a sublayerable configuration parameter
-		sublayerableConfig: function (field, layerId, requestData)
+		sublayerableConfig: function (field, layerId, userSuppliedParameters)
 		{
 			var value = false;
 			if (_layerConfig[layerId][field]) {
 				
-				// If enabled, select settings dependent on the value of a parameter in the request
+				// If enabled, select settings dependent on the value of a parameter in the user (form) parameters
 				if (_layerConfig[layerId].sublayerParameter) {
-					if (requestData[_layerConfig[layerId].sublayerParameter]) {
-						var sublayerValue = requestData[_layerConfig[layerId].sublayerParameter];
+					if (userSuppliedParameters[_layerConfig[layerId].sublayerParameter]) {
+						var sublayerValue = userSuppliedParameters[_layerConfig[layerId].sublayerParameter];
 						
 						// Allocate the values
 						value = _layerConfig[layerId][field][sublayerValue];
