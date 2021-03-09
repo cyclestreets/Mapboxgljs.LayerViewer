@@ -3954,22 +3954,23 @@ var layerviewer = (function ($) {
 			var value = false;
 			if (_layerConfig[layerId][layerConfigField]) {
 				
-				// Create a local variable for the config definition for the current config field of the current layer, for clarity
-				var configDefinition = _layerConfig[layerId][layerConfigField];
-
-				// Split out any multiple value keys (separated by comma, e.g. 'quietest,balanced,fastest' becomes three separate keys, each with the same value)
-				$.each (configDefinition, function (key, value) {
-					if (key.indexOf (',') !== -1) {		// I.e. contains comma
-						var newKeys = key.split (',');
-						$.each (newKeys, function (index, newKey) {
-							configDefinition[newKey] = value;
-						});
-						delete (configDefinition[key]);
-					}
-				});
-				
 				// If enabled, select settings dependent on the value of a parameter in the user (form) parameters; otherwise, pass through unchanged
 				if (_layerConfig[layerId].sublayerParameter) {
+					
+					// For clarity, create a local variable for the config definition for the current config field of the current layer
+					var configDefinition = _layerConfig[layerId][layerConfigField];
+					
+					// If multiple value keys (string, separated by comma) are present, split out; e.g. 'quietest,balanced,fastest' becomes three separate keys, each having the same value
+					$.each (configDefinition, function (key, value) {
+						if (key.indexOf (',') !== -1) {		// I.e. contains comma
+							var newKeys = key.split (',');
+							$.each (newKeys, function (index, newKey) {
+								configDefinition[newKey] = value;
+							});
+							delete (configDefinition[key]);
+						}
+					});
+					
 					if (userSuppliedParameters[_layerConfig[layerId].sublayerParameter]) {
 						var sublayerValue = userSuppliedParameters[_layerConfig[layerId].sublayerParameter];
 						
