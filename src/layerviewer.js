@@ -3954,17 +3954,30 @@ var layerviewer = (function ($) {
 			var value = false;
 			if (_layerConfig[layerId][layerConfigField]) {
 				
-				// If enabled, select settings dependent on the value of a parameter in the user (form) parameters
+				// Create a local variable for the config definition for the current config field of the current layer, for clarity
+				var configDefinition = _layerConfig[layerId][layerConfigField];
+
+				// Split out any multiple value keys (separated by comma, e.g. 'quietest,balanced,fastest' becomes three separate keys, each with the same value)
+				$.each (configDefinition, function (key, value) {
+					if (key.indexOf (',') !== -1) {		// I.e. contains comma
+						var newKeys = key.split (',');
+						$.each (newKeys, function (index, newKey) {
+							configDefinition[newKey] = value;
+						});
+						delete (configDefinition[key]);
+					}
+				});
+				
+				// If enabled, select settings dependent on the value of a parameter in the user (form) parameters; otherwise, pass through unchanged
 				if (_layerConfig[layerId].sublayerParameter) {
 					if (userSuppliedParameters[_layerConfig[layerId].sublayerParameter]) {
 						var sublayerValue = userSuppliedParameters[_layerConfig[layerId].sublayerParameter];
 						
 						// Allocate the values
-						value = _layerConfig[layerId][layerConfigField][sublayerValue];
-console.log (layerConfigField, value);
+						value = configDefinition[sublayerValue];
 					}
 				} else {
-					value = _layerConfig[layerId][layerConfigField];
+					value = configDefinition;
 				}
 			}
 			
