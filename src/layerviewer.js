@@ -3949,10 +3949,10 @@ var layerviewer = (function ($) {
 		
 		
 		// Function to obtain a value from a sublayerable configuration parameter
-		sublayerableConfig: function (field, layerId, userSuppliedParameters)
+		sublayerableConfig: function (layerConfigField, layerId, userSuppliedParameters)
 		{
 			var value = false;
-			if (_layerConfig[layerId][field]) {
+			if (_layerConfig[layerId][layerConfigField]) {
 				
 				// If enabled, select settings dependent on the value of a parameter in the user (form) parameters
 				if (_layerConfig[layerId].sublayerParameter) {
@@ -3960,10 +3960,11 @@ var layerviewer = (function ($) {
 						var sublayerValue = userSuppliedParameters[_layerConfig[layerId].sublayerParameter];
 						
 						// Allocate the values
-						value = _layerConfig[layerId][field][sublayerValue];
+						value = _layerConfig[layerId][layerConfigField][sublayerValue];
+console.log (layerConfigField, value);
 					}
 				} else {
-					value = _layerConfig[layerId][field];
+					value = _layerConfig[layerId][layerConfigField];
 				}
 			}
 			
