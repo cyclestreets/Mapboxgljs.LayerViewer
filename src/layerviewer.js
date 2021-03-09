@@ -2825,7 +2825,7 @@ var layerviewer = (function ($) {
 
 		// Function to assemble the base API data by reading the apiCallFixedParameters from the layer definitions
 		// @param apiCallId: boolean. The function will attempt to use apiCallId properties instead
-		assembleBaseApiData (layerId, apiCallId = false) 
+		assembleBaseApiData: function (layerId, apiCallId = false)
 		{
 			var apiData = {};
 	
