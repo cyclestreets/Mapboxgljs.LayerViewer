@@ -2821,7 +2821,7 @@ var layerviewer = (function ($) {
 					}
 					
 					// Return the data successfully
-					return layerviewer.showCurrentData (layerId, data, parameters, requestSerialised);
+					return layerviewer.showCurrentData (layerId, data, userSuppliedParameters, requestSerialised);
 				}
 			});
 		},
