@@ -3346,9 +3346,11 @@ var layerviewer = (function ($) {
 				data = toGeoJSON.kml (data);
 			}
 			
-			// Determine line colour field and stops
+			// Determine line colour/width field and stops
 			var lineColourField = layerviewer.sublayerableConfig ('lineColourField', layerId, userSuppliedParameters);
 			var lineColourStops = layerviewer.sublayerableConfig ('lineColourStops', layerId, userSuppliedParameters);
+			var lineWidthField = layerviewer.sublayerableConfig ('lineWidthField', layerId, userSuppliedParameters);
+			var lineWidthStops = layerviewer.sublayerableConfig ('lineWidthStops', layerId, userSuppliedParameters);
 			
 			// Fix up data
 			// #!# Fix GeoJSON feed upstream
@@ -3360,8 +3362,8 @@ var layerviewer = (function ($) {
 				}
 				
 				// Ensure numeric data is numeric for the line width field, to enable correct comparison
-				if (!isNaN (data.features[index].properties[_layerConfig[layerId].lineWidthField])) {
-					data.features[index].properties[_layerConfig[layerId].lineWidthField] = Number (feature.properties[_layerConfig[layerId].lineWidthField]);
+				if (!isNaN (data.features[index].properties[lineWidthField])) {
+					data.features[index].properties[lineWidthField] = Number (feature.properties[lineWidthField]);
 				}
 				
 				// Workaround to fix up string "null" to null for popups; see: https://github.com/mapbox/vector-tile-spec/issues/62
@@ -3437,8 +3439,8 @@ var layerviewer = (function ($) {
 			}
 			
 			// Set line width if required
-			if (_layerConfig[layerId].lineWidthField && _layerConfig[layerId].lineWidthStops) {
-				styles['LineString']['paint']['line-width'] = layerviewer.stopsExpression (_layerConfig[layerId].lineWidthField, _layerConfig[layerId].lineWidthStops.slice().reverse());	// Reverse the original definition: https://stackoverflow.com/a/30610528/180733
+			if (lineWidthField && lineWidthStops) {
+				styles['LineString']['paint']['line-width'] = layerviewer.stopsExpression (lineWidthField, lineWidthStops.slice().reverse());	// Reverse the original definition: https://stackoverflow.com/a/30610528/180733
 			}
 			
 			// If we have polygonColourStops (to be interpolated linearly)
