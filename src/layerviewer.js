@@ -1419,6 +1419,7 @@ var layerviewer = (function ($) {
 		
 		// Function to set the legend contents
 		// NB polygonColourStops take precedence over lineColourStops
+		// #!# Currently no support for lineWidthStops
 		setLegend: function (layerId, sublayerIntervals, sublayerLineColourStops)
 		{
 			// Determine the intervals and polygon/line colour stops for the current layer
