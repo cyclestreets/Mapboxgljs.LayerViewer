@@ -270,6 +270,7 @@ var layerviewer = (function ($) {
 			
 			// Whether to fit the data within the map initially upon loading, adjusting the zoom accordingly
 			fitInitial: false,
+			fitInitialPadding: false,	// Defaults to 20
 			
 			// Minimum zoom required for this layer
 			minZoom: false,
@@ -3528,7 +3529,8 @@ var layerviewer = (function ($) {
 			// Perform initial fit of map extent, if required
 			if (_fitInitial[layerId]) {
 				var geojsonBounds = geojsonExtent (data);
-				_map.fitBounds (geojsonBounds, {padding: 20});
+				var fitInitialPadding = (_layerConfig[layerId].hasOwnProperty ? _layerConfig[layerId].fitInitialPadding : 20);
+				_map.fitBounds (geojsonBounds, {padding: fitInitialPadding});
 				_fitInitial[layerId] = false;		// Disable for further map pannings; renabling the layer will reset
 			}
 			
