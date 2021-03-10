@@ -370,7 +370,7 @@ var layerviewer = (function ($) {
 			popupsRoundingDP: 0,
 			
 			// Make lookups (Popups / line colour stops) dependent on the value of a specified request parameter
-			// Currently supported for: lineColourField, lineColourStops, popupHtml, intervals
+			// Currently supported for: lineColourField, lineColourStops, popupHtml, legend
 			sublayerParameter: false,
 			
 			// Replace auto-generated keys in popup with pretty titles or descriptions
@@ -3396,8 +3396,8 @@ var layerviewer = (function ($) {
 			}
 			
 			// Set the legend
-			var intervals = layerviewer.sublayerableConfig ('intervals', layerId, userSuppliedParameters);
-			layerviewer.setLegend (layerId, intervals, lineColourStops);
+			var sublayerIntervals = (_layerConfig[layerId].sublayerParameter ? layerviewer.sublayerableConfig ('legend', layerId, userSuppliedParameters) : false);
+			layerviewer.setLegend (layerId, sublayerIntervals, lineColourStops);
 			
 			// Define the geometry types and their default styles
 			var defaultStyles = {
