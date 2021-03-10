@@ -3954,11 +3954,11 @@ var layerviewer = (function ($) {
 			var value = false;
 			if (_layerConfig[layerId][layerConfigField]) {
 				
+				// For clarity, create a local variable for the config definition for the current config field of the current layer
+				var configDefinition = _layerConfig[layerId][layerConfigField];
+				
 				// If enabled, select settings dependent on the value of a parameter in the user (form) parameters; otherwise, pass through unchanged
 				if (_layerConfig[layerId].sublayerParameter) {
-					
-					// For clarity, create a local variable for the config definition for the current config field of the current layer
-					var configDefinition = _layerConfig[layerId][layerConfigField];
 					
 					// If multiple value keys (string, separated by comma) are present, split out; e.g. 'quietest,balanced,fastest' becomes three separate keys, each having the same value
 					$.each (configDefinition, function (key, value) {
