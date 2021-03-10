@@ -1439,7 +1439,7 @@ var layerviewer = (function ($) {
 				}
 				
 				// Allocate sublayer intervals and line colour stops
-				#!# No support yet for polygonColourStops in sublayer mode
+				// #!# No support yet for polygonColourStops in sublayer mode
 				intervals = sublayerIntervals;
 				lineColourStops = sublayerLineColourStops;
 			}
