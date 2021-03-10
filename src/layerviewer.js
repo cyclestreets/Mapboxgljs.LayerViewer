@@ -1418,6 +1418,7 @@ var layerviewer = (function ($) {
 		
 		
 		// Function to set the legend contents
+		// NB polygonColourStops take precedence over lineColourStops
 		setLegend: function (layerId, sublayerIntervals, sublayerLineColourStops)
 		{
 			// Determine the intervals and polygon/line colour stops for the current layer
@@ -1435,6 +1436,7 @@ var layerviewer = (function ($) {
 				}
 				
 				// Allocate sublayer intervals and line colour stops
+				#!# No support yet for polygonColourStops in sublayer mode
 				intervals = sublayerIntervals;
 				lineColourStops = sublayerLineColourStops;
 			}
