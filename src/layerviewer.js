@@ -372,7 +372,8 @@ var layerviewer = (function ($) {
 			popupsRoundingDP: 0,
 			
 			// Make lookups (Popups / line colour stops) dependent on the value of a specified request parameter
-			// Currently supported for: lineColourField, lineColourStops, popupHtml, legend
+			// Currently supported for: lineColourField, lineColourStops, lineWidthField, lineWidthStops, popupHtml, legend
+			// #!# This is currently a poor architecture; each supported config type has to be enabled deep in the execution tree, whereas this should be done as a single generic hit near the start of getData ()
 			sublayerParameter: false,
 			
 			// Replace auto-generated keys in popup with pretty titles or descriptions
