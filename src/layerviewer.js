@@ -3358,8 +3358,8 @@ var layerviewer = (function ($) {
 			var lineWidthField = layerviewer.sublayerableConfig ('lineWidthField', layerId, userSuppliedParameters);
 			var lineWidthStops = layerviewer.sublayerableConfig ('lineWidthStops', layerId, userSuppliedParameters);
 			
+                   
 			// Fix up data
-			// #!# Fix GeoJSON feed upstream
 			$.each (data.features, function (index, feature) {
 				
 				// Ensure data is numeric for the line colour field, to enable correct comparison
