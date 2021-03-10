@@ -241,6 +241,7 @@ var layerviewer = (function ($) {
 	};
 	
 	// Layer definitions, which should be overriden by being supplied as an argument by the calling application
+	// #!# These do not actually represent defaults, unlike the main config - this should be enabled
 	var _layerConfig = {
 		
 		/* Example, showing all available options:
