@@ -185,6 +185,7 @@ var layerviewer = (function ($) {
 		regionSwitcherDefaultRegion: false, // Default region to load if no region saved in cookie
 		regionSwitcherMaxZoom: false,
 		regionSwitcherPermalinks: false,
+		regionsPopupCallback: false, // Generate a custom popup HTML for regions
 		
 		// Initial view of all regions; will use regionsFile
 		initialRegionsView: false,
@@ -872,6 +873,11 @@ var layerviewer = (function ($) {
 							// Add the region name as the popup content
 							var regionName = (_settings.regionsNameField ? feature.properties[_settings.regionsNameField] : layerviewer.ucfirst (feature.properties[_settings.regionsField]));
 							regionName = layerviewer.htmlspecialchars (regionName);
+							
+							// If we want to generate custom HTML popup
+							if (_settings.regionsPopupCallback) {
+								regionName = _settings.regionsPopupCallback (regionName);
+							}
 							
 							// Populate the popup and set its coordinates based on the feature found
 							popup.setLngLat (coordinates)
