@@ -320,6 +320,9 @@ var layerviewer = (function ($) {
 				[0, '#61fa61']
 			],
 			
+			// Line colour from API response, e.g. 'colour' value in API
+			lineColourApiField: false,
+			
 			// Similarly, line width
 			lineWidthField: 'width',
 			lineWidthStops: [
@@ -3358,7 +3361,6 @@ var layerviewer = (function ($) {
 			var lineWidthField = layerviewer.sublayerableConfig ('lineWidthField', layerId, userSuppliedParameters);
 			var lineWidthStops = layerviewer.sublayerableConfig ('lineWidthStops', layerId, userSuppliedParameters);
 			
-                   
 			// Fix up data
 			$.each (data.features, function (index, feature) {
 				
@@ -3438,6 +3440,11 @@ var layerviewer = (function ($) {
 				}
 			};
 			var styles = $.extend (true, {}, defaultStyles);	// Clone
+			
+			// Support for line colour directly from the API response
+			if (_layerConfig[layerId].lineColourApiField) {
+				styles['LineString']['paint']['line-color'] = ['get', _layerConfig[layerId].lineColourApiField];
+			}
 			
 			// Set line colour if required; uses original 'stops' method, see: https://github.com/mapbox/mapbox-gl-js/commit/9ac35b1059ed5f9f7798c37700b52259ce9a815d#diff-bde08934db09c688e8b1d2c0a4d2bce0
 			if (lineColourField && lineColourStops) {
@@ -3628,6 +3635,13 @@ var layerviewer = (function ($) {
 								feature.properties[key] = null;
 							}
 						});
+						
+						// Delete auto-colour field if enabled
+						if (_layerConfig[layerId].lineColourApiField) {
+							if (feature.properties.hasOwnProperty (_layerConfig[layerId].lineColourApiField)) {
+								delete feature.properties[_layerConfig[layerId].lineColourApiField];
+							}
+						}
 						
 						// Workaround to deal with nested images property; see: https://github.com/mapbox/mapbox-gl-js/issues/2434
 						// The array has become serialised to a string that looks like an array; this parses out the string back to an array
