@@ -3483,9 +3483,9 @@ var layerviewer = (function ($) {
 				styles['LineString']['paint']['line-width'] = layerviewer.stopsExpression (lineWidthField, lineWidthStops.slice().reverse());	// Reverse the original definition: https://stackoverflow.com/a/30610528/180733
 			}
 			
-			// If we have polygonColourStops (to be interpolated linearly)
+			// If we have polygonColourStops
 			if (_layerConfig[layerId].polygonColourField && _layerConfig[layerId].polygonColourStops) {
-				styles['Polygon']['paint']['fill-color'] = layerviewer.stopsExpression (_layerConfig[layerId].polygonColourField, _layerConfig[layerId].polygonColourStops.slice().reverse(), true);	// Reverse the original definition: https://stackoverflow.com/a/30610528/180733
+				styles['Polygon']['paint']['fill-color'] = layerviewer.stopsExpression (_layerConfig[layerId].polygonColourField, _layerConfig[layerId].polygonColourStops.slice().reverse(), true, true);	// Reverse the original definition: https://stackoverflow.com/a/30610528/180733
 				styles['Polygon']['paint']['fill-outline-color'] = '#aaa';
 				if (_layerConfig[layerId].fillOpacity) {
 					styles['Polygon']['paint']['fill-opacity'] = _layerConfig[layerId].fillOpacity;
@@ -3919,7 +3919,7 @@ var layerviewer = (function ($) {
 		
 		
 		// Function to render a stops expression; see: https://github.com/mapbox/mapbox-gl-js/commit/9ac35b1059ed5f9f7798c37700b52259ce9a815d#diff-bde08934db09c688e8b1d2c0a4d2bce0
-		stopsExpression: function (property, stops, supportNullTransparent)
+		stopsExpression: function (property, stops, supportNullTransparent, stepMode)
 		{
 			// Start the expression
 			var expression = [
@@ -3927,6 +3927,15 @@ var layerviewer = (function ($) {
 				['linear'],
 				['get', property]
 			];
+			
+			// In step mode, use 'step'; see: https://stackoverflow.com/a/53506912
+			if (stepMode) {
+				expression = [
+					'step',
+					['get', property],
+					'transparent'
+				];
+			}
 			
 			// Loop through each pair of the stops
 			$.each (stops, function (key, value) {
