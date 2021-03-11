@@ -4573,6 +4573,7 @@ var layerviewer = (function ($) {
 					// Dynamic styling based on data, if enabled - polygons
 					if (_layerConfig[layerId].polygonColourField && _layerConfig[layerId].polygonColourStops) {
 						style.fillColor = layerviewer.lookupStyleValue (feature.properties[_layerConfig[layerId].polygonColourField], _layerConfig[layerId].polygonColourStops);
+						style.weight = 0.5;
 					}
 					if (_layerConfig[layerId].hasOwnProperty ('fillOpacity')) {
 						style.fillOpacity = _layerConfig[layerId].fillOpacity;
