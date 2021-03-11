@@ -907,6 +907,16 @@ var layerviewer = (function ($) {
 						});
 					}
 					
+					// If polygons remain after initial regions view, treat a click on a different region as an implied drop-down change
+					if (!_settings.initialRegionsViewRemovalClick) {
+						_map.on ('click', 'regionsOverlay', function (e) {
+							var feature = e.features[0];
+							var switchToRegion = feature.properties[_settings.regionsField];
+							$('#regionswitcher select').val (switchToRegion);
+							$('#regionswitcher select').trigger ('change');
+						});
+					}
+					
 					// Create a handler to remove the overlay automatically when zoomed in (but not explicitly clicked through)
 					if (_settings.initialRegionsViewRemovalZoom) {
 						_map.on ('zoomend', function (e) {
