@@ -273,6 +273,9 @@ var layerviewer = (function ($) {
 			fitInitial: false,
 			fitInitialPadding: false,	// Defaults to 20
 			
+			// Whether to zoom initially upon loading
+			zoomInitial: false,
+			
 			// Minimum zoom required for this layer
 			minZoom: false,
 			
@@ -2350,6 +2353,11 @@ var layerviewer = (function ($) {
 			// If the data should initially be fit to the data extent, set a flag for first load
 			if (_layerConfig[layerId].fitInitial) {
 				_fitInitial[layerId] = true;
+			}
+			
+			// Perform initial zoom, if required
+			if (_layerConfig[layerId].zoomInitial) {
+				_map.flyTo ({zoom: _layerConfig[layerId].zoomInitial});
 			}
 			
 			// Fetch the data
