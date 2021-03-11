@@ -912,8 +912,10 @@ var layerviewer = (function ($) {
 						_map.on ('click', 'regionsOverlay', function (e) {
 							var feature = e.features[0];
 							var switchToRegion = feature.properties[_settings.regionsField];
-							$('#regionswitcher select').val (switchToRegion);
-							$('#regionswitcher select').trigger ('change');
+							if (switchToRegion != _selectedRegion) {	// Don't reload current if already loaded
+								$('#regionswitcher select').val (switchToRegion);
+								$('#regionswitcher select').trigger ('change');
+							}
 						});
 					}
 					
