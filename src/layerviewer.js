@@ -1,7 +1,7 @@
 // Layer viewer library code
 
 /*jslint browser: true, white: true, single: true, for: true */
-/*global $, jQuery, mapboxgl, MapboxDraw, geojsonExtent, autocomplete, Cookies, vex, GeoJSON, FULLTILT, alert, console, window */
+/*global $, jQuery, mapboxgl, MapboxDraw, geojsonExtent, autocomplete, Cookies, vex, GeoJSON, FULLTILT, L, alert, console, window */
 
 var layerviewer = (function ($) {
 	
@@ -450,6 +450,8 @@ var layerviewer = (function ($) {
 	var _regionBounds = {};
 	var _regionSwitcherDefaultRegionFromUrl = false;
 	var _selectedRegion = false;
+	var _miniMaps = {};			// Handle to each mini map
+	var _miniMapLayers = {};	// Handle to each mini map's layer
 	var _geolocate = null; // Store the geolocation element
 	var _geolocationAvailable = false; // Store geolocation availability, to automatically disable location tracking if user has not selected the right permissions
 	var _customPanningIndicatorAction = false; // Custom function that can be run on click action panning on and off, i.e. to control the visual state of a custom panning button
@@ -640,13 +642,6 @@ var layerviewer = (function ($) {
 		getMap: function ()
 		{
 			return _map;
-		},
-		
-		
-		// Getter for region bounds
-		/* public */ getRegionBounds: function ()
-		{
-			return _regionBounds;
 		},
 		
 		
@@ -4504,6 +4499,123 @@ var layerviewer = (function ($) {
 				s[1] += new Array(prec - s[1].length + 1).join('0');
 			}
 			return s.join(dec);
+		},
+		
+		
+		// Function to provide mini-maps, e.g. as layer toggle infographic buttons
+		/* public */ populateMiniMaps: function (miniMapsLayers, selectedRegion)
+		{
+			// Create mini maps for each layer
+			var id;
+			var url;
+			var defaultType;
+			var regionWsen = _regionBounds[selectedRegion];
+			var regionCentre = [ (regionWsen[1] + regionWsen[3])/2, (regionWsen[0] + regionWsen[2])/2 ];	// lat,lon centre
+			$.each (miniMapsLayers, function (index, layerId) {
+				id = 'map_' + layerId;
+				url = _layerConfig[layerId].apiCall;
+				url = url.replace ('{site_name}', selectedRegion);
+				if (url.indexOf ('{%type}') !== -1) {
+					defaultType = $('#data .selector li.' + layerId + ' select option[selected="selected"]')[0].value;
+					url = url.replace ('{%type}', defaultType);
+				}
+				layerviewer.miniMap (id, url, regionCentre, layerId);
+			});
+		},
+		
+		
+		// Function to create a mini-map, using Leaflet.js (which is lightweight and will load quickly)
+		miniMap: function (id, geojsonUrl, regionCentre, layerId)
+		{
+			// Initialise map if not already present
+			if (!_miniMaps[id]) {
+				
+				// Define URL for raster basemap; available styles include: streets-v11, dark-v10
+				var mapboxUrl = 'https://api.mapbox.com/styles/v1/mapbox/light-v10/tiles/256/{z}/{x}/{y}?access_token=' + _settings.mapboxApiKey;
+				
+				// Create the map
+				_miniMaps[id] = L.map (id, {attributionControl: false, zoomControl: false}).setView (regionCentre, 9);
+				L.tileLayer (mapboxUrl, {
+					tileSize: 256,
+					maxZoom: 20
+				}).addTo (_miniMaps[id] );
+				
+				// Disable interaction; see: https://gis.stackexchange.com/a/201470/58752
+				_miniMaps[id]._handlers.forEach (function (handlerType) {
+					handlerType.disable ();
+				});
+				
+			// Otherwise move the map location and clear any layers
+			} else {
+				_miniMaps[id].setView (regionCentre, 10);
+				_miniMaps[id].removeLayer (_miniMapLayers[id]);
+			}
+			
+			// Define the styling/behaviour for the GeoJSON layer
+			var stylingBehaviour = {
+				style: function (feature) {
+					
+					// Default
+					var style = {
+						color: '#888',
+						weight: 2
+					}
+					
+					// Dynamic styling based on data, if enabled - polygons
+					if (_layerConfig[layerId].polygonColourField && _layerConfig[layerId].polygonColourStops) {
+						style.fillColor = layerviewer.lookupStyleValue (feature.properties[_layerConfig[layerId].polygonColourField], _layerConfig[layerId].polygonColourStops);
+					}
+					if (_layerConfig[layerId].hasOwnProperty ('fillOpacity')) {
+						style.fillOpacity = _layerConfig[layerId].fillOpacity;
+					}
+					
+					// Dynamic styling based on data, if enabled - lines
+					if (_layerConfig[layerId].lineColourField && _layerConfig[layerId].lineColourStops) {
+						style.color = layerviewer.lookupStyleValue (feature.properties[_layerConfig[layerId].lineColourField], _layerConfig[layerId].lineColourStops);
+					}
+					if (_layerConfig[layerId].lineWidthField && _layerConfig[layerId].lineWidthStops) {
+						style.weight = layerviewer.lookupStyleValue (feature.properties[_layerConfig[layerId].lineWidthField], _layerConfig[layerId].lineWidthStops);
+						style.weight = style.weight / 5;	// Maps are very small so avoid thick lines
+					}
+					
+					// Return the resulting style
+					return style;
+				}
+			};
+			
+			// Add the GeoJSON layer
+			_miniMapLayers[id] = L.geoJson.ajax (geojsonUrl, stylingBehaviour);
+			_miniMapLayers[id].addTo (_miniMaps[id]);
+		},
+		
+		
+		// Assign style from lookup table
+		lookupStyleValue: function (value, lookupTable)
+		{
+			// If the value is null, set to be transparent
+			if (value === null) {
+				return 'transparent';
+			}
+			
+			// Loop through each style stop until found
+			var styleStop;
+			for (var i = 0; i < lookupTable.length; i++) {
+				styleStop = lookupTable[i];
+				if (typeof lookupTable[0][0] === 'string') {	// Fixed string values
+					if (value == styleStop[0]) {
+						return styleStop[1];
+					}
+				} else {					// Range values
+					if (value >= styleStop[0]) {
+						return styleStop[1];
+					}
+				}
+			}
+			
+			// Fallback to final colour in the list
+			return styleStop[1];
 		}
 	};
+	
 } (jQuery));
+
