@@ -863,7 +863,8 @@ var layerviewer = (function ($) {
 						});
 						
 						// Handle popup; see: https://docs.mapbox.com/mapbox-gl-js/example/popup-on-hover/
-						_map.on ('mouseenter', 'regionsOverlay', function (e) {
+						var eventType = (_settings.regionsPopupFull ? 'click' : 'mouseenter');
+						_map.on (eventType, 'regionsOverlay', function (e) {
 							_map.getCanvas().style.cursor = 'pointer';
 							
 							// Set the co-ordinates
