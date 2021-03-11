@@ -179,13 +179,13 @@ var layerviewer = (function ($) {
 		regionsField: false,
 		regionsNameField: false,
 		regionsSubstitutionToken: false,
+		regionsPopupFull: false, // Full contents for popup, as per a normal layer
 		regionSwitcherPosition: 'top-right',
 		regionSwitcherNullText: 'Move to area',
 		regionSwitcherCallback: false, // Called when the region switch is detected
 		regionSwitcherDefaultRegion: false, // Default region to load if no region saved in cookie
 		regionSwitcherMaxZoom: false,
 		regionSwitcherPermalinks: false,
-		regionsPopupCallback: false, // Generate a custom popup HTML for regions
 		
 		// Initial view of all regions; will use regionsFile
 		initialRegionsView: false,
@@ -858,7 +858,7 @@ var layerviewer = (function ($) {
 						
 						// Create a popup, but don't add it to the map yet
 						var popup = new mapboxgl.Popup ({
-							closeButton: false,
+							closeButton: (_settings.regionsPopupFull),	// Enable close button if using full layer-style popups
 							closeOnClick: false
 						});
 						
@@ -872,22 +872,27 @@ var layerviewer = (function ($) {
 							
 							// Add the region name as the popup content
 							var regionName = (_settings.regionsNameField ? feature.properties[_settings.regionsNameField] : layerviewer.ucfirst (feature.properties[_settings.regionsField]));
-							regionName = layerviewer.htmlspecialchars (regionName);
+							var popupHtml = layerviewer.htmlspecialchars (regionName);
 							
-							// If we want to generate custom HTML popup
-							if (_settings.regionsPopupCallback) {
-								regionName = _settings.regionsPopupCallback (regionName);
+							// Generate custom HTML popup, if enabled
+							if (_settings.regionsPopupFull) {
+								var regionsNullObjectName = '__regions';
+								_layerConfig[regionsNullObjectName] = {};	// Temporarily emulate a layer using the Null Object design pattern, to ensure the popup renderer has a standard datastructure
+								popupHtml = layerviewer.renderDetailsHtml (feature, false, regionsNullObjectName);
+								delete _layerConfig[regionsNullObjectName];	// Remove the emulated layer
 							}
 							
 							// Populate the popup and set its coordinates based on the feature found
 							popup.setLngLat (coordinates)
-								.setHTML (regionName)
+								.setHTML (popupHtml)
 								.addTo (_map);
 						});
-						_map.on ('mouseleave', 'regionsOverlay', function (e) {
-							_map.getCanvas().style.cursor = '';
-							popup.remove ();
-						});
+						if (!_settings.regionsPopupFull) {
+							_map.on ('mouseleave', 'regionsOverlay', function (e) {
+								_map.getCanvas().style.cursor = '';
+								popup.remove ();
+							});
+						}
 					}
 					
 					// Zoom to area and remove layer when clicked, unless disabled
