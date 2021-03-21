@@ -940,7 +940,7 @@ var layerviewer = (function ($) {
 			// When the user moves their mouse over the state-fill layer, update the feature state for the feature under the mouse
 			_map.on ('mousemove', layerId, function (e) {
 				if (e.features.length > 0) {
-					if (hoveredStateId) {
+					if (hoveredStateId !== null) {
 						_map.setFeatureState ({source: sourceId, id: hoveredStateId}, {hover: false});
 					}
 					hoveredStateId = e.features[0].id;
@@ -950,7 +950,7 @@ var layerviewer = (function ($) {
 			 
 			// When the mouse leaves the state-fill layer, update the feature state of the previously hovered feature
 			_map.on ('mouseleave', layerId, function () {
-				if (hoveredStateId) {
+				if (hoveredStateId !== null) {
 					_map.setFeatureState ({source: sourceId, id: hoveredStateId}, {hover: false});
 				}
 				hoveredStateId =  null;
