@@ -67,7 +67,10 @@ var layerviewer = (function ($) {
 		
 		// Enable hover for all (line-based) layers
 		hover: true,
-
+		
+		// Zoom control position
+		zoomPosition: 'bottom-right',
+		
 		// Geolocation position, or false for no geolocation element
 		geolocationPosition: 'top-right',
 
@@ -1617,7 +1620,7 @@ var layerviewer = (function ($) {
 			
 			// Enable zoom in/out buttons
 			if (_settings.useDefaultNavigationControls) {
-				_map.addControl (new mapboxgl.NavigationControl (), 'bottom-right');
+				_map.addControl (new mapboxgl.NavigationControl (), _settings.zoomPosition);
 			}
 			
 			// Add buildings
