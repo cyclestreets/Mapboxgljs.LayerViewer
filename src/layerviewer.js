@@ -381,6 +381,9 @@ var layerviewer = (function ($) {
 			// Rounding decimal places in popups
 			popupsRoundingDP: 0,
 			
+			// Whether to enable Street View in popups (for auto-popups)
+			streetview: true,
+			
 			// Make lookups (Popups / line colour stops) dependent on the value of a specified request parameter
 			// Currently supported for: lineColourField, lineColourStops, lineWidthField, lineWidthStops, popupHtml, legend
 			// #!# This is currently a poor architecture; each supported config type has to be enabled deep in the execution tree, whereas this should be done as a single generic hit near the start of getData ()
@@ -3271,6 +3274,11 @@ var layerviewer = (function ($) {
 						});
 					}
 				}
+				
+				// Add Street View if directly specified
+				if (_layerConfig[layerId].streetview) {
+					html += layerviewer.streetViewTemplate (feature);
+				}
 			}
 			
 			// Return the content
@@ -3791,9 +3799,9 @@ var layerviewer = (function ($) {
 							.addTo (_map);
 					}
 					
-					// If we have a callback, store each marker's popupHtml 
-					if (_layerConfig[layerId].hasOwnProperty ('popupCallback')) 
-					{	
+					// If we have a callback, store each marker's popupHtml
+					if (_layerConfig[layerId].hasOwnProperty ('popupCallback')) {
+						
 						// Create a marker property __popupHTML, unofficially overloading the published data structure
 						var template = _layerConfig[layerId].popupHtml;
 						marker.__popupHtml = layerviewer.renderDetailsHtml (feature, template, layerId);
