@@ -3710,7 +3710,8 @@ var layerviewer = (function ($) {
 		},
 		
 		
-		// Function to update totals in the interface
+		// Function to update totals in the interface, as well as provide CSV/GeoJSON export link(s)
+		// #!# These two functionalities should be split out
 		updateTotals: function (features, layerId, requestSerialised)
 		{
 			// Determine the total number of items in the data
@@ -3728,8 +3729,8 @@ var layerviewer = (function ($) {
 			}
 			
 			// Enable/update CSV/GeoJSON export link(s), if there are items, and show the count
-			var exportUrlCsv = (_layerConfig[layerId].apiCall.match (/^https?:\/\//) ? '' : _settings.apiBaseUrl) + _layerConfig[layerId].apiCall + '?' + requestSerialised + '&format=csv&export=csv';		// Both parameter types supported
-			var exportUrlGeojson = (_layerConfig[layerId].apiCall.match (/^https?:\/\//) ? '' : _settings.apiBaseUrl) + _layerConfig[layerId].apiCall.replace(/.json$/, '.geojson') + '?' + requestSerialised;
+			var exportUrlCsv = requestSerialised + '&format=csv&export=csv';	// Both parameter types supported (format=csv, export=csv)
+			var exportUrlGeojson = requestSerialised.replace (/.json($|\?)/, '.geojson$1');
 			$('#sections #' + layerId + ' div.export p span').text ('(' + totalItems + ')');
 			$('#sections #' + layerId + ' div.export .csv').parent('a').attr('href', exportUrlCsv);
 			$('#sections #' + layerId + ' div.export .geojson').parent('a').attr('href', exportUrlGeojson);
