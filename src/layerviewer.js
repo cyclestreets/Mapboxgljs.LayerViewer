@@ -327,7 +327,8 @@ var layerviewer = (function ($) {
 				[0, '#61fa61']
 			],
 			
-			// Line colour from API response, e.g. 'colour' value in API
+			// Point/Line colour from API response, e.g. 'colour' value in API
+			pointColourApiField: false,
 			lineColourApiField: false,
 			
 			// Similarly, line width
@@ -3479,6 +3480,11 @@ var layerviewer = (function ($) {
 			};
 			var styles = $.extend (true, {}, defaultStyles);	// Clone
 			
+			// Support for point colour directly from the API response
+			if (_layerConfig[layerId].pointColourApiField) {
+				styles['Point']['paint']['circle-color'] = ['get', _layerConfig[layerId].pointColourApiField];
+			}
+			
 			// Support for line colour directly from the API response
 			if (_layerConfig[layerId].lineColourApiField) {
 				styles['LineString']['paint']['line-color'] = ['get', _layerConfig[layerId].lineColourApiField];
@@ -3673,6 +3679,13 @@ var layerviewer = (function ($) {
 								feature.properties[key] = null;
 							}
 						});
+						
+						// Delete auto-colour field if enabled
+						if (_layerConfig[layerId].pointColourApiField) {
+							if (feature.properties.hasOwnProperty (_layerConfig[layerId].pointColourApiField)) {
+								delete feature.properties[_layerConfig[layerId].pointColourApiField];
+							}
+						}
 						
 						// Delete auto-colour field if enabled
 						if (_layerConfig[layerId].lineColourApiField) {
