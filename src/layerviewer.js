@@ -341,6 +341,10 @@ var layerviewer = (function ($) {
 				[100, 5],
 				[0, 1],
 			],
+			lineWidthValues: {
+				'foo': 5,
+				'bar': 2
+			},
 			
 			// Enable hover for this layer (for line-based layers)
 			hover: true,
@@ -3402,6 +3406,7 @@ var layerviewer = (function ($) {
 			var lineColourStops = layerviewer.sublayerableConfig ('lineColourStops', layerId, userSuppliedParameters);
 			var lineWidthField = layerviewer.sublayerableConfig ('lineWidthField', layerId, userSuppliedParameters);
 			var lineWidthStops = layerviewer.sublayerableConfig ('lineWidthStops', layerId, userSuppliedParameters);
+			var lineWidthValues = layerviewer.sublayerableConfig ('lineWidthValues', layerId, userSuppliedParameters);
 			
 			// Fix up data
 			$.each (data.features, function (index, feature) {
@@ -3503,9 +3508,21 @@ var layerviewer = (function ($) {
 				styles['Point']['paint']['circle-radius'] = _layerConfig[layerId].pointSize;
 			}
 			
-			// Set line width if required
+			// Set line width from stops, if required
 			if (lineWidthField && lineWidthStops) {
 				styles['LineString']['paint']['line-width'] = layerviewer.stopsExpression (lineWidthField, lineWidthStops.slice().reverse());	// Reverse the original definition: https://stackoverflow.com/a/30610528/180733
+			}
+			
+			// Set line width from lookups, if required
+			if (lineWidthField && lineWidthValues) {
+				var styleDefinition = [];
+				styleDefinition.push ('case');
+				$.each (lineWidthValues, function (key, value) {
+					styleDefinition.push (['==', ['get', lineWidthField], key]);
+					styleDefinition.push (value);
+				});
+				styleDefinition.push (/* fallback: */ 5);
+				styles['LineString']['paint']['line-width'] = styleDefinition;
 			}
 			
 			// If we have polygonColourStops
