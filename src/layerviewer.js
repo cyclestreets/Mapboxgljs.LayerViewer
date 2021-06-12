@@ -201,7 +201,7 @@ var layerviewer = (function ($) {
 		// Beta switch
 		enableBetaSwitch: false,
 		
-		// Password protection, as an SHA-256 hash
+		// Password protection, as an SHA-256 hash; can also be an array of passwords
 		password: false,
 		
 		// Hide default LayerViewer message area and legend
@@ -739,13 +739,22 @@ var layerviewer = (function ($) {
 			shaObj.update (value);
 			var hash = shaObj.getHash ('HEX');
 			
-			// Compare against the correct password hash
-			if (hash === _settings.password) {
-				return true;
+			// If a string, convert to array
+			if (typeof _settings.password == 'string') {
+				_settings.password = [_settings.password];
 			}
 			
+			// Compare against the correct password hash
+			var matched = false;
+			$.each (_settings.password, function (index, password) {
+				if (hash === password) {
+					matched = true;
+					return false;	// break
+				}
+			});
+			
 			// Failure
-			return false;
+			return matched;
 		},
 		
 		
