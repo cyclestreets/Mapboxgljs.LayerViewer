@@ -4683,6 +4683,90 @@ var layerviewer = (function ($) {
 			
 			// Fallback to final colour in the list
 			return styleStop[1];
+		},
+		
+		
+		// Helper function to get the centre-point of a geometry
+		getCentre: function (geometry)
+		{
+			// Determine the centre point
+			var centre = {};
+			switch (geometry.type) {
+				
+				case 'Point':
+					centre = {
+						lat: geometry.coordinates[1],
+						lon: geometry.coordinates[0]
+					};
+					break;
+					
+				case 'LineString':
+					var longitudes = [];
+					var latitudes = [];
+					$.each (geometry.coordinates, function (index, lonLat) {
+						longitudes.push (lonLat[0]);
+						latitudes.push (lonLat[1]);
+					});
+					centre = {
+						lat: ((Math.max.apply (null, latitudes) + Math.min.apply (null, latitudes)) / 2),
+						lon: ((Math.max.apply (null, longitudes) + Math.min.apply (null, longitudes)) / 2)
+					};
+					break;
+					
+				case 'MultiLineString':
+				case 'Polygon':
+					var longitudes = [];
+					var latitudes = [];
+					$.each (geometry.coordinates, function (index, line) {
+						$.each (line, function (index, lonLat) {
+							longitudes.push (lonLat[0]);
+							latitudes.push (lonLat[1]);
+						});
+					});
+					centre = {
+						lat: ((Math.max.apply (null, latitudes) + Math.min.apply (null, latitudes)) / 2),
+						lon: ((Math.max.apply (null, longitudes) + Math.min.apply (null, longitudes)) / 2)
+					};
+					break;
+					
+				case 'MultiPolygon':
+					var longitudes = [];
+					var latitudes = [];
+					$.each (geometry.coordinates, function (index, polygon) {
+						$.each (polygon, function (index, line) {
+							$.each (line, function (index, lonLat) {
+								longitudes.push (lonLat[0]);
+								latitudes.push (lonLat[1]);
+							});
+						});
+					});
+					centre = {
+						lat: ((Math.max.apply (null, latitudes) + Math.min.apply (null, latitudes)) / 2),
+						lon: ((Math.max.apply (null, longitudes) + Math.min.apply (null, longitudes)) / 2)
+					};
+					break;
+					
+				case 'GeometryCollection':
+					var longitudes = [];
+					var latitudes = [];
+					var centre;
+					$.each (geometry.geometries, function (index, geometryItem) {
+						centre = streetfocus.getCentre (geometryItem);		// Iterate
+						longitudes.push (centre.lon);
+						latitudes.push (centre.lat);
+					});
+					centre = {
+						lat: ((Math.max.apply (null, latitudes) + Math.min.apply (null, latitudes)) / 2),
+						lon: ((Math.max.apply (null, longitudes) + Math.min.apply (null, longitudes)) / 2)
+					};
+					break;
+					
+				default:
+					console.log ('Unsupported geometry type: ' + geometry.type, geometry);
+			}
+			
+			// Return the centre
+			return centre;
 		}
 	};
 	
