@@ -3311,7 +3311,7 @@ var layerviewer = (function ($) {
 			var centre = layerviewer.getCentre (feature.geometry);
 			
 			// Assemble and return the HTML
-			return '<iframe id="streetview" src="/streetview.html?latitude=' + centre.lat + '&longitude=' + centre.lon + '">Street View loading &hellip;</div></td></tr></table></div></iframe>';
+			return '<iframe id="streetview" src="/streetview.html?latitude=' + centre.lat + '&longitude=' + centre.lon + '">Street View loading &hellip;</iframe>';
 		},
 		
 		
