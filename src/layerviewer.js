@@ -1,4 +1,4 @@
-// Layer viewer library code
+// LayerViewer library code
 
 /*jslint browser: true, white: true, single: true, for: true */
 /*global $, jQuery, mapboxgl, MapboxDraw, geojsonExtent, autocomplete, Cookies, vex, GeoJSON, FULLTILT, L, alert, console, window */
@@ -3306,24 +3306,11 @@ var layerviewer = (function ($) {
 		// Street View container template
 		streetViewTemplate: function (feature)
 		{
-			// Determine the lon/lat values
-			var longitude;
-			var latitude;
-			switch (feature.geometry.type) {
-				case 'Point':
-					longitude = feature.geometry.coordinates[0];
-					latitude = feature.geometry.coordinates[1];
-					break;
-				case 'LineString':	// Take the centre-point
-					longitude = ((feature.geometry.coordinates[0][0] + feature.geometry.coordinates[1][0]) / 2);
-					latitude = ((feature.geometry.coordinates[0][1] + feature.geometry.coordinates[1][1]) / 2);
-					break;
-				default:
-					// Geometry type not yet supported
-			}
-
+			// Determine the centroid
+			var centre = layerviewer.getCentre (feature.geometry);
+			
 			// Assemble and return the HTML
-			return '<iframe id="streetview" src="/streetview.html?latitude=' + latitude + '&longitude=' + longitude + '">Street View loading &hellip;</div></td></tr></table></div></iframe>';
+			return '<iframe id="streetview" src="/streetview.html?latitude=' + centre.lat + '&longitude=' + centre.lon + '">Street View loading &hellip;</div></td></tr></table></div></iframe>';
 		},
 		
 		
