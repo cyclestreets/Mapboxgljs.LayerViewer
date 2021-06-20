@@ -982,6 +982,7 @@ var layerviewer = (function ($) {
 		
 		
 		// Helper function to get the centre point of a ol
+		// #!# Refactor out to use getCentre
 		polygonCentroid: function (feature)
 		{
 			// Convert the feature to bbox bounds, and then get the centre of that bbox
