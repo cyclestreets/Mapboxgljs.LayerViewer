@@ -378,6 +378,9 @@ var layerviewer = (function ($) {
 			popupHtml:
 				+ '<p>Reference: <strong>{properties.id}</strong></p>'
 				+ '<p>Date and time: {properties.datetime}</p>',
+			popupFeedbackButton: false,
+			popupFeedbackCallback: false,
+			popupFeedbackIdField: false,
 			
 			// Formatter for popup fields when using auto-table creation
 			popupImagesField: false,
@@ -612,7 +615,7 @@ var layerviewer = (function ($) {
 					}
 				});
 			});
-
+			
 			// If an ID is supplied in the URL, load it 
 			layerviewer.loadIdFromUrl (urlParameters);
 			
@@ -2453,9 +2456,12 @@ var layerviewer = (function ($) {
 					layerviewer.getData (layerId, _parameters[layerId]);
 				});
 			}
+			
+			// Register popup feedback handler for a layer
+			layerviewer.addPopupFeedbackHandler (layerId);
 		},
-
-
+		
+		
 		// Function to load IDs from URL parameters
 		loadIdFromUrl: function (urlParameters)
 		{
@@ -3299,6 +3305,10 @@ var layerviewer = (function ($) {
 				}
 			}
 			
+			// Prepend feedback button if required
+			var feedbackButton = layerviewer.addPopupFeedbackButton (layerId, feature);
+			html = feedbackButton + html;
+			
 			// Return the content
 			return html;
 		},
@@ -4140,6 +4150,9 @@ var layerviewer = (function ($) {
 				$('#sections #' + layerId + ' div.export p').removeClass('enabled');
 				$('#sections #' + layerId + ' div.export span').remove();
 			}
+			
+			// Deregister popup feedback handler for a layer
+			layerviewer.removePopupFeedbackHandler (layerId);
 		},
 		
 		
@@ -4755,6 +4768,62 @@ var layerviewer = (function ($) {
 			
 			// Return the centre
 			return centre;
+		},
+		
+		
+		// Function to create a popup feedback layer
+		addPopupFeedbackButton: function (layerId, feature)
+		{
+			// End if not enabled for this layer
+			if (!_layerConfig[layerId].popupFeedbackButton) {return '';}
+			
+			// Assemble the HTML
+			var html = '<p class="feedbackbutton">';
+			html += '<a href="#" data-id="' + feature.properties[_layerConfig[layerId].popupFeedbackIdField] + '" title="Give feedback">';
+			html += _layerConfig[layerId].popupFeedbackButton;
+			html += '</a>';
+			html += '</p>';
+			
+			// Return the HTML
+			return html;
+		},
+		
+		
+		// Function to create a popup feedback handler
+		addPopupFeedbackHandler: function (layerId)
+		{
+			// End if not enabled for this layer
+			if (!_layerConfig[layerId].popupFeedbackButton) {return;}
+			
+			// Add handler
+			$('body').on ('click', '.mapboxgl-popup.' + layerId + ' p.feedbackbutton', {layerId: layerId}, function (event) {
+				
+				// Create an overlay canvas
+				var overlayHtml = '<div id="feedbackoverlay"><a href="#" class="closebutton">x</a><div id="feedbackoverlaycontent"></div></div>';
+				$(overlayHtml).hide ().appendTo ( $(this).closest ('.mapboxgl-popup-content') ).fadeIn (500, function () {
+					
+					// Get the properties
+					var layerId = event.data.layerId;
+					var id = event.target.dataset.id;
+					_layerConfig[layerId].popupFeedbackCallback (id);
+				});
+			});
+			
+			// Remove the overlay canvas on close
+			$('body').on ('click', '#feedbackoverlay .closebutton', function (e) {
+				$('#feedbackoverlay').fadeOut (500, function () { $(this).remove(); });
+			});
+		},
+		
+		
+		// Function to remove a popup feedback handler
+		removePopupFeedbackHandler: function (layerId)
+		{
+			// End if not enabled for this layer
+			if (!_layerConfig[layerId].popupFeedbackButton) {return;}
+			
+			// Remove the handler, with the path exactly matching the onClick handler above
+			$('body').off ('click', '.mapboxgl-popup.' + layerId + ' p.feedbackbutton');
 		}
 	};
 	
