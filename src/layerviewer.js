@@ -4800,19 +4800,19 @@ var layerviewer = (function ($) {
 			$('body').on ('click', '.mapboxgl-popup.' + layerId + ' p.feedbackbutton', {layerId: layerId}, function (event) {
 				
 				// Create an overlay canvas
-				var overlayHtml = '<div id="feedbackoverlay"><a href="#" class="closebutton">x</a><div id="feedbackoverlaycontent"></div></div>';
+				var overlayHtml = '<div id="feedbackoverlay"><a href="#" class="closebutton">x</a><div id="popupfeedbackoverlaycontent"></div></div>';
 				$(overlayHtml).hide ().appendTo ( $(this).closest ('.mapboxgl-popup-content') ).fadeIn (500, function () {
 					
 					// Get the layer
 					var layerId = event.data.layerId;
 					
+					// Add the HTML contents to the overlay
+					var popupFeedbackOverlayContent = $('#popupfeedback' + layerId).children ().clone ();	// .children() ensures the container itself isn't copied
+					popupFeedbackOverlayContent.appendTo ('#popupfeedbackoverlaycontent');
+					
 					// Retrieve the feature properties
 					var featureBase64 = event.target.dataset.feature;
 					var feature = JSON.parse (window.atob (featureBase64));
-					
-					// Add the HTML contents to the overlay
-					var feedbackOverlayContent = $('#popupfeedback' + layerId).children ().clone ();	// .children() ensures the container itself isn't copied
-					feedbackOverlayContent.appendTo ('#feedbackoverlaycontent');
 					
 					// Define a function to resolve a path; see: https://stackoverflow.com/a/22129960/180733
 					var resolve = function (obj, path) {
@@ -4824,7 +4824,7 @@ var layerviewer = (function ($) {
 					// Populate any hidden fields from the feature
 					var path;
 					var value;
-					$('#feedbackoverlaycontent input[type="hidden"]').each (function () {
+					$('#popupfeedbackoverlaycontent input[type="hidden"]').each (function () {
 						if ($(this)[0].dataset.hasOwnProperty ('value')) {		// i.e. data-value is defined
 							path = $(this)[0].dataset.value
 							value = resolve (feature, path);	// E.g. data-value="properties.foo" will look up that path in the feature
@@ -4833,7 +4833,7 @@ var layerviewer = (function ($) {
 					});
 					
 					// Add form processor
-					layerviewer.processPopupFeedbackForm ('#feedbackoverlaycontent');
+					layerviewer.processPopupFeedbackForm ('#popupfeedbackoverlaycontent');
 				});
 			});
 			
