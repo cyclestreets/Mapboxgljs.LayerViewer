@@ -378,7 +378,6 @@ var layerviewer = (function ($) {
 			popupHtml:
 				+ '<p>Reference: <strong>{properties.id}</strong></p>'
 				+ '<p>Date and time: {properties.datetime}</p>',
-			popupFeedbackButton: false,
 			
 			// Formatter for popup fields when using auto-table creation
 			popupImagesField: false,
@@ -386,6 +385,10 @@ var layerviewer = (function ($) {
 				myField: function (value, feature) {return string;},
 				...
 			},
+			
+			// Layer-specific feedback buttons
+			popupFeedbackButton: false,		// or string containing button text
+			locateFeedbackButton: false,	// or string containing button text
 			
 			// Rounding decimal places in popups
 			popupsRoundingDP: 0,
@@ -465,6 +468,8 @@ var layerviewer = (function ($) {
 	var _regionBounds = {};
 	var _regionSwitcherDefaultRegionFromUrl = false;
 	var _selectedRegion = false;
+	var _locateHandlerFunction;
+	var _locateHandlerMarker;
 	var _miniMaps = {};			// Handle to each mini map
 	var _miniMapLayers = {};	// Handle to each mini map's layer
 	var _geolocate = null; // Store the geolocation element
@@ -2455,8 +2460,9 @@ var layerviewer = (function ($) {
 				});
 			}
 			
-			// Register popup feedback handler for a layer
+			// Register popup and locate feedback handler for a layer
 			layerviewer.addPopupFeedbackHandler (layerId);
+			layerviewer.addLocateFeedbackHandler (layerId);
 		},
 		
 		
@@ -4149,8 +4155,9 @@ var layerviewer = (function ($) {
 				$('#sections #' + layerId + ' div.export span').remove();
 			}
 			
-			// Deregister popup feedback handler for a layer
+			// Deregister popup and locate feedback handler for a layer
 			layerviewer.removePopupFeedbackHandler (layerId);
+			layerviewer.removeLocateFeedbackHandler (layerId);
 		},
 		
 		
@@ -4848,7 +4855,7 @@ var layerviewer = (function ($) {
 		processPopupFeedbackForm: function (containerDiv)
 		{
 			// Move focus to first input
-			$(containerDiv + ' input, ' + containerDiv + ' textarea').first ().focus ();
+			$(containerDiv + ' input, ' + containerDiv + ' textarea, ' + containerDiv + ' select').first ().focus ();
 			
 			// Capture the form submit, so that it goes via AJAX instead
 			$(containerDiv + ' form').submit (function () {
@@ -4886,6 +4893,74 @@ var layerviewer = (function ($) {
 			
 			// Remove the handler, with the path exactly matching the onClick handler above
 			$('body').off ('click', '.mapboxgl-popup.' + layerId + ' p.feedbackbutton');
+		},
+		
+		
+		// Function to create a locate (click on map) feedback handler
+		addLocateFeedbackHandler: function (layerId)
+		{
+			// End if not enabled for this layer
+			if (!_layerConfig[layerId].popupFeedbackButton) {return;}
+			
+			// Create a marker, which will be a singleton, as it is defined as a single object
+			_locateHandlerMarker = new mapboxgl.Marker ({
+				draggable: true,
+				color: '#603'
+			});
+			
+			// Create popup, which will be retained upon drag or new re-click
+			var overlayHtml = '<div id="locatefeedbackoverlaycontent" class="overlaycontent"></div>';
+			_locateHandlerMarker.setPopup (new mapboxgl.Popup ().setHTML (overlayHtml));
+			
+			// Define a function set the lat/lon values in the form fields
+			var setFormLocation = function (lngLat) {
+				$('#locatefeedbackoverlaycontent form input[name="longitude"]').val (lngLat.lng);
+				$('#locatefeedbackoverlaycontent form input[name="latitude"]').val (lngLat.lat);
+			}
+			
+			// Define handler function
+			_locateHandlerFunction = function (e) {
+				
+				// Add the marker to the map, or relocate if it already exists
+				_locateHandlerMarker.setLngLat (e.lngLat)
+					.addTo (_map)
+					.togglePopup ();
+				
+				// Add the HTML contents to the overlay, if not already present
+				if (!$('#locatefeedbackoverlaycontent form').length) {
+					var locateFeedbackOverlayContent = $('#locatefeedback' + layerId).children ().clone ();	// .children() ensures the container itself isn't copied
+					$('#locatefeedbackoverlaycontent').html (locateFeedbackOverlayContent);		// .html() rather than .appendTo() to avoid additional
+				}
+				
+				// Set the lat/lon values
+				setFormLocation (e.lngLat);
+				
+				// Add form processor
+				layerviewer.processPopupFeedbackForm ('#locatefeedbackoverlaycontent');
+			}
+			
+			// Add handler
+			_map.on ('contextmenu', _locateHandlerFunction);
+			
+			// Update the form location values if moved
+			_locateHandlerMarker.on ('dragend', function () {
+				var lngLat = _locateHandlerMarker.getLngLat ();
+				setFormLocation (lngLat);
+			});
+		},
+		
+		
+		// Function to remove a popup feedback handler
+		removeLocateFeedbackHandler: function (layerId)
+		{
+			// End if not enabled for this layer
+			if (!_layerConfig[layerId].popupFeedbackButton) {return;}
+			
+			// Remove the marker
+			_locateHandlerMarker.remove ();
+			
+			// Remove the handler
+			_map.off ('contextmenu', _locateHandlerFunction);
 		}
 	};
 	

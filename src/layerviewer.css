@@ -35,7 +35,7 @@ body .mapboxgl-map {line-height: 1.4;}
 #map .mapboxgl-popup abbr {text-decoration: none;}
 
 /* In-popup feedback */
-body .popupfeedback {display: none;}		/* Hide raw version in HTML which the JS picks up */
+body .popupfeedback, body .locatefeedback {display: none;}		/* Hide raw version in HTML which the JS picks up */
 #map .mapboxgl-popup p.feedbackbutton a {float: right; padding: 3px 6px; width: 6em; border: 1px solid gray; border-radius: 5px; color: gray; text-decoration: none; display: block; font-size; 0.9em; margin-top: 10px;}
 #map .mapboxgl-popup p.feedbackbutton a:hover {background-color: #f5f5f5;}
 #map .mapboxgl-popup #feedbackoverlay {position: absolute; top: 0; bottom: 0; left: 0; right: 0; z-index: 2; background-color: white; padding: 13px 29px; border-radius: 12px;}
