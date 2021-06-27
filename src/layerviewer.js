@@ -4832,40 +4832,48 @@ var layerviewer = (function ($) {
 						}
 					});
 					
-					// Move focus to first input
-					$('#feedbackoverlaycontent input, #feedbackoverlaycontent textarea').first ().focus ();
-					
-					// Capture the form submit, so that it goes via AJAX instead
-					$('#feedbackoverlaycontent form').submit (function () {
-						var form = $(this);
-						var resultHtml;
-						var errorHtml = '<p class="error">Sorry, an error occured while trying to save your feedback. Please try again later.</p>';
-						$.ajax ({
-							type: form.attr ('method'),
-							url: layerviewer.settingsPlaceholderSubstitution (form.attr ('action'), ['apiBaseUrl', 'apiKey']),
-							data: form.serialize (),
-							success: function (data) {
-								if (data.id) {
-									resultHtml = '<p class="success">&#10003; Thank you - we will review your feedback shortly.</p>';
-								}
-								if (data.error) {
-									resultHtml = errorHtml;
-								}
-								$('#feedbackoverlaycontent').html (resultHtml);
-							},
-							error: function (jqXHR, textStatus, errorThrown) {
-								resultHtml = errorHtml;
-								$('#feedbackoverlaycontent').html (resultHtml);
-							}
-						});
-						return false;	// Prevent submit
-					});
+					// Add form processor
+					layerviewer.processPopupFeedbackForm ();
 				});
 			});
 			
 			// Remove the overlay canvas on close
 			$('body').on ('click', '#feedbackoverlay .closebutton', function (e) {
 				$('#feedbackoverlay').fadeOut (500, function () { $(this).remove(); });
+			});
+		},
+		
+		
+		// Function to process a popup feedback form
+		processPopupFeedbackForm: function ()
+		{
+			// Move focus to first input
+			$('#feedbackoverlaycontent input, #feedbackoverlaycontent textarea').first ().focus ();
+			
+			// Capture the form submit, so that it goes via AJAX instead
+			$('#feedbackoverlaycontent form').submit (function () {
+				var form = $(this);
+				var resultHtml;
+				var errorHtml = '<p class="error">Sorry, an error occured while trying to save your feedback. Please try again later.</p>';
+				$.ajax ({
+					type: form.attr ('method'),
+					url: layerviewer.settingsPlaceholderSubstitution (form.attr ('action'), ['apiBaseUrl', 'apiKey']),
+					data: form.serialize (),
+					success: function (data) {
+						if (data.id) {
+							resultHtml = '<p class="success">&#10003; Thank you - we will review your feedback shortly.</p>';
+						}
+						if (data.error) {
+							resultHtml = errorHtml;
+						}
+						$('#feedbackoverlaycontent').html (resultHtml);
+					},
+					error: function (jqXHR, textStatus, errorThrown) {
+						resultHtml = errorHtml;
+						$('#feedbackoverlaycontent').html (resultHtml);
+					}
+				});
+				return false;	// Prevent submit
 			});
 		},
 		
