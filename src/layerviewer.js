@@ -1,7 +1,7 @@
 // LayerViewer library code
 
-/*jslint browser: true, white: true, single: true, for: true */
-/*global $, jQuery, mapboxgl, MapboxDraw, geojsonExtent, autocomplete, Cookies, vex, GeoJSON, FULLTILT, L, alert, console, window */
+/*jslint browser: true, white: true, single: true, for: true, long: true, unordered: true */
+/*global $, jQuery, mapboxgl, MapboxDraw, geojsonExtent, autocomplete, Cookies, vex, GeoJSON, FULLTILT, L, Papa, jsSHA, toGeoJSON, alert, console, window, history, DeviceOrientationEvent */
 
 var layerviewer = (function ($) {
 	
@@ -105,7 +105,7 @@ var layerviewer = (function ($) {
 			light: {
 				vectorTiles: 'mapbox://styles/mapbox/light-v10',
 				label: 'Light',
-				description: 'A light-fade background map.',
+				description: 'A light-fade background map.'
 			},
 			night: {
 				vectorTiles: 'mapbox://styles/mapbox/dark-v10',
@@ -153,8 +153,8 @@ var layerviewer = (function ($) {
 				tileSize: 256,
 				label: 'OS 6-inch',
 				description: 'Comprehensive topographic mapping covering all of England and Wales from the 1840s.'
-			},
-			/*
+			}
+			/* ,
 			os1to25k1stseries: {
 				tiles: 'https://{s}.tile.cyclestreets.net/os1to25k1stseries/{z}/{x}/{y}@2x.png',
 				maxZoom: 16,
@@ -824,7 +824,7 @@ var layerviewer = (function ($) {
 						latitude: hashParts[2],
 						longitude: hashParts[3],
 						zoom: hashParts[1]
-					}
+					};
 					urlParameters.defaultTileLayer = hashParts[4];
 					
 					// Remove the tile layer element, before loading the map, so that the MapboxGL hash value is as expected
@@ -964,7 +964,7 @@ var layerviewer = (function ($) {
 		setHoverState: function (layerId, sourceId)
 		{
 			// Create the hover state ID
-			var hoveredStateId =  null;
+			var hoveredStateId = null;
 			
 			// When the user moves their mouse over the state-fill layer, update the feature state for the feature under the mouse
 			_map.on ('mousemove', layerId, function (e) {
@@ -982,7 +982,7 @@ var layerviewer = (function ($) {
 				if (hoveredStateId !== null) {
 					_map.setFeatureState ({source: sourceId, id: hoveredStateId}, {hover: false});
 				}
-				hoveredStateId =  null;
+				hoveredStateId = null;
 			});
 		},
 		
@@ -1122,8 +1122,8 @@ var layerviewer = (function ($) {
 						$('nav').hide ('slide', {direction: 'right'}, 250);
 						$('#nav-mobile').fadeTo(250, 1);
 					});
-				};
-			};
+				}
+			}
 			
 			// Enable closing menu on slide right
 			if ($('#nav-mobile').is(':visible')) {
@@ -1131,7 +1131,7 @@ var layerviewer = (function ($) {
 					$('nav').hide ('slide', {direction: 'right'}, 250);
 					$('#nav-mobile').fadeTo(250, 1);
 				});
-			};
+			}
 		},
 		
 		
@@ -1605,7 +1605,7 @@ var layerviewer = (function ($) {
 			_message.hide = function () {
 				$('#message').html ('');
 				$('#message').hide ();
-			}
+			};
 		},
 		
 		
@@ -1746,14 +1746,14 @@ var layerviewer = (function ($) {
 					tileLayerAttributes.tiles.replace ('{s}', 'a'),
 					tileLayerAttributes.tiles.replace ('{s}', 'b'),
 					tileLayerAttributes.tiles.replace ('{s}', 'c')
-				]
+				];
 			}
 			
 			// Convert string (without {s}) to array
 			if (typeof tileLayerAttributes.tiles === 'string') {
 				tileLayerAttributes.tiles = [
 					tileLayerAttributes.tiles
-				]
+				];
 			}
 			
 			// Register the definition
@@ -2001,7 +2001,7 @@ var layerviewer = (function ($) {
 		// Deactivate FULLTILT when map is being dragged, as it blocks panning otherwise
 		monitorDragging: function () {
 			var isDragging = false;
-			var panningWasEnabled = false
+			var panningWasEnabled = false;
 
 			$('#map')
 				.tapstart(function () {
@@ -2136,7 +2136,7 @@ var layerviewer = (function ($) {
 			// Create a tracking control
 			_geolocate = new mapboxgl.GeolocateControl ({
 				positionOptions: {
-					enableHighAccuracy: true,
+					enableHighAccuracy: true
 				},
 				fitBoundsOptions: {
 					duration: 1500
@@ -2264,16 +2264,17 @@ var layerviewer = (function ($) {
 				_map.setStyle (style);
 
 				// Save this style as a cookie
-				Cookies.set ('mapstyle', styleId)
+				Cookies.set ('mapstyle', styleId);
 				
 				// Set the style flag to the new ID
 				_currentStyleId = styleId;	
 				
 				// Fire an event; see: https://javascript.info/dispatch-events
 				layerviewer.styleChanged ();
-			};
+			}
 			var inputs = $(container + ' ul input');
-			for (var i = 0; i < inputs.length; i++) {
+			var i;
+			for (i = 0; i < inputs.length; i++) {
 				inputs[i].onclick = switchStyle;
 			}
 
@@ -2296,14 +2297,6 @@ var layerviewer = (function ($) {
 			var body = document.getElementsByTagName ('body')[0];
 			var myEvent = new Event ('style-changed', {'bubbles': true});
 			body.dispatchEvent (myEvent);
-		},
-		
-		
-		// Function to make first character upper-case; see: https://stackoverflow.com/a/1026087/180733
-		ucfirst: function (string)
-		{
-			if (typeof string !== 'string') {return string;}
-			return string.charAt(0).toUpperCase() + string.slice(1);
 		},
 		
 		
@@ -2484,7 +2477,7 @@ var layerviewer = (function ($) {
 			
 			// Start API data parameters and add in the ID
 			var apiData = layerviewer.assembleBaseApiData (layerId, true);
-			apiData['id'] = id;
+			apiData.id = id;
 
 			// Determine the API URL to use
 			var apiUrl = _layerConfig[layerId].apiCallId.apiCall;
@@ -2770,7 +2763,7 @@ var layerviewer = (function ($) {
 			
 			// Add beta flag if enabled
 			if (_betaMode) {
-				apiData['beta'] = 1;
+				apiData.beta = 1;
 			}
 			
 			// Determine the API URL to use
@@ -2784,7 +2777,7 @@ var layerviewer = (function ($) {
 				if (apiUrl.includes (_settings.regionsSubstitutionToken)) {
 					var selectedOption = $('#regionswitcher option:selected').val();
 					if (!selectedOption) {
-						selectedOption = $($('#regionswitcher option')[1]).val()
+						selectedOption = $($('#regionswitcher option')[1]).val();
 					}
 					var region = (selectedOption == null ? $('#regionswitcher option').first().val() : selectedOption);
 					apiUrl = apiUrl.replace (_settings.regionsSubstitutionToken, region);
@@ -3105,12 +3098,12 @@ var layerviewer = (function ($) {
 			// Initialise blank popupLabels property if necessary
 			if (!_layerConfig[layerId].hasOwnProperty('popupLabels')) {
 				_layerConfig[layerId].popupLabels = {};
-			};
+			}
 			
 			// Initialise blank popupDescriptions property if necessary
 			if (!_layerConfig[layerId].hasOwnProperty('popupDescriptions')) {
 				_layerConfig[layerId].popupDescriptions = {};
-			};
+			}
 			
 			// Default fields
 			// #!# This should really be done at the layer initialisation
@@ -3134,7 +3127,7 @@ var layerviewer = (function ($) {
 						_layerConfig[layerId].popupDescriptions[key] = description;
 					});
 				}
-			})
+			});
 		},
 		
 		
@@ -3249,7 +3242,7 @@ var layerviewer = (function ($) {
 					// Key
 					fieldLabel = key;
 					if (_layerConfig[layerId].popupLabels) {
-						if (_layerConfig[layerId].popupLabels[key]) {
+						if (_layerConfig[layerId].popupLabels.hasOwnProperty (key)) {
 							fieldLabel = _layerConfig[layerId].popupLabels[key];
 						}
 					}
@@ -3377,8 +3370,9 @@ var layerviewer = (function ($) {
 		range: function (start, end)
 		{
 			if (start > end) {return [];}	// Prevent accidental infinite iteration
+			var i;
 			var range = [];
-			for (var i = start; i <= end; i++) {
+			for (i = start; i <= end; i++) {
 				range.push(i);
 			}
 			return range;
@@ -3473,19 +3467,19 @@ var layerviewer = (function ($) {
 					layout: {},		// Not applicable
 					paint: {
 						'circle-radius': 8,
-						'circle-color': '#007cbf',
-					},
+						'circle-color': '#007cbf'
+					}
 				},
 				'LineString': {
 					type: 'line',
 					layout: {
 						'line-cap': 'round',
-						'line-join': 'round',
+						'line-join': 'round'
 					},
 					paint: {
 						'line-color': ['case', ['has', 'color'], ['get', 'color'], /* fallback: */ '#888'],
 						'line-width': 3
-					},
+					}
 				},
 				'Polygon': {
 					type: 'fill',
@@ -3494,7 +3488,7 @@ var layerviewer = (function ($) {
 						'fill-color': '#888',
 						'fill-opacity': 0.4
 						// NB Outline line width cannot be changed: https://github.com/mapbox/mapbox-gl-js/issues/3018#issuecomment-240381965
-					},
+					}
 				}
 			};
 			var styles = $.extend (true, {}, defaultStyles);	// Clone
@@ -3615,7 +3609,7 @@ var layerviewer = (function ($) {
 						paint: layerviewer.heatmapStyles (),
 						layout: {}
 					}
-				}
+				};
 			}
 			
 			// Perform initial fit of map extent, if required
@@ -3650,8 +3644,8 @@ var layerviewer = (function ($) {
 					source: layerId,
 					type: style.type,
 					paint: style.paint,
-					layout: style.layout,
-				}
+					layout: style.layout
+				};
 				if (geometryType != 'heatmap') {
 					layer.filter = ['==', '$type', geometryType];
 				}
@@ -3958,9 +3952,10 @@ var layerviewer = (function ($) {
 		{
 			if (_markers[layerId]) {
 				var totalMarkers = _markers[layerId].length;
-				for (var i = 0; i < totalMarkers; i++) {
+				var i;
+				for (i = 0; i < totalMarkers; i++) {
 					_markers[layerId][i].remove ();		// Remove the actual item, not a copy
-				};
+				}
 			}
 			_markers[layerId] = [];
 		},
@@ -3971,9 +3966,10 @@ var layerviewer = (function ($) {
 		{
 			if (_popups[layerId]) {
 				var totalPopups = _popups[layerId].length;
-				for (var i = 0; i < totalPopups; i++) {
+				var i;
+				for (i = 0; i < totalPopups; i++) {
 					_popups[layerId][i].remove ();		// Remove the actual item, not a copy
-				};
+				}
 			}
 			_popups[layerId] = [];
 		},
@@ -4176,8 +4172,8 @@ var layerviewer = (function ($) {
 					paint: {
 						'fill-color': '#D20C0C',
 						'fill-outline-color': '#D20C0C',
-						'fill-opacity': 0.1,
-					},
+						'fill-opacity': 0.1
+					}
 				},
 				// Polygon outline stroke
 				{
@@ -4185,13 +4181,13 @@ var layerviewer = (function ($) {
 					type: 'line',
 					layout: {
 						'line-cap': 'round',
-						'line-join': 'round',
+						'line-join': 'round'
 					},
 					paint: {
 						'line-color': '#D96B27',
 						'line-dasharray': [0.2, 2],
-						'line-width': 4,
-					},
+						'line-width': 4
+					}
 				},
 				// Vertex point halos
 				{
@@ -4200,8 +4196,8 @@ var layerviewer = (function ($) {
 					filter: ['all', ['==', 'meta', 'vertex'], ['==', '$type', 'Point']],
 					paint: {
 						'circle-radius': 7,
-						'circle-color': '#FFF',
-					},
+						'circle-color': '#FFF'
+					}
 				},
 				// Vertex points
 				{
@@ -4210,8 +4206,8 @@ var layerviewer = (function ($) {
 					filter: ['all', ['==', 'meta', 'vertex'], ['==', '$type', 'Point']],
 					paint: {
 						'circle-radius': 6,
-						'circle-color': '#D96B27',
-					},
+						'circle-color': '#D96B27'
+					}
 				}
 			];
 			
@@ -4280,7 +4276,7 @@ var layerviewer = (function ($) {
 				// Trigger jQuery change event, so that .change() behaves as expected for the hidden field; see: https://stackoverflow.com/a/8965804
 				// #!# Note that this fires twice for some reason - see notes to the answer in the above URL
 				$(targetField).trigger('change');
-			};
+			}
 			
 			// Cancel button clears drawn polygon and clears the form value
 			$('.edit-clear').click(function() {
@@ -4438,7 +4434,7 @@ var layerviewer = (function ($) {
 			// Reorder by name
 			var sortBy = 'name';
 			regions.sort (function (a, b) {
-				return a[sortBy].localeCompare (b[sortBy])
+				return a[sortBy].localeCompare (b[sortBy]);
 			});
 			
 			// Return the list
@@ -4633,7 +4629,7 @@ var layerviewer = (function ($) {
 					var style = {
 						color: '#888',
 						weight: 2
-					}
+					};
 					
 					// Dynamic styling based on data, if enabled - polygons
 					if (_layerConfig[layerId].polygonColourField && _layerConfig[layerId].polygonColourStops) {
@@ -4673,8 +4669,9 @@ var layerviewer = (function ($) {
 			}
 			
 			// Loop through each style stop until found
+			var i;
 			var styleStop;
-			for (var i = 0; i < lookupTable.length; i++) {
+			for (i = 0; i < lookupTable.length; i++) {
 				styleStop = lookupTable[i];
 				if (typeof lookupTable[0][0] === 'string') {	// Fixed string values
 					if (value == styleStop[0]) {
@@ -4697,6 +4694,8 @@ var layerviewer = (function ($) {
 		{
 			// Determine the centre point
 			var centre = {};
+			var longitudes = [];
+			var latitudes = [];
 			switch (geometry.type) {
 				
 				case 'Point':
@@ -4707,8 +4706,6 @@ var layerviewer = (function ($) {
 					break;
 					
 				case 'LineString':
-					var longitudes = [];
-					var latitudes = [];
 					$.each (geometry.coordinates, function (index, lonLat) {
 						longitudes.push (lonLat[0]);
 						latitudes.push (lonLat[1]);
@@ -4721,8 +4718,6 @@ var layerviewer = (function ($) {
 					
 				case 'MultiLineString':
 				case 'Polygon':
-					var longitudes = [];
-					var latitudes = [];
 					$.each (geometry.coordinates, function (index, line) {
 						$.each (line, function (index, lonLat) {
 							longitudes.push (lonLat[0]);
@@ -4736,8 +4731,6 @@ var layerviewer = (function ($) {
 					break;
 					
 				case 'MultiPolygon':
-					var longitudes = [];
-					var latitudes = [];
 					$.each (geometry.coordinates, function (index, polygon) {
 						$.each (polygon, function (index, line) {
 							$.each (line, function (index, lonLat) {
@@ -4753,8 +4746,6 @@ var layerviewer = (function ($) {
 					break;
 					
 				case 'GeometryCollection':
-					var longitudes = [];
-					var latitudes = [];
 					var centre;
 					$.each (geometry.geometries, function (index, geometryItem) {
 						centre = streetfocus.getCentre (geometryItem);		// Iterate
@@ -4833,7 +4824,7 @@ var layerviewer = (function ($) {
 					var value;
 					$('#popupfeedbackoverlaycontent input[type="hidden"]').each (function () {
 						if ($(this)[0].dataset.hasOwnProperty ('value')) {		// i.e. data-value is defined
-							path = $(this)[0].dataset.value
+							path = $(this)[0].dataset.value;
 							value = resolve (feature, path);	// E.g. data-value="properties.foo" will look up that path in the feature
 							$(this).val (value);
 						}
@@ -4916,7 +4907,7 @@ var layerviewer = (function ($) {
 			var setFormLocation = function (lngLat) {
 				$('#locatefeedbackoverlaycontent form input[name="longitude"]').val (lngLat.lng);
 				$('#locatefeedbackoverlaycontent form input[name="latitude"]').val (lngLat.lat);
-			}
+			};
 			
 			// Define handler function
 			_locateHandlerFunction = function (e) {
@@ -4937,7 +4928,7 @@ var layerviewer = (function ($) {
 				
 				// Add form processor
 				layerviewer.processPopupFeedbackForm ('#locatefeedbackoverlaycontent');
-			}
+			};
 			
 			// Add handler
 			_map.on ('contextmenu', _locateHandlerFunction);
