@@ -4800,7 +4800,7 @@ var layerviewer = (function ($) {
 			$('body').on ('click', '.mapboxgl-popup.' + layerId + ' p.feedbackbutton', {layerId: layerId}, function (event) {
 				
 				// Create an overlay canvas
-				var overlayHtml = '<div id="feedbackoverlay"><a href="#" class="closebutton">x</a><div id="popupfeedbackoverlaycontent"></div></div>';
+				var overlayHtml = '<div id="feedbackoverlay"><a href="#" class="closebutton">x</a><div id="popupfeedbackoverlaycontent" class="overlaycontent"></div></div>';
 				$(overlayHtml).hide ().appendTo ( $(this).closest ('.mapboxgl-popup-content') ).fadeIn (500, function () {
 					
 					// Get the layer
