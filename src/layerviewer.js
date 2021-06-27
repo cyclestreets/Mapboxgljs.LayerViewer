@@ -4833,7 +4833,7 @@ var layerviewer = (function ($) {
 					});
 					
 					// Add form processor
-					layerviewer.processPopupFeedbackForm ();
+					layerviewer.processPopupFeedbackForm ('#feedbackoverlaycontent');
 				});
 			});
 			
@@ -4845,13 +4845,13 @@ var layerviewer = (function ($) {
 		
 		
 		// Function to process a popup feedback form
-		processPopupFeedbackForm: function ()
+		processPopupFeedbackForm: function (containerDiv)
 		{
 			// Move focus to first input
-			$('#feedbackoverlaycontent input, #feedbackoverlaycontent textarea').first ().focus ();
+			$(containerDiv + ' input, ' + containerDiv + ' textarea').first ().focus ();
 			
 			// Capture the form submit, so that it goes via AJAX instead
-			$('#feedbackoverlaycontent form').submit (function () {
+			$(containerDiv + ' form').submit (function () {
 				var form = $(this);
 				var resultHtml;
 				var errorHtml = '<p class="error">Sorry, an error occured while trying to save your feedback. Please try again later.</p>';
@@ -4866,11 +4866,11 @@ var layerviewer = (function ($) {
 						if (data.error) {
 							resultHtml = errorHtml;
 						}
-						$('#feedbackoverlaycontent').html (resultHtml);
+						$(containerDiv).html (resultHtml);
 					},
 					error: function (jqXHR, textStatus, errorThrown) {
 						resultHtml = errorHtml;
-						$('#feedbackoverlaycontent').html (resultHtml);
+						$(containerDiv).html (resultHtml);
 					}
 				});
 				return false;	// Prevent submit
