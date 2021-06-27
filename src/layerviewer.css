@@ -35,10 +35,15 @@ body .mapboxgl-map {line-height: 1.4;}
 #map .mapboxgl-popup abbr {text-decoration: none;}
 
 /* In-popup feedback */
+body .popupfeedback {display: none;}		/* Hide raw version in HTML which the JS picks up */
 #map .mapboxgl-popup p.feedbackbutton a {float: right; padding: 3px 6px; width: 6em; border: 1px solid gray; border-radius: 5px; color: gray; text-decoration: none; display: block; font-size; 0.9em; margin-top: 10px;}
 #map .mapboxgl-popup p.feedbackbutton a:hover {background-color: #f5f5f5;}
-#map .mapboxgl-popup #feedbackoverlay {position: absolute; top: 0; bottom: 0; left: 0; right: 0; z-index: 2; background-color: white; padding: 13px 19px; border-radius: 12px;}
+#map .mapboxgl-popup #feedbackoverlay {position: absolute; top: 0; bottom: 0; left: 0; right: 0; z-index: 2; background-color: white; padding: 13px 29px; border-radius: 12px;}
 #map .mapboxgl-popup #feedbackoverlay a.closebutton {float: right; color: gray; padding: 0; text-decoration: none; font-family: Tahoma, Verdana, sans-serif; font-size: 16px;}
+#map .mapboxgl-popup #feedbackoverlay input[type="text"], #map .mapboxgl-popup #feedbackoverlay input[type="email"], #map .mapboxgl-popup #feedbackoverlay textarea {width: calc(100% - 12px); font-size: 1.2em; color: #603; padding: 5px;}
+#map .mapboxgl-popup #feedbackoverlay input[type="submit"] {margin-top: 15px;}
+#map .mapboxgl-popup #feedbackoverlay p.success {color: green; font-weight: bold;}
+#map .mapboxgl-popup #feedbackoverlay p.error {color: red; font-weight: bold;}
 
 /* Geocoder */
 #geocoder {position: absolute; top: 10px; left: 55px; z-index: 1001;}

@@ -379,8 +379,6 @@ var layerviewer = (function ($) {
 				+ '<p>Reference: <strong>{properties.id}</strong></p>'
 				+ '<p>Date and time: {properties.datetime}</p>',
 			popupFeedbackButton: false,
-			popupFeedbackCallback: false,
-			popupFeedbackIdField: false,
 			
 			// Formatter for popup fields when using auto-table creation
 			popupImagesField: false,
@@ -4777,9 +4775,12 @@ var layerviewer = (function ($) {
 			// End if not enabled for this layer
 			if (!_layerConfig[layerId].popupFeedbackButton) {return '';}
 			
+			// Assemble the feature to an encoded string that can safely be passed into the data properties
+			var featureBase64 = window.btoa (JSON.stringify (feature));
+			
 			// Assemble the HTML
 			var html = '<p class="feedbackbutton">';
-			html += '<a href="#" data-id="' + feature.properties[_layerConfig[layerId].popupFeedbackIdField] + '" title="Give feedback">';
+			html += '<a href="#" data-feature="' + featureBase64 + '" title="Give feedback">';
 			html += _layerConfig[layerId].popupFeedbackButton;
 			html += '</a>';
 			html += '</p>';
@@ -4802,10 +4803,63 @@ var layerviewer = (function ($) {
 				var overlayHtml = '<div id="feedbackoverlay"><a href="#" class="closebutton">x</a><div id="feedbackoverlaycontent"></div></div>';
 				$(overlayHtml).hide ().appendTo ( $(this).closest ('.mapboxgl-popup-content') ).fadeIn (500, function () {
 					
-					// Get the properties
+					// Get the layer
 					var layerId = event.data.layerId;
-					var id = event.target.dataset.id;
-					_layerConfig[layerId].popupFeedbackCallback (id);
+					
+					// Retrieve the feature properties
+					var featureBase64 = event.target.dataset.feature;
+					var feature = JSON.parse (window.atob (featureBase64));
+					
+					// Add the HTML contents to the overlay
+					var feedbackOverlayContent = $('#popupfeedback' + layerId).children ().clone ();	// .children() ensures the container itself isn't copied
+					feedbackOverlayContent.appendTo ('#feedbackoverlaycontent');
+					
+					// Define a function to resolve a path; see: https://stackoverflow.com/a/22129960/180733
+					var resolve = function (obj, path) {
+						var separator = '.';
+						var properties = (Array.isArray (path) ? path : path.split (separator));
+						return properties.reduce ((prev, curr) => prev && prev[curr], obj);
+					}
+					
+					// Populate any hidden fields from the feature
+					var path;
+					var value;
+					$('#feedbackoverlaycontent input[type="hidden"]').each (function () {
+						if ($(this)[0].dataset.hasOwnProperty ('value')) {		// i.e. data-value is defined
+							path = $(this)[0].dataset.value
+							value = resolve (feature, path);	// E.g. data-value="properties.foo" will look up that path in the feature
+							$(this).val (value);
+						}
+					});
+					
+					// Move focus to first input
+					$('#feedbackoverlaycontent input, #feedbackoverlaycontent textarea').first ().focus ();
+					
+					// Capture the form submit, so that it goes via AJAX instead
+					$('#feedbackoverlaycontent form').submit (function () {
+						var form = $(this);
+						var resultHtml;
+						var errorHtml = '<p class="error">Sorry, an error occured while trying to save your feedback. Please try again later.</p>';
+						$.ajax ({
+							type: form.attr ('method'),
+							url: layerviewer.settingsPlaceholderSubstitution (form.attr ('action'), ['apiBaseUrl', 'apiKey']),
+							data: form.serialize (),
+							success: function (data) {
+								if (data.id) {
+									resultHtml = '<p class="success">&#10003; Thank you - we will review your feedback shortly.</p>';
+								}
+								if (data.error) {
+									resultHtml = errorHtml;
+								}
+								$('#feedbackoverlaycontent').html (resultHtml);
+							},
+							error: function (jqXHR, textStatus, errorThrown) {
+								resultHtml = errorHtml;
+								$('#feedbackoverlaycontent').html (resultHtml);
+							}
+						});
+						return false;	// Prevent submit
+					});
 				});
 			});
 			
