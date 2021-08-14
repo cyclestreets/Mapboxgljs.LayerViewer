@@ -2244,7 +2244,7 @@ var layerviewer = (function ($) {
 				if (_settings.styleSwitcherGraphical) {
 					image = '/images/mapstyle/' + styleId + '.png';
 					labelContent  = '<img src="' + image + '" alt="' + name + '" />';
-					labelContent += '<span>' + name + '</span>';
+					labelContent += '<h3>' + name + '</h3>';
 					labelContent += '<p>' + description + '</p>';
 				} else {
 					labelContent = '<abbr title="' + description + '">' + name + '</abbr>';
