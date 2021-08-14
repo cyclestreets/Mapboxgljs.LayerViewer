@@ -2241,8 +2241,8 @@ var layerviewer = (function ($) {
 			$.each (_styles, function (styleId, style) {
 				name = (_settings.tileUrls[styleId].label ? _settings.tileUrls[styleId].label : layerviewer.ucfirst (styleId));
 				description = (_settings.tileUrls[styleId].description ? _settings.tileUrls[styleId].description : '');
-				image = '/images/maps-' + styleId + '.png';
 				if (_settings.styleSwitcherGraphical) {
+					image = '/images/mapstyle/' + styleId + '.png';
 					labelContent  = '<img src="' + image + '" alt="' + name + '" />';
 					labelContent += '<span>' + name + '</span>';
 					labelContent += '<p>' + description + '</p>';
