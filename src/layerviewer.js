@@ -41,8 +41,6 @@ var layerviewer = (function ($) {
 		
 		// Feedback API URL; re-use of settings values represented as placeholders {%apiBaseUrl}, {%apiKey}, are supported
 		feedbackApiUrl: '{%apiBaseUrl}/v2/feedback.add?key={%apiKey}',
-
-		poisApiUrl: '{%apiBaseUrl}/v2/pois.types?icons=32?key={%apiKey}',
 		
 		// Enable/disable 3D terrain (Mapbox GL JS v.2.0.0+)
 		enable3dTerrain: false,
