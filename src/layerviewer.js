@@ -452,6 +452,7 @@ var layerviewer = (function ($) {
 	var _markers = [];
 	var _popups = [];
 	var _tileOverlayLayer = false;
+	var _vectorOverlayLayer = false;
 	var _isTouchDevice;
 	var _panningEnabled = false;
 	var _virginFormState = {};
@@ -2694,6 +2695,12 @@ var layerviewer = (function ($) {
 				if (_map.getZoom () < _layerConfig[layerId].minZoom) {return;}
 			}
 			
+			// If the layer is a native vector layer rather than an API call, add it and end
+			if (_layerConfig[layerId].vector) {
+				layerviewer.addVectorLayer (_layerConfig[layerId].vector, layerId, parameters);
+				return;		// No further action, e.g. API calls
+			}
+			
 			// If the layer is a tile layer rather than an API call, add it and end
 			if (_layerConfig[layerId].tileLayer) {
 				layerviewer.addTileLayer (_layerConfig[layerId].tileLayer, layerId, parameters);
@@ -2925,6 +2932,42 @@ var layerviewer = (function ($) {
 		},
 		
 		
+		// Function to add a native vector layer
+		addVectorLayer: function (vectorLayerAttributes, layerId, parameters)
+		{
+			// Construct the ID, namespaced to avoid clashes with background layers, incorporating any parameters to ensure uniqueness
+			var id = 'vector-' + layerId + '-' + jQuery.param (parameters);    // E.g. vector-xyz-style=blue
+			
+			// Leave current setup in place if already present, with the same style options
+			if (_vectorOverlayLayer == id) {
+				return;
+			}
+			
+			// If an existing layer is already present, e.g. with different style options, remove it
+			if (_vectorOverlayLayer) {
+				layerviewer.removeVectorLayer ();
+			}
+			
+			// Register to the cache
+			_vectorOverlayLayer = id;
+			
+			// Amend the ID in the layer specification
+			vectorLayerAttributes.layer.id = id;
+			vectorLayerAttributes.layer.source = id;
+			
+			// Convert absolute tile source paths to full URL, as otherwise an 'Unable to parse URL' error will result
+			$.each (vectorLayerAttributes.source.tiles, function (index, url) {
+				if (url.match (/^\//)) {
+					vectorLayerAttributes.source.tiles[index] = window.location.origin + url;
+				}
+			});
+			
+			// Register the source and layer
+			_map.addSource (id, vectorLayerAttributes.source);		// source will contain {type: 'vector', tiles: [...], etc}
+			_map.addLayer (vectorLayerAttributes.layer);			// layer will contain {id: ..., type: 'circle', source: ..., 'source-layer': ..., 'paint': {...}}
+		},
+		
+		
 		// Function to add a tile layer
 		addTileLayer: function (tileLayerAttributes, layerId, parameters)
 		{
@@ -2962,6 +3005,16 @@ var layerviewer = (function ($) {
 			_map.addLayer (layer.layers[0]);
 			// #!# Max zoom on layer doesn't actually seem to work
 			_map.setLayerZoomRange (id, 0, (tileLayerAttributes.maxZoom ? tileLayerAttributes.maxZoom : 20));
+		},
+		
+		
+		// Function to remove a vector layer
+		removeVectorLayer: function ()
+		{
+			// Remove the layer and the source, and reset the layer value
+			_map.removeLayer (_vectorOverlayLayer);
+			_map.removeSource (_vectorOverlayLayer);
+			_vectorOverlayLayer = false;
 		},
 		
 		
@@ -4113,6 +4166,12 @@ var layerviewer = (function ($) {
 			// Cache this deletion
 			layerviewer.setStateCookie ();
 
+			// If the layer is a native vector layer rather than an API call, remove it and end
+			if (_layerConfig[layerId].vector) {
+				layerviewer.removeVectorLayer ();
+				return;
+			}
+			
 			// If the layer is a tile layer rather than an API call, remove it and end
 			if (_layerConfig[layerId].tileLayer) {
 				if (_tileOverlayLayer) {
