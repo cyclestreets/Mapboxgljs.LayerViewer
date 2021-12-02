@@ -443,6 +443,38 @@ var layerviewer = (function ($) {
 		*/
 	};
 	
+	// Define the geometry types and their default styles
+	var _defaultStyles = {
+		'Point' : {
+			// NB Icons, if present, are also drawn over the points
+			type: 'circle',
+			layout: {},		// Not applicable
+			paint: {
+			'circle-radius': 8,
+				'circle-color': '#007cbf'
+			}
+		},
+		'LineString': {
+			type: 'line',
+			layout: {
+				'line-cap': 'round',
+				'line-join': 'round'
+			},
+			paint: {
+				'line-color': ['case', ['has', 'color'], ['get', 'color'], /* fallback: */ '#888'],
+				'line-width': 3
+			}
+		},
+		'Polygon': {
+			type: 'fill',
+			layout: {},		// Not applicable
+			paint: {
+				'fill-color': '#888',
+				'fill-opacity': 0.4
+				// NB Outline line width cannot be changed: https://github.com/mapbox/mapbox-gl-js/issues/3018#issuecomment-240381965
+			}
+		}
+	};
 	
 	// Internal class properties
 	var _map = null;
@@ -2962,6 +2994,13 @@ var layerviewer = (function ($) {
 				}
 			});
 			
+			// Merge any supplied styles into the defaults
+			var defaultStylesByType = {};
+			$.each (_defaultStyles, function (opengisType, style) {
+				defaultStylesByType[style.type] = style;
+			});
+			vectorLayerAttributes.layer = $.extend (vectorLayerAttributes.layer, defaultStylesByType[vectorLayerAttributes.layer.type]);
+			
 			// Register the source and layer
 			_map.addSource (id, vectorLayerAttributes.source);		// source will contain {type: 'vector', tiles: [...], etc}
 			_map.addLayer (vectorLayerAttributes.layer);			// layer will contain {id: ..., type: 'circle', source: ..., 'source-layer': ..., 'paint': {...}}
@@ -3510,39 +3549,7 @@ var layerviewer = (function ($) {
 			var sublayerIntervals = (_layerConfig[layerId].sublayerParameter ? layerviewer.sublayerableConfig ('legend', layerId, userSuppliedParameters) : false);
 			layerviewer.setLegend (layerId, sublayerIntervals, lineColourStops);
 			
-			// Define the geometry types and their default styles
-			var defaultStyles = {
-				'Point' : {
-					// NB Icons, if present, are also drawn over the points
-					type: 'circle',
-					layout: {},		// Not applicable
-					paint: {
-						'circle-radius': 8,
-						'circle-color': '#007cbf'
-					}
-				},
-				'LineString': {
-					type: 'line',
-					layout: {
-						'line-cap': 'round',
-						'line-join': 'round'
-					},
-					paint: {
-						'line-color': ['case', ['has', 'color'], ['get', 'color'], /* fallback: */ '#888'],
-						'line-width': 3
-					}
-				},
-				'Polygon': {
-					type: 'fill',
-					layout: {},		// Not applicable
-					paint: {
-						'fill-color': '#888',
-						'fill-opacity': 0.4
-						// NB Outline line width cannot be changed: https://github.com/mapbox/mapbox-gl-js/issues/3018#issuecomment-240381965
-					}
-				}
-			};
-			var styles = $.extend (true, {}, defaultStyles);	// Clone
+			var styles = $.extend (true, {}, _defaultStyles);	// Clone
 			
 			// Support for point colour directly from the API response
 			if (_layerConfig[layerId].pointColourApiField) {
