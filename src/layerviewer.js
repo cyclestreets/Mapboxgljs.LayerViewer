@@ -906,7 +906,7 @@ var layerviewer = (function ($) {
 					});
 					
 					// Set hover state; see: https://docs.mapbox.com/mapbox-gl-js/example/hover-styles/
-					layerviewer.setHoverState ('regionsOverlay', 'regionsOverlay');
+					layerviewer.hoverStateHandlers ('regionsOverlay', 'regionsOverlay');
 					
 					// Support popup content, if enabled
 					if (_settings.regionsField) {
@@ -991,8 +991,8 @@ var layerviewer = (function ($) {
 		},
 		
 		
-		// Helper function to handle hover state; see: https://docs.mapbox.com/mapbox-gl-js/example/hover-styles/
-		setHoverState: function (layerId, sourceId)
+		// Helper function to create handlers to set hover state; see: https://docs.mapbox.com/mapbox-gl-js/example/hover-styles/
+		hoverStateHandlers: function (layerId, sourceId)
 		{
 			// Create the hover state ID
 			var hoveredStateId = null;
@@ -3604,9 +3604,9 @@ var layerviewer = (function ($) {
 			// Show icons, where Points present
 			layerviewer.drawIcons (data, layerId, popupHtmlTemplate);
 			
-			// For line style, add hover style if enabled; see: https://docs.mapbox.com/mapbox-gl-js/example/hover-styles/
+			// For line style, add hover state handlers if enabled; see: https://docs.mapbox.com/mapbox-gl-js/example/hover-styles/
 			if (_settings.hover || _layerConfig[layerId].hover) {
-				layerviewer.setHoverState (layerId + '_' + 'linestring', layerId);
+				layerviewer.hoverStateHandlers (layerId + '_' + 'linestring', layerId);
 			}
 			
 			// Add popups if required
