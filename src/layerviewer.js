@@ -3561,20 +3561,20 @@ var layerviewer = (function ($) {
 				data: data
 			});
 			
+			// For a heatmap, ignore styles and define directly; see: https://docs.mapbox.com/help/tutorials/make-a-heatmap-with-mapbox-gl-js/
+			if (_layerConfig[layerId].heatmap) {
+				layer = {
+					id: layerId,
+					source: layerId,
+					type: 'heatmap',
+					paint: layerviewer.heatmapStyles ()
+				};
+				_map.addLayer (layer);
+				return;
+			}
+			
 			// Create the styles definition
 			var styles = layerviewer.assembleStylesDefinition (layerId, userSuppliedParameters /* needed for layer:sublayerParameter */);
-			
-			// For a heatmap, ignore all the above styles and define directly; see: https://docs.mapbox.com/help/tutorials/make-a-heatmap-with-mapbox-gl-js/
-			// #!# This should be refactored to become internally re-routed to be a vector layer, as the data will not be changeable on map move
-			if (_layerConfig[layerId].heatmap) {
-				styles = {
-					'heatmap': {
-						type: 'heatmap',
-						paint: layerviewer.heatmapStyles (),
-						layout: {}
-					}
-				};
-			}
 			
 			// Add renderers for each different feature type; see: https://docs.mapbox.com/mapbox-gl-js/example/multiple-geometries/
 			var layer;
@@ -3593,11 +3593,9 @@ var layerviewer = (function ($) {
 					source: layerId,
 					type: style.type,
 					paint: style.paint,
-					layout: style.layout
+					layout: style.layout,
+					filter: ['==', '$type', geometryType]
 				};
-				if (geometryType != 'heatmap') {
-					layer.filter = ['==', '$type', geometryType];
-				}
 				_map.addLayer (layer);
 			});
 			
