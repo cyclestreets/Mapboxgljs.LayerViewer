@@ -3725,15 +3725,7 @@ var layerviewer = (function ($) {
 			if (popups) {
 				
 				// Set up handlers to give a cursor pointer over each feature; see: https://docs.mapbox.com/mapbox-gl-js/example/hover-styles/
-				$.each (styles, function (geometryType, style) {
-					layerVariantId = layerviewer.layerVariantId (layerId, geometryType);
-					_map.on ('mousemove', layerVariantId, function () {
-						_map.getCanvas().style.cursor = 'pointer';
-					});
-					_map.on ('mouseleave', layerVariantId, function() {
-						_map.getCanvas().style.cursor = '';
-					});
-				});
+				layerviewer.cursorPointerHandlers (layerId);
 				
 				// Set a popup handler for when a rendered (i.e. non-icon) feature is clicked on; see: https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/
 				var popup;
@@ -3804,8 +3796,8 @@ var layerviewer = (function ($) {
 		},
 		
 		
-		// Function to create a layer variant ID from a layerId and geometry type, e.g. foo_point, foo_linestring, foo_polygon
-		layerVariantId (layerId, geometryType)
+		// Function to create a layer variant ID from a layerId and geometry type, e.g. mydata_point, mydata_linestring, mydata_polygon
+		layerVariantId: function (layerId, geometryType)
 		{
 			return layerId + '_' + geometryType.toLowerCase ();
 		},
@@ -4002,6 +3994,27 @@ var layerviewer = (function ($) {
 			
 			// Return the marker
 			return marker;
+		},
+		
+		
+		// Function to create handlers to give a cursor pointer over each feature; see: https://docs.mapbox.com/mapbox-gl-js/example/hover-styles/
+		cursorPointerHandlers: function (layerId)
+		{
+			// Loop through each geometry type
+			var layerVariantId;
+			$.each (_defaultStyles, function (geometryType, styleIgnored) {
+				
+				// Obtain the internal ID
+				layerVariantId = layerviewer.layerVariantId (layerId, geometryType);	// e.g. mydata_points, mydata_linestring, mydata_polygon
+				
+				// Create the handlers
+				_map.on ('mousemove', layerVariantId, function () {
+					_map.getCanvas().style.cursor = 'pointer';
+				});
+				_map.on ('mouseleave', layerVariantId, function() {
+					_map.getCanvas().style.cursor = '';
+				});
+			});
 		},
 		
 		
