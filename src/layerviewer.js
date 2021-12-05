@@ -3542,7 +3542,7 @@ var layerviewer = (function ($) {
 				layerviewer.removeMarkers (layerId);
 				
 				// Set the new data
-				_map.getSource(layerId).setData(data);
+				_map.getSource (layerId).setData (data);
 				layerviewer.drawIcons (data, layerId, popupHtmlTemplate);
 				
 				return;
@@ -3564,9 +3564,12 @@ var layerviewer = (function ($) {
 			// Define the data source; rather than use addLayer and specify the source directly, we have to split the source addition and the layer addition, as the layers can have different feature types (point/line/polygon), which need different renderers
 			_map.addSource (layerId, {
 				type: 'geojson',
-				generateId: true,	// NB See: https://github.com/mapbox/mapbox-gl-js/issues/8133
-				data: data
+				data: {type: 'FeatureCollection', 'features': []},		// Empty GeoJSON; see: https://github.com/mapbox/mapbox-gl-js/issues/5986
+				generateId: true	// NB See: https://github.com/mapbox/mapbox-gl-js/issues/8133
 			});
+			
+			// Set the data, in this first time
+			_map.getSource (layerId).setData (data);
 			
 			// For a heatmap, ignore styles and define directly; see: https://docs.mapbox.com/help/tutorials/make-a-heatmap-with-mapbox-gl-js/
 			if (_layerConfig[layerId].heatmap) {
