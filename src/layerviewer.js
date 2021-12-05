@@ -2211,14 +2211,15 @@ var layerviewer = (function ($) {
 				_map.fitBounds (e.bounds, {duration: 1500});
 			});
 		},
-
+		
 		
 		// Setter for custom geolocation button action
 		setCustomGeolocationButtonAction: function (customAction)
 		{
 			_customGeolocationButtonAction = customAction;
 		},
-
+		
+		
 		// Trigger geolocation, accessible externally
 		triggerGeolocation: function () 
 		{
@@ -2229,15 +2230,15 @@ var layerviewer = (function ($) {
 
 			_geolocate.trigger ();
 		},
-
+		
 		
 		// Getter for the user's geolocation
 		getGeolocation: function () 
 		{
 			return _geolocate;
 		},
-
-
+		
+		
 		// Function to add style (background layer) switching
 		// https://www.mapbox.com/mapbox-gl-js/example/setstyle/
 		// https://bl.ocks.org/ryanbaumann/7f9a353d0a1ae898ce4e30f336200483/96bea34be408290c161589dcebe26e8ccfa132d7
@@ -3496,14 +3497,9 @@ var layerviewer = (function ($) {
 				data = toGeoJSON.kml (data);
 			}
 			
-			// Determine line colour/width field and stops
-			var lineColourField = layerviewer.sublayerableConfig ('lineColourField', layerId, userSuppliedParameters);
-			var lineColourStops = layerviewer.sublayerableConfig ('lineColourStops', layerId, userSuppliedParameters);
-			var lineWidthField = layerviewer.sublayerableConfig ('lineWidthField', layerId, userSuppliedParameters);
-			var lineWidthStops = layerviewer.sublayerableConfig ('lineWidthStops', layerId, userSuppliedParameters);
-			var lineWidthValues = layerviewer.sublayerableConfig ('lineWidthValues', layerId, userSuppliedParameters);
-			
 			// Fix up data
+			var lineColourField = layerviewer.sublayerableConfig ('lineColourField', layerId, userSuppliedParameters);
+			var lineWidthField = layerviewer.sublayerableConfig ('lineWidthField', layerId, userSuppliedParameters);
 			$.each (data.features, function (index, feature) {
 				
 				// Ensure data is numeric for the line colour field, to enable correct comparison
@@ -3547,128 +3543,8 @@ var layerviewer = (function ($) {
 			
 			// Set the legend
 			var sublayerIntervals = (_layerConfig[layerId].sublayerParameter ? layerviewer.sublayerableConfig ('legend', layerId, userSuppliedParameters) : false);
+			var lineColourStops = layerviewer.sublayerableConfig ('lineColourStops', layerId, userSuppliedParameters);
 			layerviewer.setLegend (layerId, sublayerIntervals, lineColourStops);
-			
-			var styles = $.extend (true, {}, _defaultStyles);	// Clone
-			
-			// Support for point colour directly from the API response
-			if (_layerConfig[layerId].pointColourApiField) {
-				styles['Point']['paint']['circle-color'] = ['get', _layerConfig[layerId].pointColourApiField];
-			}
-			
-			// Support for line colour directly from the API response
-			if (_layerConfig[layerId].lineColourApiField) {
-				styles['LineString']['paint']['line-color'] = ['get', _layerConfig[layerId].lineColourApiField];
-			}
-			
-			// Set line colour if required; uses original 'stops' method, see: https://github.com/mapbox/mapbox-gl-js/commit/9ac35b1059ed5f9f7798c37700b52259ce9a815d#diff-bde08934db09c688e8b1d2c0a4d2bce0
-			if (lineColourField && lineColourStops) {
-				styles['LineString']['paint']['line-color'] = layerviewer.stopsExpression (lineColourField, lineColourStops.slice().reverse());	// Reverse the original definition: https://stackoverflow.com/a/30610528/180733
-			}
-			
-			// Set point size if required
-			if (_layerConfig[layerId].pointSize) {
-				styles['Point']['paint']['circle-radius'] = _layerConfig[layerId].pointSize;
-			}
-			
-			// Set line width from stops, if required
-			if (lineWidthField && lineWidthStops) {
-				styles['LineString']['paint']['line-width'] = layerviewer.stopsExpression (lineWidthField, lineWidthStops.slice().reverse());	// Reverse the original definition: https://stackoverflow.com/a/30610528/180733
-			}
-			
-			// Set line width from lookups, if required
-			if (lineWidthField && lineWidthValues) {
-				var styleDefinition = [];
-				styleDefinition.push ('case');
-				$.each (lineWidthValues, function (key, value) {
-					styleDefinition.push (['==', ['get', lineWidthField], key]);
-					styleDefinition.push (value);
-				});
-				styleDefinition.push (/* fallback: */ 5);
-				styles['LineString']['paint']['line-width'] = styleDefinition;
-			}
-			
-			// If we have polygonColourStops
-			if (_layerConfig[layerId].polygonColourField && _layerConfig[layerId].polygonColourStops) {
-				styles['Polygon']['paint']['fill-color'] = layerviewer.stopsExpression (_layerConfig[layerId].polygonColourField, _layerConfig[layerId].polygonColourStops.slice().reverse(), true, true);	// Reverse the original definition: https://stackoverflow.com/a/30610528/180733
-				styles['Polygon']['paint']['fill-outline-color'] = '#aaa';
-				if (_layerConfig[layerId].fillOpacity) {
-					styles['Polygon']['paint']['fill-opacity'] = _layerConfig[layerId].fillOpacity;
-				}
-				
-			// Set key,value colour field
-			} else if (_layerConfig[layerId].polygonColourField) {
-				// Construct the style definition; see e.g. https://stackoverflow.com/a/49611427 and https://docs.mapbox.com/mapbox-gl-js/example/cluster-html/
-				var styleDefinition = [];
-				styleDefinition.push ('case');
-				$.each (_layerConfig[layerId].polygonStyle, function (key, value) {
-					styleDefinition.push (['==', ['get', _layerConfig[layerId].polygonColourField], key]);
-					styleDefinition.push (value);
-				});
-				styleDefinition.push (/* fallback: */ '#03f');
-				styles['Polygon']['paint']['fill-color'] = styleDefinition;
-				
-			// Set polygon style if required: grid / fixed styles
-			} else if (_layerConfig[layerId].polygonStyle) {
-				switch (_layerConfig[layerId].polygonStyle) {
-					
-					// Blue boxes with dashed lines, intended for data that is likely to tessellate, e.g. adjacent box grid
-					case 'grid':
-						styles['Polygon']['paint']['fill-color'] = ['case', ['has', 'colour'], ['get', 'colour'], /* fallback: */ '#03f'];	// See: https://github.com/mapbox/mapbox-gl-js/issues/4079#issuecomment-385196151 and https://docs.mapbox.com/mapbox-gl-js/example/data-driven-lines/
-						//styles['Polygon']['paint']['fill-outline-dasharray'] = [5, 5];
-						break;
-						
-					// Red
-					case 'red':
-						styles['Polygon']['paint']['fill-outline-color'] = 'darkred';
-						styles['Polygon']['paint']['fill-color'] = 'red';
-						break;
-						
-					// Green
-					case 'green':
-						styles['Polygon']['paint']['fill-outline-color'] = 'green';
-						styles['Polygon']['paint']['fill-color'] = '#090';
-						break;
-						
-					// Blue
-					case 'blue':
-						styles['Polygon']['paint']['fill-outline-color'] = 'darkblue';
-						styles['Polygon']['paint']['fill-color'] = '#3388ff';
-						break;
-				}
-			}
-			
-			// Start from global style if supplied
-			// E.g. _settings.style = {LineString: {"line-color": "red";} } will get merged in
-			if (!$.isEmptyObject (_settings.style)) {
-				$.each (_settings.style, function (geometryType, style) {
-					styles[geometryType]['paint'] = style;
-				});
-			}
-			
-			// Start from default layer style if supplied
-			// E.g. layer.style = {LineString: {"line-color": "red";} } will get merged in
-			if (!$.isEmptyObject (_layerConfig[layerId].style)) {
-				$.each (_layerConfig[layerId].style, function (geometryType, style) {
-					styles[geometryType]['paint'] = style;
-				});
-			}
-			
-			// For line style, if hover is enabled, override hover style width in definition
-			if (_settings.hover || _layerConfig[layerId].hover) {
-				styles['LineString']['paint']['line-width'] = ['case', ['boolean', ['feature-state', 'hover'], false], 12, styles['LineString']['paint']['line-width'] ];
-			}
-			
-			// For a heatmap, ignore all the above styles and define directly; see: https://docs.mapbox.com/help/tutorials/make-a-heatmap-with-mapbox-gl-js/
-			if (_layerConfig[layerId].heatmap) {
-				styles = {
-					'heatmap': {
-						type: 'heatmap',
-						paint: layerviewer.heatmapStyles (),
-						layout: {}
-					}
-				};
-			}
 			
 			// Perform initial fit of map extent, if required
 			if (_fitInitial[layerId]) {
@@ -3684,6 +3560,21 @@ var layerviewer = (function ($) {
 				generateId: true,	// NB See: https://github.com/mapbox/mapbox-gl-js/issues/8133
 				data: data	// NB Potentially amended during style allocation
 			});
+			
+			// Create the styles definition
+			var styles = layerviewer.assembleStylesDefinition (layerId, userSuppliedParameters /* needed for layer:sublayerParameter */);
+			
+			// For a heatmap, ignore all the above styles and define directly; see: https://docs.mapbox.com/help/tutorials/make-a-heatmap-with-mapbox-gl-js/
+			// #!# This should be refactored to become internally re-routed to be a vector layer, as the data will not be changeable on map move
+			if (_layerConfig[layerId].heatmap) {
+				styles = {
+					'heatmap': {
+						type: 'heatmap',
+						paint: layerviewer.heatmapStyles (),
+						layout: {}
+					}
+				};
+			}
 			
 			// Add renderers for each different feature type; see: https://docs.mapbox.com/mapbox-gl-js/example/multiple-geometries/
 			var layer;
@@ -3921,6 +3812,133 @@ var layerviewer = (function ($) {
 			
 			// Return the marker
 			return marker;
+		},
+		
+		
+		// Function assemble the styles definition for a layer
+		assembleStylesDefinition: function (layerId, userSuppliedParameters)
+		{
+			// Determine definitions
+			// #!# This merge-style operation should be dealt with generically at top-level
+			var lineColourField = layerviewer.sublayerableConfig ('lineColourField', layerId, userSuppliedParameters);
+			var lineColourStops = layerviewer.sublayerableConfig ('lineColourStops', layerId, userSuppliedParameters);
+			var lineWidthField = layerviewer.sublayerableConfig ('lineWidthField', layerId, userSuppliedParameters);
+			var lineWidthStops = layerviewer.sublayerableConfig ('lineWidthStops', layerId, userSuppliedParameters);
+			var lineWidthValues = layerviewer.sublayerableConfig ('lineWidthValues', layerId, userSuppliedParameters);
+			
+			// Start styles
+			var styles = $.extend (true, {}, _defaultStyles);	// Clone
+			
+			// Support for point colour directly from the API response
+			if (_layerConfig[layerId].pointColourApiField) {
+				styles['Point']['paint']['circle-color'] = ['get', _layerConfig[layerId].pointColourApiField];
+			}
+			
+			// Support for line colour directly from the API response
+			if (_layerConfig[layerId].lineColourApiField) {
+				styles['LineString']['paint']['line-color'] = ['get', _layerConfig[layerId].lineColourApiField];
+			}
+			
+			// Set line colour if required; uses original 'stops' method, see: https://github.com/mapbox/mapbox-gl-js/commit/9ac35b1059ed5f9f7798c37700b52259ce9a815d#diff-bde08934db09c688e8b1d2c0a4d2bce0
+			if (lineColourField && lineColourStops) {
+				styles['LineString']['paint']['line-color'] = layerviewer.stopsExpression (lineColourField, lineColourStops.slice().reverse());	// Reverse the original definition: https://stackoverflow.com/a/30610528/180733
+			}
+			
+			// Set point size if required
+			if (_layerConfig[layerId].pointSize) {
+				styles['Point']['paint']['circle-radius'] = _layerConfig[layerId].pointSize;
+			}
+			
+			// Set line width from stops, if required
+			if (lineWidthField && lineWidthStops) {
+				styles['LineString']['paint']['line-width'] = layerviewer.stopsExpression (lineWidthField, lineWidthStops.slice().reverse());	// Reverse the original definition: https://stackoverflow.com/a/30610528/180733
+			}
+			
+			// Set line width from lookups, if required
+			if (lineWidthField && lineWidthValues) {
+				var styleDefinition = [];
+				styleDefinition.push ('case');
+				$.each (lineWidthValues, function (key, value) {
+					styleDefinition.push (['==', ['get', lineWidthField], key]);
+					styleDefinition.push (value);
+				});
+				styleDefinition.push (/* fallback: */ 5);
+				styles['LineString']['paint']['line-width'] = styleDefinition;
+			}
+			
+			// If we have polygonColourStops
+			if (_layerConfig[layerId].polygonColourField && _layerConfig[layerId].polygonColourStops) {
+				styles['Polygon']['paint']['fill-color'] = layerviewer.stopsExpression (_layerConfig[layerId].polygonColourField, _layerConfig[layerId].polygonColourStops.slice().reverse(), true, true);	// Reverse the original definition: https://stackoverflow.com/a/30610528/180733
+				styles['Polygon']['paint']['fill-outline-color'] = '#aaa';
+				if (_layerConfig[layerId].fillOpacity) {
+					styles['Polygon']['paint']['fill-opacity'] = _layerConfig[layerId].fillOpacity;
+				}
+				
+			// Set key,value colour field
+			} else if (_layerConfig[layerId].polygonColourField) {
+				// Construct the style definition; see e.g. https://stackoverflow.com/a/49611427 and https://docs.mapbox.com/mapbox-gl-js/example/cluster-html/
+				var styleDefinition = [];
+				styleDefinition.push ('case');
+				$.each (_layerConfig[layerId].polygonStyle, function (key, value) {
+					styleDefinition.push (['==', ['get', _layerConfig[layerId].polygonColourField], key]);
+					styleDefinition.push (value);
+				});
+				styleDefinition.push (/* fallback: */ '#03f');
+				styles['Polygon']['paint']['fill-color'] = styleDefinition;
+				
+			// Set polygon style if required: grid / fixed styles
+			} else if (_layerConfig[layerId].polygonStyle) {
+				switch (_layerConfig[layerId].polygonStyle) {
+					
+					// Blue boxes with dashed lines, intended for data that is likely to tessellate, e.g. adjacent box grid
+					case 'grid':
+						styles['Polygon']['paint']['fill-color'] = ['case', ['has', 'colour'], ['get', 'colour'], /* fallback: */ '#03f'];	// See: https://github.com/mapbox/mapbox-gl-js/issues/4079#issuecomment-385196151 and https://docs.mapbox.com/mapbox-gl-js/example/data-driven-lines/
+						//styles['Polygon']['paint']['fill-outline-dasharray'] = [5, 5];
+						break;
+						
+					// Red
+					case 'red':
+						styles['Polygon']['paint']['fill-outline-color'] = 'darkred';
+						styles['Polygon']['paint']['fill-color'] = 'red';
+						break;
+						
+					// Green
+					case 'green':
+						styles['Polygon']['paint']['fill-outline-color'] = 'green';
+						styles['Polygon']['paint']['fill-color'] = '#090';
+						break;
+						
+					// Blue
+					case 'blue':
+						styles['Polygon']['paint']['fill-outline-color'] = 'darkblue';
+						styles['Polygon']['paint']['fill-color'] = '#3388ff';
+						break;
+				}
+			}
+			
+			// Start from global style if supplied
+			// E.g. _settings.style = {LineString: {'line-color': 'red';} } will get merged in
+			if (!$.isEmptyObject (_settings.style)) {
+				$.each (_settings.style, function (geometryType, style) {
+					styles[geometryType]['paint'] = style;
+				});
+			}
+			
+			// Start from default layer style if supplied
+			// E.g. layer.style = {LineString: {'line-color': 'red';} } will get merged in
+			if (!$.isEmptyObject (_layerConfig[layerId].style)) {
+				$.each (_layerConfig[layerId].style, function (geometryType, style) {
+					styles[geometryType]['paint'] = style;
+				});
+			}
+			
+			// For line style, if hover is enabled, override hover style width in definition
+			if (_settings.hover || _layerConfig[layerId].hover) {
+				styles['LineString']['paint']['line-width'] = ['case', ['boolean', ['feature-state', 'hover'], false], 12, styles['LineString']['paint']['line-width'] ];
+			}
+			
+			// Return the definition
+			return styles;
 		},
 		
 		
