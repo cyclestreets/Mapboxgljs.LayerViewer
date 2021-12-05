@@ -2730,7 +2730,7 @@ var layerviewer = (function ($) {
 			
 			// If the layer is a native vector layer rather than an API call, add it and end
 			if (_layerConfig[layerId].vector) {
-				layerviewer.addVectorLayer (_layerConfig[layerId].vector, layerId, parameters);
+				layerviewer.addVectorLayer (_layerConfig[layerId].vector, layerId);
 				return;		// No further action, e.g. API calls
 			}
 			
@@ -2965,11 +2965,11 @@ var layerviewer = (function ($) {
 		},
 		
 		
-		// Function to add a native vector layer
-		addVectorLayer: function (vectorLayerAttributes, layerId, parameters)
+		// Function to add a native vector layer; vector layers are assumed to be static
+		addVectorLayer: function (vectorLayerAttributes, layerId)
 		{
-			// Construct the ID, namespaced to avoid clashes with background layers, incorporating any parameters to ensure uniqueness
-			var id = 'vector-' + layerId + '-' + jQuery.param (parameters);    // E.g. vector-xyz-style=blue
+			// Construct the ID, namespaced to avoid clashes with background layers
+			var id = 'vector-' + layerId;
 			
 			// Leave current setup in place if already present, with the same style options
 			if (_vectorOverlayLayer == id) {
