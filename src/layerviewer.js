@@ -3564,7 +3564,7 @@ var layerviewer = (function ($) {
 			// For a heatmap, ignore styles and define directly; see: https://docs.mapbox.com/help/tutorials/make-a-heatmap-with-mapbox-gl-js/
 			if (_layerConfig[layerId].heatmap) {
 				layer = {
-					id: layerId,
+					id: layerId + '_' + 'heatmap',	// Matching the call to removeLayer
 					source: layerId,
 					type: 'heatmap',
 					paint: layerviewer.heatmapStyles ()
@@ -3730,8 +3730,7 @@ var layerviewer = (function ($) {
 				}
 			});
 		},
-
-
+		
 		
 		// Function to determine the iconUrl for a feature
 		getIconUrl: function (layerId, feature /* may be set to null if checking layer-only definitions */)
@@ -4203,7 +4202,7 @@ var layerviewer = (function ($) {
 			if (_requestCache.hasOwnProperty (layerId)) {
 				delete _requestCache[layerId];
 			}
-
+			
 			// Cache this deletion
 			layerviewer.setStateCookie ();
 
