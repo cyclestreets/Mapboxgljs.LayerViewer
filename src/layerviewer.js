@@ -491,6 +491,7 @@ var layerviewer = (function ($) {
 	var _parameters = {};
 	var _xhrRequests = {};
 	var _requestCache = {};
+	var _sublayerValues = {};
 	var _fitInitial = {};
 	var _title = false;
 	var _embedMode = false;
@@ -2415,6 +2416,15 @@ var layerviewer = (function ($) {
 			// Get the form parameters on load
 			_parameters[layerId] = layerviewer.parseFormValues (layerId);
 			
+			// If sublayer parameterisation is enabled, i.e. layer style is dependent on a form value that has caused the layer to be reloaded, inject the new form value
+			// #!# Currently, it is assumed that the calling application will write a handler to disable + re-enable the layer - this should be generalised as a setting
+			_sublayerValues[layerId] = false;
+			if (_layerConfig[layerId].sublayerParameter) {
+				if (_parameters[layerId][_layerConfig[layerId].sublayerParameter]) {
+					_sublayerValues[layerId] = _parameters[layerId][_layerConfig[layerId].sublayerParameter];
+				}
+			}
+			
 			// Register a dialog box handler for showing additional details if required
 			if (_layerConfig[layerId].detailsOverlay) {
 				layerviewer.detailsOverlayHandler ('#details', layerId);
@@ -2922,7 +2932,7 @@ var layerviewer = (function ($) {
 					}
 					
 					// Return the data successfully
-					return layerviewer.showCurrentData (layerId, data, userSuppliedParameters, requestSerialised);
+					return layerviewer.showCurrentData (layerId, data, requestSerialised);
 				}
 			});
 		},
@@ -3478,7 +3488,7 @@ var layerviewer = (function ($) {
 		
 		
 		// Function to show the data for a layer
-		showCurrentData: function (layerId, data, userSuppliedParameters, requestSerialised)
+		showCurrentData: function (layerId, data, requestSerialised)
 		{
 			// Convert using a callback if required
 			if (_layerConfig[layerId].convertData) {
@@ -3498,8 +3508,8 @@ var layerviewer = (function ($) {
 			}
 			
 			// Fix up data
-			var lineColourField = layerviewer.sublayerableConfig ('lineColourField', layerId, userSuppliedParameters);
-			var lineWidthField = layerviewer.sublayerableConfig ('lineWidthField', layerId, userSuppliedParameters);
+			var lineColourField = layerviewer.sublayerableConfig ('lineColourField', layerId);
+			var lineWidthField = layerviewer.sublayerableConfig ('lineWidthField', layerId);
 			$.each (data.features, function (index, feature) {
 				
 				// Ensure data is numeric for the line colour field, to enable correct comparison
@@ -3524,7 +3534,7 @@ var layerviewer = (function ($) {
 			layerviewer.updateTotals (data.features, layerId, requestSerialised);
 			
 			// Define the popupHtml template
-			var popupHtmlTemplate = layerviewer.sublayerableConfig ('popupHtml', layerId, userSuppliedParameters);
+			var popupHtmlTemplate = layerviewer.sublayerableConfig ('popupHtml', layerId);
 			
 			// If this layer already exists, update the data for its source
 			// The Leaflet.js approach of take down and redraw does not work for MapboxGL.js, as this would require handler destruction which is impractical to achieve; see: https://gis.stackexchange.com/a/252061/58752
@@ -3542,8 +3552,8 @@ var layerviewer = (function ($) {
 			}
 			
 			// Set the legend
-			var sublayerIntervals = (_layerConfig[layerId].sublayerParameter ? layerviewer.sublayerableConfig ('legend', layerId, userSuppliedParameters) : false);
-			var lineColourStops = layerviewer.sublayerableConfig ('lineColourStops', layerId, userSuppliedParameters);
+			var sublayerIntervals = (_layerConfig[layerId].sublayerParameter ? layerviewer.sublayerableConfig ('legend', layerId) : false);
+			var lineColourStops = layerviewer.sublayerableConfig ('lineColourStops', layerId);
 			layerviewer.setLegend (layerId, sublayerIntervals, lineColourStops);
 			
 			// Perform initial fit of map extent, if required
@@ -3574,7 +3584,7 @@ var layerviewer = (function ($) {
 			}
 			
 			// Create the styles definition
-			var styles = layerviewer.assembleStylesDefinition (layerId, userSuppliedParameters /* needed for layer:sublayerParameter */);
+			var styles = layerviewer.assembleStylesDefinition (layerId);
 			
 			// Add renderers for each different feature type; see: https://docs.mapbox.com/mapbox-gl-js/example/multiple-geometries/
 			var layer;
@@ -3813,15 +3823,15 @@ var layerviewer = (function ($) {
 		
 		
 		// Function assemble the styles definition for a layer
-		assembleStylesDefinition: function (layerId, userSuppliedParameters)
+		assembleStylesDefinition: function (layerId)
 		{
 			// Determine definitions
 			// #!# This merge-style operation should be dealt with generically at top-level
-			var lineColourField = layerviewer.sublayerableConfig ('lineColourField', layerId, userSuppliedParameters);
-			var lineColourStops = layerviewer.sublayerableConfig ('lineColourStops', layerId, userSuppliedParameters);
-			var lineWidthField = layerviewer.sublayerableConfig ('lineWidthField', layerId, userSuppliedParameters);
-			var lineWidthStops = layerviewer.sublayerableConfig ('lineWidthStops', layerId, userSuppliedParameters);
-			var lineWidthValues = layerviewer.sublayerableConfig ('lineWidthValues', layerId, userSuppliedParameters);
+			var lineColourField = layerviewer.sublayerableConfig ('lineColourField', layerId);
+			var lineColourStops = layerviewer.sublayerableConfig ('lineColourStops', layerId);
+			var lineWidthField = layerviewer.sublayerableConfig ('lineWidthField', layerId);
+			var lineWidthStops = layerviewer.sublayerableConfig ('lineWidthStops', layerId);
+			var lineWidthValues = layerviewer.sublayerableConfig ('lineWidthValues', layerId);
 			
 			// Start styles
 			var styles = $.extend (true, {}, _defaultStyles);	// Clone
@@ -4156,7 +4166,7 @@ var layerviewer = (function ($) {
 		
 		
 		// Function to obtain a value from a sublayerable configuration parameter
-		sublayerableConfig: function (layerConfigField, layerId, userSuppliedParameters)
+		sublayerableConfig: function (layerConfigField, layerId)
 		{
 			var value = false;
 			if (_layerConfig[layerId][layerConfigField]) {
@@ -4178,11 +4188,14 @@ var layerviewer = (function ($) {
 						}
 					});
 					
-					if (userSuppliedParameters[_layerConfig[layerId].sublayerParameter]) {
-						var sublayerValue = userSuppliedParameters[_layerConfig[layerId].sublayerParameter];
-						
-						// Allocate the values
-						value = configDefinition[sublayerValue];
+					// If sublayer parameterisation is enabled, i.e. layer style is dependent on a form value, obtain the layer value, then look up the config definition value
+					if (_layerConfig[layerId].sublayerParameter) {		// Check for clarity, but not actually needed as _sublayerValues[layerId] derived from this
+						if (_sublayerValues[layerId]) {
+							var sublayerValue = _sublayerValues[layerId];
+							
+							// Allocate the values
+							value = configDefinition[sublayerValue];
+						}
 					}
 				} else {
 					value = configDefinition;
