@@ -3558,7 +3558,7 @@ var layerviewer = (function ($) {
 			_map.addSource (layerId, {
 				type: 'geojson',
 				generateId: true,	// NB See: https://github.com/mapbox/mapbox-gl-js/issues/8133
-				data: data	// NB Potentially amended during style allocation
+				data: data
 			});
 			
 			// Create the styles definition
