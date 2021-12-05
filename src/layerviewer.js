@@ -2735,7 +2735,7 @@ var layerviewer = (function ($) {
 			
 			// If the layer is a tile layer rather than an API call, add it and end
 			if (_layerConfig[layerId].tileLayer) {
-				layerviewer.addTileLayer (_layerConfig[layerId].tileLayer, layerId, parameters);
+				layerviewer.addTileOverlayLayer (_layerConfig[layerId].tileLayer, layerId, parameters);
 				return;		// No further action, e.g. API calls
 			}
 			
@@ -3007,8 +3007,8 @@ var layerviewer = (function ($) {
 		},
 		
 		
-		// Function to add a tile layer
-		addTileLayer: function (tileLayerAttributes, layerId, parameters)
+		// Function to add a tile overlay (foreground) layer
+		addTileOverlayLayer: function (tileLayerAttributes, layerId, parameters)
 		{
 			// Make changes on the tile layer attributes without modifying the original
 			tileLayerAttributes = $.extend (true, {}, tileLayerAttributes);
@@ -3032,7 +3032,7 @@ var layerviewer = (function ($) {
 			
 			// If an existing layer is already present, e.g. with different style options, remove it
 			if (_tileOverlayLayer) {
-				layerviewer.removeTileLayer ();
+				layerviewer.removeTileOverlayLayer ();
 			}
 			
 			// Register to the cache
@@ -3057,8 +3057,8 @@ var layerviewer = (function ($) {
 		},
 		
 		
-		// Function to remove a tile layer
-		removeTileLayer: function ()
+		// Function to remove a tile overlay (foreground) layer
+		removeTileOverlayLayer: function ()
 		{
 			// Remove the layer and the source, and reset the layer value
 			_map.removeLayer (_tileOverlayLayer);
@@ -4200,7 +4200,7 @@ var layerviewer = (function ($) {
 			// If the layer is a tile layer rather than an API call, remove it and end
 			if (_layerConfig[layerId].tileLayer) {
 				if (_tileOverlayLayer) {
-					layerviewer.removeTileLayer ();
+					layerviewer.removeTileOverlayLayer ();
 				}
 				
 				// No further action, e.g. API calls
