@@ -2750,9 +2750,6 @@ var layerviewer = (function ($) {
 				return;		// No further action, e.g. API calls
 			}
 			
-			// Cache a clone of the original user-supplied parameters, so that an unmodified copy is available
-			var userSuppliedParameters = $.extend (true, {}, parameters);	// See: https://stackoverflow.com/a/12690181/180733
-			
 			// Start API data parameters
 			var apiData = layerviewer.assembleBaseApiData (layerId);
 			
@@ -2936,8 +2933,8 @@ var layerviewer = (function ($) {
 				}
 			});
 		},
-
-
+		
+		
 		// Function to assemble the base API data by reading the apiCallFixedParameters from the layer definitions
 		// @param apiCallId: boolean. The function will attempt to use apiCallId properties instead
 		assembleBaseApiData: function (layerId, apiCallId = false)
