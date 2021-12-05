@@ -479,8 +479,8 @@ var layerviewer = (function ($) {
 	// Internal class properties
 	var _map = null;
 	var _layers = {};	// Layer status registry
-	var _styles = {};
-	var _currentStyleId;
+	var _backgroundMapStyles = {};
+	var _currentBackgroundMapStyleId;
 	var _markers = [];
 	var _popups = [];
 	var _tileOverlayLayer = false;
@@ -549,8 +549,8 @@ var layerviewer = (function ($) {
 			var defaultLocation = (urlParameters.defaultLocation || _settings.defaultLocation);
 			var defaultTileLayer = (urlParameters.defaultTileLayer || _settings.defaultTileLayer);
 			
-			// Load styles
-			layerviewer.getStyles ();
+			// Load background map style defitions
+			layerviewer.getBackgroundMapStyles ();
 			
 			// Create the map
 			layerviewer.createMap (defaultLocation, defaultTileLayer);
@@ -1663,7 +1663,7 @@ var layerviewer = (function ($) {
 			mapboxgl.accessToken = _settings.mapboxApiKey;
 			_map = new mapboxgl.Map ({
 				container: 'map',
-				style: _styles[defaultTileLayer],
+				style: _backgroundMapStyles[defaultTileLayer],
 				center: [defaultLocation.longitude, defaultLocation.latitude],
 				zoom: defaultLocation.zoom,
 				maxZoom: _settings.maxZoom,
@@ -1673,8 +1673,8 @@ var layerviewer = (function ($) {
 				// boxZoom is enabled, but mapbox-gl-draw causes it to fail: https://github.com/mapbox/mapbox-gl-draw/issues/571
 			});
 			
-			// Set the style flag
-			_currentStyleId = defaultTileLayer;
+			// Set the map background style flag
+			_currentBackgroundMapStyleId = defaultTileLayer;
 			
 			// Enable zoom in/out buttons
 			if (_settings.useDefaultNavigationControls) {
@@ -1713,24 +1713,24 @@ var layerviewer = (function ($) {
 		},
 		
 		
-		// Define styles
-		getStyles: function ()
+		// Define background map styles
+		getBackgroundMapStyles: function ()
 		{
 			// Register each tileset
 			$.each (_settings.tileUrls, function (tileLayerId, tileLayerAttributes) {
 				
-				// Register vector tiles or traditional raster (bitmap) layers
+				// Register vector tiles or traditional raster (bitmap) background map layers
 				if (tileLayerAttributes.vectorTiles) {
-					_styles[tileLayerId] = layerviewer.defineVectorLayer (tileLayerAttributes);
+					_backgroundMapStyles[tileLayerId] = layerviewer.defineVectorBackgroundMapLayer (tileLayerAttributes);
 				} else {
-					_styles[tileLayerId] = layerviewer.defineRasterLayer (tileLayerAttributes, 'background-' + tileLayerId);
+					_backgroundMapStyles[tileLayerId] = layerviewer.defineRasterTilesLayer (tileLayerAttributes, 'background-' + tileLayerId);
 				}
 			});
 		},
 		
 		
-		// Function to define a vector layer
-		defineVectorLayer: function (tileLayerAttributes)
+		// Function to define a vector background map layer definition
+		defineVectorBackgroundMapLayer: function (tileLayerAttributes)
 		{
 			// Support native vector tiles format
 			if (tileLayerAttributes.vectorTiles) {
@@ -1761,8 +1761,8 @@ var layerviewer = (function ($) {
 		},
 		
 		
-		// Function to define a raster layer
-		defineRasterLayer: function (tileLayerAttributes, id)
+		// Function to define a raster tiles map layer, for background map tiles or for foreground tile-based layers
+		defineRasterTilesLayer: function (tileLayerAttributes, id)
 		{
 			// Determine if this is a TMS (i.e. {-y}) tilesource; see: https://docs.mapbox.com/mapbox-gl-js/style-spec/#sources-raster-scheme
 			var scheme = 'xyz';
@@ -2252,11 +2252,11 @@ var layerviewer = (function ($) {
 			// Load a style from the cookie, if it exists
 			if (Cookies.get ('mapstyle')) {
 				var styleId = Cookies.get ('mapstyle');
-				var style = _styles[styleId];
+				var style = _backgroundMapStyles[styleId];
 				_map.setStyle (style);
 				
-				// Set the style flag to the new ID
-				_currentStyleId = styleId;
+				// Set the background map style flag to the new ID
+				_currentBackgroundMapStyleId = styleId;
 				
 				// Fire an event; see: https://javascript.info/dispatch-events
 				layerviewer.styleChanged ();
@@ -2271,7 +2271,7 @@ var layerviewer = (function ($) {
 			var description;
 			var image;
 			var labelContent;
-			$.each (_styles, function (styleId, style) {
+			$.each (_backgroundMapStyles, function (styleId, style) {
 				name = (_settings.tileUrls[styleId].label ? _settings.tileUrls[styleId].label : layerviewer.ucfirst (styleId));
 				description = (_settings.tileUrls[styleId].description ? _settings.tileUrls[styleId].description : '');
 				if (_settings.styleSwitcherGraphical) {
@@ -2291,14 +2291,14 @@ var layerviewer = (function ($) {
 			// Switch to selected style
 			function switchStyle (style) {
 				var styleId = style.target.id;
-				var style = _styles[styleId];
+				var style = _backgroundMapStyles[styleId];
 				_map.setStyle (style);
 
 				// Save this style as a cookie
 				Cookies.set ('mapstyle', styleId);
 				
 				// Set the style flag to the new ID
-				_currentStyleId = styleId;	
+				_currentBackgroundMapStyleId = styleId;
 				
 				// Fire an event; see: https://javascript.info/dispatch-events
 				layerviewer.styleChanged ();
@@ -3039,7 +3039,7 @@ var layerviewer = (function ($) {
 			_tileOverlayLayer = id;
 			
 			// Add to the map
-			var layer = layerviewer.defineRasterLayer (tileLayerAttributes, id);
+			var layer = layerviewer.defineRasterTilesLayer (tileLayerAttributes, id);
 			_map.addSource (id, layer.sources[id]);
 			_map.addLayer (layer.layers[0]);
 			// #!# Max zoom on layer doesn't actually seem to work
@@ -4586,7 +4586,7 @@ var layerviewer = (function ($) {
 				// Construct the embed URL
 				var url  = window.location.href;
 				url = url.replace ('/#', '/embed/#');
-				url += '/' + _currentStyleId;
+				url += '/' + _currentBackgroundMapStyleId;
 				
 				// Compile the iframe code
 				var iframeHtml = '<iframe src="' + url + '" width="100%" height="650" title="CycleStreets Bikedata map" frameborder="0"></iframe>';
