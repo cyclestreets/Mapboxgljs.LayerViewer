@@ -2425,14 +2425,70 @@ var layerviewer = (function ($) {
 				}
 			}
 			
+			// Define the data source; rather than use addLayer and specify the source directly, we have to split the source addition and the layer addition, as the layers can have different feature types (point/line/polygon), which need different renderers
+			_map.addSource (layerId, {
+				type: 'geojson',
+				data: {type: 'FeatureCollection', 'features': []},		// Empty GeoJSON; see: https://github.com/mapbox/mapbox-gl-js/issues/5986
+				generateId: true	// NB See: https://github.com/mapbox/mapbox-gl-js/issues/8133
+			});
+			
+			// Create the styles definition
+			var styles = layerviewer.assembleStylesDefinition (layerId);
+			
+			// For a heatmap, ignore styles and define directly; see: https://docs.mapbox.com/help/tutorials/make-a-heatmap-with-mapbox-gl-js/
+			if (_layerConfig[layerId].heatmap) {
+				styles = {
+					'heatmap': {
+						type: 'heatmap',
+						paint: layerviewer.heatmapStyles (),
+						layout: {}
+					}
+				};
+			}
+			
+			// Add renderers for each different feature type; see: https://docs.mapbox.com/mapbox-gl-js/example/multiple-geometries/
+			var layer;
+			var layerVariantId;
+			$.each (styles, function (geometryType, style) {
+				
+				// Determine if there is an icon; if so, the marker has been rendered already, so a render icon is not needed
+				if (geometryType == 'Point') {
+					var iconUrl = layerviewer.getIconUrl (layerId, null);
+					if (iconUrl) {return;}
+				}
+				
+				layerVariantId = layerviewer.layerVariantId (layerId, geometryType);
+				layer = {
+					id: layerVariantId,
+					source: layerId,
+					type: style.type,
+					paint: style.paint,
+					layout: style.layout
+				};
+				if (geometryType != 'heatmap') {
+					layer.filter = ['==', '$type', geometryType];
+				}
+				_map.addLayer (layer);
+			});
+			
+			// For line style, add hover state handlers if enabled; see: https://docs.mapbox.com/mapbox-gl-js/example/hover-styles/
+			if (_settings.hover || _layerConfig[layerId].hover) {
+				layerviewer.hoverStateHandlers (layerId + '_' + 'linestring', layerId);
+			}
+			
+			// Enable popups if required
+			var popupHtmlTemplate = layerviewer.sublayerableConfig ('popupHtml', layerId);
+			layerviewer.createPopups (layerId, popupHtmlTemplate);
+			
+			// Set the legend
+			var sublayerIntervals = (_layerConfig[layerId].sublayerParameter ? layerviewer.sublayerableConfig ('legend', layerId) : false);
+			var lineColourStops = layerviewer.sublayerableConfig ('lineColourStops', layerId);
+			layerviewer.setLegend (layerId, sublayerIntervals, lineColourStops);
+
 			// Register a dialog box handler for showing additional details if required
 			if (_layerConfig[layerId].detailsOverlay) {
 				layerviewer.detailsOverlayHandler ('#details', layerId);
 			}
-			
-			// Set the legend
-			// #!# Ideally this would appear below the style switcher, but this does not seem to be controllable
-			layerviewer.setLegend (layerId, false, false);
 			
 			// If the data should initially be fit to the data extent, set a flag for first load
 			if (_layerConfig[layerId].fitInitial) {
@@ -3530,29 +3586,6 @@ var layerviewer = (function ($) {
 			// Update display of total in the menu and export links
 			layerviewer.updateTotals (data.features, layerId, requestSerialised);
 			
-			// Define the popupHtml template
-			var popupHtmlTemplate = layerviewer.sublayerableConfig ('popupHtml', layerId);
-			
-			// If this layer already exists, update the data for its source
-			// The Leaflet.js approach of take down and redraw does not work for MapboxGL.js, as this would require handler destruction which is impractical to achieve; see: https://gis.stackexchange.com/a/252061/58752
-			if (_map.getSource (layerId)) {
-				
-				// Remove any existing markers and popups, neither of which are technically bound to a feature
-				layerviewer.removePopups (layerId);
-				layerviewer.removeMarkers (layerId);
-				
-				// Set the new data
-				_map.getSource (layerId).setData (data);
-				layerviewer.drawIcons (data, layerId, popupHtmlTemplate);
-				
-				return;
-			}
-			
-			// Set the legend
-			var sublayerIntervals = (_layerConfig[layerId].sublayerParameter ? layerviewer.sublayerableConfig ('legend', layerId) : false);
-			var lineColourStops = layerviewer.sublayerableConfig ('lineColourStops', layerId);
-			layerviewer.setLegend (layerId, sublayerIntervals, lineColourStops);
-			
 			// Perform initial fit of map extent, if required
 			if (_fitInitial[layerId]) {
 				var geojsonBounds = geojsonExtent (data);
@@ -3561,64 +3594,16 @@ var layerviewer = (function ($) {
 				_fitInitial[layerId] = false;		// Disable for further map pannings; renabling the layer will reset
 			}
 			
-			// Define the data source; rather than use addLayer and specify the source directly, we have to split the source addition and the layer addition, as the layers can have different feature types (point/line/polygon), which need different renderers
-			_map.addSource (layerId, {
-				type: 'geojson',
-				data: {type: 'FeatureCollection', 'features': []},		// Empty GeoJSON; see: https://github.com/mapbox/mapbox-gl-js/issues/5986
-				generateId: true	// NB See: https://github.com/mapbox/mapbox-gl-js/issues/8133
-			});
+			// Remove any existing markers and popups, neither of which are technically bound to a feature
+			layerviewer.removePopups (layerId);
+			layerviewer.removeMarkers (layerId);
 			
-			// Set the data, in this first time
+			// Set the data
 			_map.getSource (layerId).setData (data);
 			
-			// For a heatmap, ignore styles and define directly; see: https://docs.mapbox.com/help/tutorials/make-a-heatmap-with-mapbox-gl-js/
-			if (_layerConfig[layerId].heatmap) {
-				layer = {
-					id: layerId + '_' + 'heatmap',	// Matching the call to removeLayer
-					source: layerId,
-					type: 'heatmap',
-					paint: layerviewer.heatmapStyles ()
-				};
-				_map.addLayer (layer);
-				return;
-			}
-			
-			// Create the styles definition
-			var styles = layerviewer.assembleStylesDefinition (layerId);
-			
-			// Add renderers for each different feature type; see: https://docs.mapbox.com/mapbox-gl-js/example/multiple-geometries/
-			var layer;
-			var layerVariantId;
-			$.each (styles, function (geometryType, style) {
-				
-				// Determine if there is an icon; if so, the marker has been rendered already, so a render icon is not needed
-				if (geometryType == 'Point') {
-					var iconUrl = layerviewer.getIconUrl (layerId, null);
-					if (iconUrl) {return;}
-				}
-				
-				layerVariantId = layerviewer.layerVariantId (layerId, geometryType);
-				layer = {
-					id: layerVariantId,
-					source: layerId,
-					type: style.type,
-					paint: style.paint,
-					layout: style.layout,
-					filter: ['==', '$type', geometryType]
-				};
-				_map.addLayer (layer);
-			});
-			
 			// Show icons, where Points present
+			var popupHtmlTemplate = layerviewer.sublayerableConfig ('popupHtml', layerId);
 			layerviewer.drawIcons (data, layerId, popupHtmlTemplate);
-			
-			// For line style, add hover state handlers if enabled; see: https://docs.mapbox.com/mapbox-gl-js/example/hover-styles/
-			if (_settings.hover || _layerConfig[layerId].hover) {
-				layerviewer.hoverStateHandlers (layerId + '_' + 'linestring', layerId);
-			}
-			
-			// Add popups if required
-			layerviewer.createPopups (layerId, popupHtmlTemplate);
 		},
 		
 		
