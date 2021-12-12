@@ -3970,14 +3970,18 @@ var layerviewer = (function ($) {
 			var popups = layerviewer.glocalVariable ('popups', layerId);
 			if (!popups) {return;}
 			
-			// Set up handlers to give a cursor pointer over each feature; see: https://docs.mapbox.com/mapbox-gl-js/example/hover-styles/
-			layerviewer.cursorPointerHandlers (layerId);
-			
 			// Set a popup handler for when a rendered (i.e. non-icon) feature is clicked on; see: https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/
+			var layerVariantId;
 			var popup;
 			var popupFeatureId = null;
 			$.each (_defaultStyles, function (geometryType, styleIgnored) {
-				_map.on ('click', layerviewer.layerVariantId (layerId, geometryType), function (e) {
+				layerVariantId = layerviewer.layerVariantId (layerId, geometryType);
+				
+				// Set up handlers to give a cursor pointer over each feature; see: https://docs.mapbox.com/mapbox-gl-js/example/hover-styles/
+				layerviewer.cursorPointerHandlers (layerVariantId);
+				
+				// Add the click handler
+				_map.on ('click', layerVariantId, function (e) {
 					var feature = e.features[0];
 					
 					// Remove the popup if already opened and clicked again (implied close)
@@ -4041,23 +4045,16 @@ var layerviewer = (function ($) {
 		},
 		
 		
-		// Function to create handlers to give a cursor pointer over each feature; see: https://docs.mapbox.com/mapbox-gl-js/example/hover-styles/
+		// Function to create handlers to give a cursor pointer over each feature; see: https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/
+		// This does not get triggered for DOM icons (see: createIconDom), which have pointer set directly on the image CSS properties
 		cursorPointerHandlers: function (layerId)
 		{
-			// Loop through each geometry type
-			var layerVariantId;
-			$.each (_defaultStyles, function (geometryType, styleIgnored) {
-				
-				// Obtain the internal ID
-				layerVariantId = layerviewer.layerVariantId (layerId, geometryType);	// e.g. mydata_points, mydata_linestring, mydata_polygon
-				
-				// Create the handlers
-				_map.on ('mousemove', layerVariantId, function () {
-					_map.getCanvas().style.cursor = 'pointer';
-				});
-				_map.on ('mouseleave', layerVariantId, function() {
-					_map.getCanvas().style.cursor = '';
-				});
+			// Create the handlers
+			_map.on ('mousemove', layerId, function () {
+				_map.getCanvas().style.cursor = 'pointer';
+			});
+			_map.on ('mouseleave', layerId, function() {
+				_map.getCanvas().style.cursor = '';
 			});
 		},
 		
