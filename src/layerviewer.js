@@ -484,7 +484,6 @@ var layerviewer = (function ($) {
 	var _markers = [];
 	var _popups = [];
 	var _tileOverlayLayer = false;
-	var _vectorOverlayLayer = false;
 	var _isTouchDevice;
 	var _panningEnabled = false;
 	var _virginFormState = {};
@@ -3072,14 +3071,6 @@ var layerviewer = (function ($) {
 			// Construct the ID, namespaced to avoid clashes with background layers
 			var id = 'vector-' + layerId;
 			
-			// Leave current setup in place if already present, with the same style options
-			if (_vectorOverlayLayer == id) {
-				return;
-			}
-			
-			// Register to the cache
-			_vectorOverlayLayer = id;
-			
 			// Amend the ID in the layer specification
 			vectorLayerAttributes.layer.id = id;
 			vectorLayerAttributes.layer.source = id;
@@ -3145,12 +3136,14 @@ var layerviewer = (function ($) {
 		
 		
 		// Function to remove a vector layer
-		removeVectorLayer: function ()
+		removeVectorLayer: function (layerId)
 		{
+			// Construct the ID, namespaced to avoid clashes with background layers
+			var id = 'vector-' + layerId;
+			
 			// Remove the layer and the source, and reset the layer value
-			_map.removeLayer (_vectorOverlayLayer);
-			_map.removeSource (_vectorOverlayLayer);
-			_vectorOverlayLayer = false;
+			_map.removeLayer (id);
+			_map.removeSource (id);
 		},
 		
 		
@@ -4242,7 +4235,7 @@ var layerviewer = (function ($) {
 
 			// If the layer is a native vector layer rather than an API call, remove it and end
 			if (_layerConfig[layerId].vector) {
-				layerviewer.removeVectorLayer ();
+				layerviewer.removeVectorLayer (layerId);
 				return;
 			}
 			
