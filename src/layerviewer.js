@@ -3077,11 +3077,6 @@ var layerviewer = (function ($) {
 				return;
 			}
 			
-			// If an existing layer is already present, e.g. with different style options, remove it
-			if (_vectorOverlayLayer) {
-				layerviewer.removeVectorLayer ();
-			}
-			
 			// Register to the cache
 			_vectorOverlayLayer = id;
 			
