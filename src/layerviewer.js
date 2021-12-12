@@ -3096,6 +3096,16 @@ var layerviewer = (function ($) {
 			// Register the source and layer
 			_map.addSource (layerId, vectorLayerAttributes.source);		// source will contain {type: 'vector', tiles: [...], etc}
 			_map.addLayer (vectorLayerAttributes.layer);			// layer will contain {id: ..., type: 'circle', source: ..., 'source-layer': ..., 'paint': {...}}
+			
+			// Enable popups if required
+			var popupHtmlTemplate = layerviewer.sublayerableConfig ('popupHtml', layerId);
+			layerviewer.createPopups (layerId, layerId, false, popupHtmlTemplate);
+			
+			// Register a dialog box handler for showing additional popup details if required
+			layerviewer.detailsOverlayHandler ('#details', layerId);
+			
+			// Register in-popup feedback button handler if required
+			layerviewer.addPopupFeedbackHandler (layerId);
 		},
 		
 		
