@@ -2987,9 +2987,13 @@ var layerviewer = (function ($) {
 			// Add layer renderers for each feature type
 			layerviewer.addFeatureTypeLayerSet (layerId);
 			
-			// Enable popups if required
+			// Enable popups if required, for each of the three geometry types
 			var popupHtmlTemplate = layerviewer.sublayerableConfig ('popupHtml', layerId);
-			layerviewer.createPopups (layerId, popupHtmlTemplate);
+			var layerVariantId;
+			$.each (_defaultStyles, function (geometryType, styleIgnored) {
+				layerVariantId = layerviewer.layerVariantId (layerId, geometryType);
+				layerviewer.createPopups (layerId, layerVariantId, geometryType, popupHtmlTemplate);
+			});
 			
 			// Register a dialog box handler for showing additional popup details if required
 			layerviewer.detailsOverlayHandler ('#details', layerId);
@@ -3164,7 +3168,7 @@ var layerviewer = (function ($) {
 			var value = _settings[variableName];
 			
 			// Layer-specific setting can override global
-			if (_layerConfig[layerId].hasOwnProperty(variableName)) {
+			if (_layerConfig[layerId].hasOwnProperty (variableName)) {
 				value = _layerConfig[layerId][variableName];
 			}
 			
@@ -3963,84 +3967,82 @@ var layerviewer = (function ($) {
 		},
 		
 		
-		// Function to create popups for a layer
-		createPopups: function (layerId, popupHtmlTemplate)
+		// Function to create popups for a layer, for rendered (i.e. non-icon) features; see: https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/
+		createPopups: function (layerId, layerVariantId, geometryType, popupHtmlTemplate)
 		{
 			// Determine whether to have popups, ending if not required
 			var popups = layerviewer.glocalVariable ('popups', layerId);
 			if (!popups) {return;}
 			
-			// Set a popup handler for when a rendered (i.e. non-icon) feature is clicked on; see: https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/
-			var layerVariantId;
-			var popup;
+			// Set up handlers to give a cursor pointer over each feature; see: https://docs.mapbox.com/mapbox-gl-js/example/hover-styles/
+			layerviewer.cursorPointerHandlers (layerVariantId);
+			
+			// Initialise the popup handle
+			var popup = null;
+			
+			// Initialise the feature ID handle
 			var popupFeatureId = null;
-			$.each (_defaultStyles, function (geometryType, styleIgnored) {
-				layerVariantId = layerviewer.layerVariantId (layerId, geometryType);
+			
+			// Add the click handler
+			_map.on ('click', layerVariantId, function (e) {
+				var feature = e.features[0];
 				
-				// Set up handlers to give a cursor pointer over each feature; see: https://docs.mapbox.com/mapbox-gl-js/example/hover-styles/
-				layerviewer.cursorPointerHandlers (layerVariantId);
+				// Remove the popup if already opened and clicked again (implied close)
+				if (popupFeatureId) {
+					if (popupFeatureId == feature.id) {
+						popup.remove ();
+						popupFeatureId = null;
+						return;		// End here
+					}
+				}
+				popupFeatureId = feature.id;
 				
-				// Add the click handler
-				_map.on ('click', layerVariantId, function (e) {
-					var feature = e.features[0];
-					
-					// Remove the popup if already opened and clicked again (implied close)
-					if (popupFeatureId) {
-						if (popupFeatureId == feature.id) {
-							popup.remove ();
-							popupFeatureId = null;
-							return;		// End here
-						}
+				// Remove any popup already existing for this layer, i.e. enforce single item only
+				layerviewer.removePopups (layerId);
+				
+				// Set the location of the click; for a point, look up the feature's actual location
+				var coordinates = e.lngLat;	// Actual lat/lon clicked on
+				if (geometryType == 'Point') {
+					coordinates = feature.geometry.coordinates.slice();	// https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/
+				}
+				
+				// Workaround to fix up string "null" to null; see: https://github.com/mapbox/vector-tile-spec/issues/62
+				$.each (feature.properties, function (key, value) {
+					if (value === 'null') {
+						feature.properties[key] = null;
 					}
-					popupFeatureId = feature.id;
-					
-					// Remove any popup alerady existing for this layer, i.e. enforce single item only
-					layerviewer.removePopups (layerId);
-					
-					// Set the location of the click; for a point, look up the feature's actual location
-					var coordinates = e.lngLat;	// Actual lat/lon clicked on
-					if (geometryType == 'Point') {
-						coordinates = feature.geometry.coordinates.slice();	// https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/
-					}
-					
-					// Workaround to fix up string "null" to null; see: https://github.com/mapbox/vector-tile-spec/issues/62
-					$.each (feature.properties, function (key, value) {
-						if (value === 'null') {
-							feature.properties[key] = null;
-						}
-					});
-					
-					// Delete auto-colour field if enabled
-					if (_layerConfig[layerId].pointColourApiField) {
-						if (feature.properties.hasOwnProperty (_layerConfig[layerId].pointColourApiField)) {
-							delete feature.properties[_layerConfig[layerId].pointColourApiField];
-						}
-					}
-					
-					// Delete auto-colour field if enabled
-					if (_layerConfig[layerId].lineColourApiField) {
-						if (feature.properties.hasOwnProperty (_layerConfig[layerId].lineColourApiField)) {
-							delete feature.properties[_layerConfig[layerId].lineColourApiField];
-						}
-					}
-					
-					// Workaround to deal with nested images property; see: https://github.com/mapbox/mapbox-gl-js/issues/2434
-					// The array has become serialised to a string that looks like an array; this parses out the string back to an array
-					if (_layerConfig[layerId].popupImagesField) {
-						var popupImagesField = _layerConfig[layerId].popupImagesField;
-						feature.properties[popupImagesField] = JSON.parse (feature.properties[popupImagesField]);
-					}
-					
-					// Create the popup
-					var popupContentHtml = layerviewer.renderDetailsHtml (feature, popupHtmlTemplate, layerId);
-					popup = new mapboxgl.Popup ({className: layerId})
-						.setLngLat (coordinates)
-						.setHTML (popupContentHtml)
-						.addTo (_map);
-					
-					// Register the marker so it can be removed on redraw
-					_popups[layerId].push (popup);
 				});
+				
+				// Delete auto-colour field if enabled
+				if (_layerConfig[layerId].pointColourApiField) {
+					if (feature.properties.hasOwnProperty (_layerConfig[layerId].pointColourApiField)) {
+						delete feature.properties[_layerConfig[layerId].pointColourApiField];
+					}
+				}
+				
+				// Delete auto-colour field if enabled
+				if (_layerConfig[layerId].lineColourApiField) {
+					if (feature.properties.hasOwnProperty (_layerConfig[layerId].lineColourApiField)) {
+						delete feature.properties[_layerConfig[layerId].lineColourApiField];
+					}
+				}
+				
+				// Workaround to deal with nested images property; see: https://github.com/mapbox/mapbox-gl-js/issues/2434
+				// The array has become serialised to a string that looks like an array; this parses out the string back to an array
+				if (_layerConfig[layerId].popupImagesField) {
+					var popupImagesField = _layerConfig[layerId].popupImagesField;
+					feature.properties[popupImagesField] = JSON.parse (feature.properties[popupImagesField]);
+				}
+				
+				// Create the popup
+				var popupContentHtml = layerviewer.renderDetailsHtml (feature, popupHtmlTemplate, layerId);
+				popup = new mapboxgl.Popup ({className: layerId})
+					.setLngLat (coordinates)
+					.setHTML (popupContentHtml)
+					.addTo (_map);
+				
+				// Register the marker so it can be removed on redraw
+				_popups[layerId].push (popup);
 			});
 		},
 		
