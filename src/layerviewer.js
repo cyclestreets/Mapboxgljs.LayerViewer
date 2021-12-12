@@ -2435,15 +2435,10 @@ var layerviewer = (function ($) {
 			// Create the styles definition
 			var styles = layerviewer.assembleStylesDefinition (layerId);
 			
-			// For a heatmap, ignore styles and define directly; see: https://docs.mapbox.com/help/tutorials/make-a-heatmap-with-mapbox-gl-js/
+			// Heatmap layer
 			if (_layerConfig[layerId].heatmap) {
-				styles = {
-					'heatmap': {
-						type: 'heatmap',
-						paint: layerviewer.heatmapStyles (),
-						layout: {}
-					}
-				};
+				layerviewer.addHeatmapLayer (layerId);
+				styles = {};
 			}
 			
 			// Add renderers for each different feature type; see: https://docs.mapbox.com/mapbox-gl-js/example/multiple-geometries/
@@ -3025,6 +3020,23 @@ var layerviewer = (function ($) {
 		parseSettingSelector: function (setting, layerId)
 		{
 			return (_settings[setting].replace ('{layerId}', layerId));
+		},
+		
+		
+		// Function to add a heatmap layer; see: https://docs.mapbox.com/help/tutorials/make-a-heatmap-with-mapbox-gl-js/
+		addHeatmapLayer: function (layerId)
+		{
+			// This uses a GeoJSON source, which has already been added
+			
+			// Add the layer
+			var layer = {
+				id: layerviewer.layerVariantId (layerId, 'heatmap'),	// E.g. mydata_heatmap
+				source: layerId,
+				type: 'heatmap',
+				paint: layerviewer.heatmapStyles (),
+				layout: {}
+			};
+			_map.addLayer (layer);
 		},
 		
 		
