@@ -2460,15 +2460,15 @@ var layerviewer = (function ($) {
 				layerviewer.addGeojsonLayer (layerId);
 			}
 			
+			// Native vector layer, assumed to be static (i.e. not dependent on map moves)
+			if (_layerConfig[layerId].vector) {
+				layerviewer.addVectorLayer (_layerConfig[layerId].vector, layerId);
+				return;		// Layer is static so no getData calls
+			}
+			
 			// Heatmap layer
 			if (_layerConfig[layerId].heatmap) {
 				layerviewer.addHeatmapLayer (layerId);
-			}
-			
-			// If the layer is a native vector layer rather than an API call, add it and end - as this is assumed to be static and not dependent on map moves
-			if (_layerConfig[layerId].vector) {
-				layerviewer.addVectorLayer (_layerConfig[layerId].vector, layerId);
-				return;		// No further action, e.g. API calls
 			}
 			
 			// Fetch the data
@@ -2501,7 +2501,7 @@ var layerviewer = (function ($) {
 				layerviewer.updateUrl ();
 				layerviewer.getData (layerId, _parameters[layerId]);
 			});
-			$(rescanPathBase + ' :text, ' + rescanPathBase + ' input[type="search"]').on ('input', function() {	// Also include text input changes as-you-type; see: https://gist.github.com/brandonaaskov/1596867
+			$(rescanPathBase + ' :text, ' + rescanPathBase + ' input[type="search"]').on ('input', function () {	// Also include text input changes as-you-type; see: https://gist.github.com/brandonaaskov/1596867
 				_parameters[layerId] = layerviewer.parseFormValues (layerId);
 				layerviewer.updateUrl ();
 				layerviewer.getData (layerId, _parameters[layerId]);
