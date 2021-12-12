@@ -2425,12 +2425,8 @@ var layerviewer = (function ($) {
 				}
 			}
 			
-			// Define the data source; rather than use addLayer and specify the source directly, we have to split the source addition and the layer addition, as the layers can have different feature types (point/line/polygon), which need different renderers
-			_map.addSource (layerId, {
-				type: 'geojson',
-				data: {type: 'FeatureCollection', 'features': []},		// Empty GeoJSON; see: https://github.com/mapbox/mapbox-gl-js/issues/5986
-				generateId: true	// NB See: https://github.com/mapbox/mapbox-gl-js/issues/8133
-			});
+			// Add the GeoJSON data source; rather than use addLayer and specify the source directly, we have to split the source addition and the layer addition, as the layers can have different feature types (point/line/polygon), which need different renderers
+			layerviewer.addGeojsonSource (layerId);
 			
 			// Create the styles definition
 			var styles = layerviewer.assembleStylesDefinition (layerId);
@@ -3020,6 +3016,18 @@ var layerviewer = (function ($) {
 		parseSettingSelector: function (setting, layerId)
 		{
 			return (_settings[setting].replace ('{layerId}', layerId));
+		},
+		
+		
+		// Function to add a GeoJSON source
+		addGeojsonSource: function (layerId)
+		{
+			// Define the data source
+			_map.addSource (layerId, {
+				type: 'geojson',
+				data: {type: 'FeatureCollection', 'features': []},		// Empty GeoJSON; see: https://github.com/mapbox/mapbox-gl-js/issues/5986
+				generateId: true	// NB See: https://github.com/mapbox/mapbox-gl-js/issues/8133
+			});
 		},
 		
 		
