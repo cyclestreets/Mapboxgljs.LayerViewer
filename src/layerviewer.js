@@ -2425,11 +2425,11 @@ var layerviewer = (function ($) {
 				}
 			}
 			
-			// Add the GeoJSON data source; rather than use addLayer and specify the source directly, we have to split the source addition and the layer addition, as the layers can have different feature types (point/line/polygon), which need different renderers
-			layerviewer.addGeojsonSource (layerId);
-			
 			// Create the styles definition
 			var styles = layerviewer.assembleStylesDefinition (layerId);
+			
+			// Create the GeoJSON layer, which is the default type
+			layerviewer.addGeojsonLayer (layerId);
 			
 			// Heatmap layer
 			if (_layerConfig[layerId].heatmap) {
@@ -3014,6 +3014,14 @@ var layerviewer = (function ($) {
 		parseSettingSelector: function (setting, layerId)
 		{
 			return (_settings[setting].replace ('{layerId}', layerId));
+		},
+		
+		
+		// Function to add a GeoJSON layer
+		addGeojsonLayer: function (layerId)
+		{
+			// Add the GeoJSON data source; rather than use addLayer and specify the source directly, we have to split the source addition and the layer addition, as the layers can have different feature types (point/line/polygon), which need different renderers
+			layerviewer.addGeojsonSource (layerId);
 		},
 		
 		
