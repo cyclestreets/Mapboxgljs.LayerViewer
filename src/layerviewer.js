@@ -484,7 +484,6 @@ var layerviewer = (function ($) {
 	var _markers = [];
 	var _popups = [];
 	var _tileOverlayLayer = false;
-	var _vectorOverlayLayer = false;
 	var _isTouchDevice;
 	var _panningEnabled = false;
 	var _virginFormState = {};
@@ -2428,17 +2427,6 @@ var layerviewer = (function ($) {
 				}
 			}
 			
-			// GeoJSON layer, which is the default type
-			var isGeojsonLayer = (!_layerConfig[layerId].heatmap && !_layerConfig[layerId].vector && !_layerConfig[layerId].tileLayer);
-			if (isGeojsonLayer) {
-				layerviewer.addGeojsonLayer (layerId);
-			}
-			
-			// Heatmap layer
-			if (_layerConfig[layerId].heatmap) {
-				layerviewer.addHeatmapLayer (layerId);
-			}
-			
 			// Set the legend
 			layerviewer.setLegend (layerId);
 			
@@ -2450,6 +2438,23 @@ var layerviewer = (function ($) {
 			// Perform initial zoom, if required
 			if (_layerConfig[layerId].zoomInitial) {
 				_map.flyTo ({zoom: _layerConfig[layerId].zoomInitial});
+			}
+			
+			// GeoJSON layer, which is the default type
+			var isGeojsonLayer = (!_layerConfig[layerId].heatmap && !_layerConfig[layerId].vector && !_layerConfig[layerId].tileLayer);
+			if (isGeojsonLayer) {
+				layerviewer.addGeojsonLayer (layerId);
+			}
+			
+			// Heatmap layer
+			if (_layerConfig[layerId].heatmap) {
+				layerviewer.addHeatmapLayer (layerId);
+			}
+			
+			// If the layer is a native vector layer rather than an API call, add it and end
+			if (_layerConfig[layerId].vector) {
+				layerviewer.addVectorLayer (_layerConfig[layerId].vector, layerId);
+				return;		// No further action, e.g. API calls
 			}
 			
 			// Fetch the data
@@ -2744,13 +2749,8 @@ var layerviewer = (function ($) {
 				if (_map.getZoom () < _layerConfig[layerId].minZoom) {return;}
 			}
 			
-			// If the layer is a native vector layer rather than an API call, add it and end
-			if (_layerConfig[layerId].vector) {
-				layerviewer.addVectorLayer (_layerConfig[layerId].vector, layerId);
-				return;		// No further action, e.g. API calls
-			}
-			
 			// If the layer is a tile layer rather than an API call, add it and end
+			// #!# Cannot yet move up as per other layer types, as form rescan needs to hook into style change
 			if (_layerConfig[layerId].tileLayer) {
 				layerviewer.addTileOverlayLayer (_layerConfig[layerId].tileLayer, layerId, parameters);
 				return;		// No further action, e.g. API calls
@@ -3071,19 +3071,6 @@ var layerviewer = (function ($) {
 			// Construct the ID, namespaced to avoid clashes with background layers
 			var id = 'vector-' + layerId;
 			
-			// Leave current setup in place if already present, with the same style options
-			if (_vectorOverlayLayer == id) {
-				return;
-			}
-			
-			// If an existing layer is already present, e.g. with different style options, remove it
-			if (_vectorOverlayLayer) {
-				layerviewer.removeVectorLayer ();
-			}
-			
-			// Register to the cache
-			_vectorOverlayLayer = id;
-			
 			// Amend the ID in the layer specification
 			vectorLayerAttributes.layer.id = id;
 			vectorLayerAttributes.layer.source = id;
@@ -3149,12 +3136,14 @@ var layerviewer = (function ($) {
 		
 		
 		// Function to remove a vector layer
-		removeVectorLayer: function ()
+		removeVectorLayer: function (layerId)
 		{
+			// Construct the ID, namespaced to avoid clashes with background layers
+			var id = 'vector-' + layerId;
+			
 			// Remove the layer and the source, and reset the layer value
-			_map.removeLayer (_vectorOverlayLayer);
-			_map.removeSource (_vectorOverlayLayer);
-			_vectorOverlayLayer = false;
+			_map.removeLayer (id);
+			_map.removeSource (id);
 		},
 		
 		
@@ -4246,7 +4235,7 @@ var layerviewer = (function ($) {
 
 			// If the layer is a native vector layer rather than an API call, remove it and end
 			if (_layerConfig[layerId].vector) {
-				layerviewer.removeVectorLayer ();
+				layerviewer.removeVectorLayer (layerId);
 				return;
 			}
 			
