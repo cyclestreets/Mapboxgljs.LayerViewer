@@ -2429,7 +2429,10 @@ var layerviewer = (function ($) {
 			var styles = layerviewer.assembleStylesDefinition (layerId);
 			
 			// Create the GeoJSON layer, which is the default type
-			layerviewer.addGeojsonLayer (layerId);
+			var isGeojsonLayer = (!_layerConfig[layerId].heatmap && !_layerConfig[layerId].vector && !_layerConfig[layerId].tileLayer);
+			if (isGeojsonLayer) {
+				layerviewer.addGeojsonLayer (layerId);
+			}
 			
 			// Heatmap layer
 			if (_layerConfig[layerId].heatmap) {
@@ -3040,7 +3043,8 @@ var layerviewer = (function ($) {
 		// Function to add a heatmap layer; see: https://docs.mapbox.com/help/tutorials/make-a-heatmap-with-mapbox-gl-js/
 		addHeatmapLayer: function (layerId)
 		{
-			// This uses a GeoJSON source, which has already been added
+			// Add the GeoJSON data source; rather than use addLayer and specify the source directly, we have to split the source addition and the layer addition, as the layers can have different feature types (point/line/polygon), which need different renderers
+			layerviewer.addGeojsonSource (layerId);
 			
 			// Add the layer
 			var layer = {
