@@ -2425,9 +2425,6 @@ var layerviewer = (function ($) {
 				}
 			}
 			
-			// Assemble the styles definition
-			var styles = layerviewer.assembleStylesDefinition (layerId);
-			
 			// Create the GeoJSON layer, which is the default type
 			var isGeojsonLayer = (!_layerConfig[layerId].heatmap && !_layerConfig[layerId].vector && !_layerConfig[layerId].tileLayer);
 			if (isGeojsonLayer) {
@@ -2437,11 +2434,7 @@ var layerviewer = (function ($) {
 			// Heatmap layer
 			if (_layerConfig[layerId].heatmap) {
 				layerviewer.addHeatmapLayer (layerId);
-				styles = {};
 			}
-			
-			// Add layer renderers for each feature type
-			layerviewer.addFeatureTypeLayerSet (styles, layerId);
 			
 			// For line style, add hover state handlers if enabled; see: https://docs.mapbox.com/mapbox-gl-js/example/hover-styles/
 			if (_settings.hover || _layerConfig[layerId].hover) {
@@ -3005,6 +2998,9 @@ var layerviewer = (function ($) {
 		{
 			// Add the GeoJSON data source; rather than use addLayer and specify the source directly, we have to split the source addition and the layer addition, as the layers can have different feature types (point/line/polygon), which need different renderers
 			layerviewer.addGeojsonSource (layerId);
+			
+			// Add layer renderers for each feature type
+			layerviewer.addFeatureTypeLayerSet (layerId);
 		},
 		
 		
@@ -3022,8 +3018,11 @@ var layerviewer = (function ($) {
 		
 		
 		// Function to add a layer for each feature type
-		addFeatureTypeLayerSet: function (styles, layerId)
+		addFeatureTypeLayerSet: function (layerId)
 		{
+			// Assemble the styles definition
+			var styles = layerviewer.assembleStylesDefinition (layerId);
+			
 			// Add renderers for each different feature type; see: https://docs.mapbox.com/mapbox-gl-js/example/multiple-geometries/
 			var layer;
 			var layerVariantId;
