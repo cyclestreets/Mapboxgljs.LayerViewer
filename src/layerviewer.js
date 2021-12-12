@@ -2425,7 +2425,7 @@ var layerviewer = (function ($) {
 				}
 			}
 			
-			// Create the styles definition
+			// Assemble the styles definition
 			var styles = layerviewer.assembleStylesDefinition (layerId);
 			
 			// Create the GeoJSON layer, which is the default type
@@ -2440,28 +2440,8 @@ var layerviewer = (function ($) {
 				styles = {};
 			}
 			
-			// Add renderers for each different feature type; see: https://docs.mapbox.com/mapbox-gl-js/example/multiple-geometries/
-			var layer;
-			var layerVariantId;
-			$.each (styles, function (geometryType, style) {
-				
-				// Determine if there is an icon; if so, the marker has been rendered already, so a render icon is not needed
-				if (geometryType == 'Point') {
-					var iconUrl = layerviewer.getIconUrl (layerId, null);
-					if (iconUrl) {return;}
-				}
-				
-				layerVariantId = layerviewer.layerVariantId (layerId, geometryType);
-				layer = {
-					id: layerVariantId,
-					source: layerId,
-					type: style.type,
-					paint: style.paint,
-					layout: style.layout,
-					filter: ['==', '$type', geometryType]
-				};
-				_map.addLayer (layer);
-			});
+			// Add layer renderers for each feature type
+			layerviewer.addFeatureTypeLayerSet (styles, layerId);
 			
 			// For line style, add hover state handlers if enabled; see: https://docs.mapbox.com/mapbox-gl-js/example/hover-styles/
 			if (_settings.hover || _layerConfig[layerId].hover) {
@@ -3036,6 +3016,36 @@ var layerviewer = (function ($) {
 				type: 'geojson',
 				data: {type: 'FeatureCollection', 'features': []},		// Empty GeoJSON; see: https://github.com/mapbox/mapbox-gl-js/issues/5986
 				generateId: true	// NB See: https://github.com/mapbox/mapbox-gl-js/issues/8133
+			});
+		},
+		
+		
+		
+		// Function to add a layer for each feature type
+		addFeatureTypeLayerSet: function (styles, layerId)
+		{
+			// Add renderers for each different feature type; see: https://docs.mapbox.com/mapbox-gl-js/example/multiple-geometries/
+			var layer;
+			var layerVariantId;
+			$.each (styles, function (geometryType, style) {
+				
+				// Determine if there is an icon; if so, the marker has been rendered already, so a render icon is not needed
+				if (geometryType == 'Point') {
+					var iconUrl = layerviewer.getIconUrl (layerId, null);
+					if (iconUrl) {return;}
+				}
+				
+				// Add the layer
+				layerVariantId = layerviewer.layerVariantId (layerId, geometryType);
+				layer = {
+					id: layerVariantId,
+					source: layerId,
+					type: style.type,
+					paint: style.paint,
+					layout: style.layout,
+					filter: ['==', '$type', geometryType]
+				};
+				_map.addLayer (layer);
 			});
 		},
 		
