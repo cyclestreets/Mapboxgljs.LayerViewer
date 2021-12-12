@@ -2454,11 +2454,9 @@ var layerviewer = (function ($) {
 					source: layerId,
 					type: style.type,
 					paint: style.paint,
-					layout: style.layout
+					layout: style.layout,
+					filter: ['==', '$type', geometryType]
 				};
-				if (geometryType != 'heatmap') {
-					layer.filter = ['==', '$type', geometryType];
-				}
 				_map.addLayer (layer);
 			});
 			
@@ -3042,7 +3040,6 @@ var layerviewer = (function ($) {
 				source: layerId,
 				type: 'heatmap',
 				paint: layerviewer.heatmapStyles (),
-				layout: {}
 			};
 			_map.addLayer (layer);
 		},
