@@ -2443,6 +2443,17 @@ var layerviewer = (function ($) {
 				_map.flyTo ({zoom: _layerConfig[layerId].zoomInitial});
 			}
 			
+			// Register to show/hide message based on zoom level
+			if (_layerConfig[layerId].fullZoom) {
+				layerviewer.fullZoomMessage (layerId);
+				_map.on ('zoomend', function (e) {
+					layerviewer.fullZoomMessage (layerId);
+				});
+			}
+			
+			// Register right-click feedback handler if required
+			layerviewer.addLocateFeedbackHandler (layerId);
+			
 			// GeoJSON layer, which is the default type
 			var isGeojsonLayer = (!_layerConfig[layerId].heatmap && !_layerConfig[layerId].vector && !_layerConfig[layerId].tileLayer);
 			if (isGeojsonLayer) {
@@ -2454,7 +2465,7 @@ var layerviewer = (function ($) {
 				layerviewer.addHeatmapLayer (layerId);
 			}
 			
-			// If the layer is a native vector layer rather than an API call, add it and end
+			// If the layer is a native vector layer rather than an API call, add it and end - as this is assumed to be static and not dependent on map moves
 			if (_layerConfig[layerId].vector) {
 				layerviewer.addVectorLayer (_layerConfig[layerId].vector, layerId);
 				return;		// No further action, e.g. API calls
@@ -2475,14 +2486,6 @@ var layerviewer = (function ($) {
 				layerviewer.getData (layerId, _parameters[layerId]);
 			});
 			
-			// Register to show/hide message based on zoom level
-			if (_layerConfig[layerId].fullZoom) {
-				layerviewer.fullZoomMessage (layerId);
-				_map.on ('zoomend', function (e) {
-					layerviewer.fullZoomMessage (layerId);
-				});
-			}
-			
 			// Reload the data for this layer, using a rescan of the form parameters for the layer, when any change is made
 			var rescanPathBase = layerviewer.parseSettingSelector ('formRescanPath', layerId);
 			var rescanPath = rescanPathBase + ' :input';
@@ -2491,6 +2494,8 @@ var layerviewer = (function ($) {
 			if (_settings.enableDrawing) {
 				rescanPath += ', form #drawing :input';
 			}
+			
+			// Rescan on form change
 			$(document).on ('change', rescanPath, function () {
 				_parameters[layerId] = layerviewer.parseFormValues (layerId);
 				layerviewer.updateUrl ();
@@ -2509,9 +2514,6 @@ var layerviewer = (function ($) {
 					layerviewer.getData (layerId, _parameters[layerId]);
 				});
 			}
-			
-			// Register right-click feedback handler if required
-			layerviewer.addLocateFeedbackHandler (layerId);
 		},
 		
 		
@@ -3075,12 +3077,9 @@ var layerviewer = (function ($) {
 		// Function to add a native vector layer; vector layers are assumed to be static
 		addVectorLayer: function (vectorLayerAttributes, layerId)
 		{
-			// Construct the ID, namespaced to avoid clashes with background layers
-			var id = 'vector-' + layerId;
-			
 			// Amend the ID in the layer specification
-			vectorLayerAttributes.layer.id = id;
-			vectorLayerAttributes.layer.source = id;
+			vectorLayerAttributes.layer.id = layerId;
+			vectorLayerAttributes.layer.source = layerId;
 			
 			// Convert absolute tile source paths to full URL, as otherwise an 'Unable to parse URL' error will result
 			$.each (vectorLayerAttributes.source.tiles, function (index, url) {
@@ -3097,8 +3096,18 @@ var layerviewer = (function ($) {
 			vectorLayerAttributes.layer = $.extend (vectorLayerAttributes.layer, defaultStylesByType[vectorLayerAttributes.layer.type]);
 			
 			// Register the source and layer
-			_map.addSource (id, vectorLayerAttributes.source);		// source will contain {type: 'vector', tiles: [...], etc}
+			_map.addSource (layerId, vectorLayerAttributes.source);		// source will contain {type: 'vector', tiles: [...], etc}
 			_map.addLayer (vectorLayerAttributes.layer);			// layer will contain {id: ..., type: 'circle', source: ..., 'source-layer': ..., 'paint': {...}}
+			
+			// Enable popups if required
+			var popupHtmlTemplate = layerviewer.sublayerableConfig ('popupHtml', layerId);
+			layerviewer.createPopups (layerId, layerId, false, popupHtmlTemplate);
+			
+			// Register a dialog box handler for showing additional popup details if required
+			layerviewer.detailsOverlayHandler ('#details', layerId);
+			
+			// Register in-popup feedback button handler if required
+			layerviewer.addPopupFeedbackHandler (layerId);
 		},
 		
 		
@@ -3117,8 +3126,8 @@ var layerviewer = (function ($) {
 				});
 			}
 			
-			// Construct the ID, namespaced to avoid clashes with background layers, incorporating any parameters to ensure uniqueness
-			var id = 'overlay-' + layerId + '-' + jQuery.param (parameters);	// E.g. overlay-abc-style=blue
+			// Construct the ID, incorporating any parameters to ensure uniqueness
+			var id = layerId + '-' + jQuery.param (parameters);	// E.g. abc-style=blue
 			
 			// Leave current setup in place if already present, with the same style options
 			if (_tileOverlayLayer == id) {
@@ -3145,12 +3154,9 @@ var layerviewer = (function ($) {
 		// Function to remove a vector layer
 		removeVectorLayer: function (layerId)
 		{
-			// Construct the ID, namespaced to avoid clashes with background layers
-			var id = 'vector-' + layerId;
-			
 			// Remove the layer and the source, and reset the layer value
-			_map.removeLayer (id);
-			_map.removeSource (id);
+			_map.removeLayer (layerId);
+			_map.removeSource (layerId);
 		},
 		
 		
