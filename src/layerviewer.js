@@ -3187,6 +3187,9 @@ var layerviewer = (function ($) {
 		// Details dialog box handler
 		detailsOverlayHandler: function (triggerElement, layerId)
 		{
+			// End if not enabled
+			if (!_layerConfig[layerId].detailsOverlay) {return;}
+			
 			// Register a handler; note that the HTML in bindPopup doesn't exist yet, so $(triggerElement) can't be used; instead, this listens for click events on the map element which will bubble up from the tooltip, once it's created and someone clicks on it; see: https://stackoverflow.com/questions/13698975/
 			$('#map').on('click', triggerElement, function (e) {
 				
