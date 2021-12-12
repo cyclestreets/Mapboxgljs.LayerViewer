@@ -2428,7 +2428,7 @@ var layerviewer = (function ($) {
 				}
 			}
 			
-			// Create the GeoJSON layer, which is the default type
+			// GeoJSON layer, which is the default type
 			var isGeojsonLayer = (!_layerConfig[layerId].heatmap && !_layerConfig[layerId].vector && !_layerConfig[layerId].tileLayer);
 			if (isGeojsonLayer) {
 				layerviewer.addGeojsonLayer (layerId);
@@ -2439,17 +2439,8 @@ var layerviewer = (function ($) {
 				layerviewer.addHeatmapLayer (layerId);
 			}
 			
-			// Enable popups if required
-			var popupHtmlTemplate = layerviewer.sublayerableConfig ('popupHtml', layerId);
-			layerviewer.createPopups (layerId, popupHtmlTemplate);
-			
 			// Set the legend
 			layerviewer.setLegend (layerId);
-
-			// Register a dialog box handler for showing additional details if required
-			if (_layerConfig[layerId].detailsOverlay) {
-				layerviewer.detailsOverlayHandler ('#details', layerId);
-			}
 			
 			// If the data should initially be fit to the data extent, set a flag for first load
 			if (_layerConfig[layerId].fitInitial) {
@@ -2492,7 +2483,6 @@ var layerviewer = (function ($) {
 			if (_settings.enableDrawing) {
 				rescanPath += ', form #drawing :input';
 			}
-			
 			$(document).on ('change', rescanPath, function () {
 				_parameters[layerId] = layerviewer.parseFormValues (layerId);
 				layerviewer.updateUrl ();
@@ -2512,8 +2502,7 @@ var layerviewer = (function ($) {
 				});
 			}
 			
-			// Register popup and locate feedback handler for a layer
-			layerviewer.addPopupFeedbackHandler (layerId);
+			// Register right-click feedback handler if required
 			layerviewer.addLocateFeedbackHandler (layerId);
 		},
 		
@@ -2997,6 +2986,16 @@ var layerviewer = (function ($) {
 			
 			// Add layer renderers for each feature type
 			layerviewer.addFeatureTypeLayerSet (layerId);
+			
+			// Enable popups if required
+			var popupHtmlTemplate = layerviewer.sublayerableConfig ('popupHtml', layerId);
+			layerviewer.createPopups (layerId, popupHtmlTemplate);
+			
+			// Register a dialog box handler for showing additional popup details if required
+			layerviewer.detailsOverlayHandler ('#details', layerId);
+			
+			// Register in-popup feedback button handler if required
+			layerviewer.addPopupFeedbackHandler (layerId);
 		},
 		
 		
