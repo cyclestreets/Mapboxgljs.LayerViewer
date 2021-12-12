@@ -2465,7 +2465,7 @@ var layerviewer = (function ($) {
 				layerviewer.addHeatmapLayer (layerId);
 			}
 			
-			// If the layer is a native vector layer rather than an API call, add it and end
+			// If the layer is a native vector layer rather than an API call, add it and end - as this is assumed to be static and not dependent on map moves
 			if (_layerConfig[layerId].vector) {
 				layerviewer.addVectorLayer (_layerConfig[layerId].vector, layerId);
 				return;		// No further action, e.g. API calls
@@ -2494,6 +2494,8 @@ var layerviewer = (function ($) {
 			if (_settings.enableDrawing) {
 				rescanPath += ', form #drawing :input';
 			}
+			
+			// Rescan on form change
 			$(document).on ('change', rescanPath, function () {
 				_parameters[layerId] = layerviewer.parseFormValues (layerId);
 				layerviewer.updateUrl ();
