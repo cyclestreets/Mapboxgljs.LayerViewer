@@ -2443,6 +2443,14 @@ var layerviewer = (function ($) {
 				_map.flyTo ({zoom: _layerConfig[layerId].zoomInitial});
 			}
 			
+			// Register to show/hide message based on zoom level
+			if (_layerConfig[layerId].fullZoom) {
+				layerviewer.fullZoomMessage (layerId);
+				_map.on ('zoomend', function (e) {
+					layerviewer.fullZoomMessage (layerId);
+				});
+			}
+			
 			// Register right-click feedback handler if required
 			layerviewer.addLocateFeedbackHandler (layerId);
 			
@@ -2477,14 +2485,6 @@ var layerviewer = (function ($) {
 			$('body').on ('style-changed', function (event) {
 				layerviewer.getData (layerId, _parameters[layerId]);
 			});
-			
-			// Register to show/hide message based on zoom level
-			if (_layerConfig[layerId].fullZoom) {
-				layerviewer.fullZoomMessage (layerId);
-				_map.on ('zoomend', function (e) {
-					layerviewer.fullZoomMessage (layerId);
-				});
-			}
 			
 			// Reload the data for this layer, using a rescan of the form parameters for the layer, when any change is made
 			var rescanPathBase = layerviewer.parseSettingSelector ('formRescanPath', layerId);
