@@ -2428,17 +2428,6 @@ var layerviewer = (function ($) {
 				}
 			}
 			
-			// GeoJSON layer, which is the default type
-			var isGeojsonLayer = (!_layerConfig[layerId].heatmap && !_layerConfig[layerId].vector && !_layerConfig[layerId].tileLayer);
-			if (isGeojsonLayer) {
-				layerviewer.addGeojsonLayer (layerId);
-			}
-			
-			// Heatmap layer
-			if (_layerConfig[layerId].heatmap) {
-				layerviewer.addHeatmapLayer (layerId);
-			}
-			
 			// Set the legend
 			layerviewer.setLegend (layerId);
 			
@@ -2450,6 +2439,23 @@ var layerviewer = (function ($) {
 			// Perform initial zoom, if required
 			if (_layerConfig[layerId].zoomInitial) {
 				_map.flyTo ({zoom: _layerConfig[layerId].zoomInitial});
+			}
+			
+			// GeoJSON layer, which is the default type
+			var isGeojsonLayer = (!_layerConfig[layerId].heatmap && !_layerConfig[layerId].vector && !_layerConfig[layerId].tileLayer);
+			if (isGeojsonLayer) {
+				layerviewer.addGeojsonLayer (layerId);
+			}
+			
+			// Heatmap layer
+			if (_layerConfig[layerId].heatmap) {
+				layerviewer.addHeatmapLayer (layerId);
+			}
+			
+			// If the layer is a native vector layer rather than an API call, add it and end
+			if (_layerConfig[layerId].vector) {
+				layerviewer.addVectorLayer (_layerConfig[layerId].vector, layerId);
+				return;		// No further action, e.g. API calls
 			}
 			
 			// Fetch the data
@@ -2744,13 +2750,8 @@ var layerviewer = (function ($) {
 				if (_map.getZoom () < _layerConfig[layerId].minZoom) {return;}
 			}
 			
-			// If the layer is a native vector layer rather than an API call, add it and end
-			if (_layerConfig[layerId].vector) {
-				layerviewer.addVectorLayer (_layerConfig[layerId].vector, layerId);
-				return;		// No further action, e.g. API calls
-			}
-			
 			// If the layer is a tile layer rather than an API call, add it and end
+			// #!# Cannot yet move up as per other layer types, as form rescan needs to hook into style change
 			if (_layerConfig[layerId].tileLayer) {
 				layerviewer.addTileOverlayLayer (_layerConfig[layerId].tileLayer, layerId, parameters);
 				return;		// No further action, e.g. API calls
