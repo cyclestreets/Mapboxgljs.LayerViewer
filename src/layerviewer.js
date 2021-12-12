@@ -481,6 +481,7 @@ var layerviewer = (function ($) {
 	var _layers = {};	// Layer status registry
 	var _backgroundMapStyles = {};
 	var _currentBackgroundMapStyleId;
+	var _backgroundStylesInternalPrefix = 'background-';
 	var _markers = [];
 	var _popups = [];
 	var _tileOverlayLayer = false;
@@ -1662,16 +1663,16 @@ var layerviewer = (function ($) {
 		// Create the map
 		createMap: function (defaultLocation, defaultTileLayer)
 		{
-			// Create the map in the "map" div, set the view to a given place and zoom
+			// Create the map in the 'map' div, set the view to a given place and zoom
 			mapboxgl.accessToken = _settings.mapboxApiKey;
 			_map = new mapboxgl.Map ({
 				container: 'map',
-				style: _backgroundMapStyles[defaultTileLayer],
+				style: _backgroundMapStyles[_backgroundStylesInternalPrefix + defaultTileLayer],
 				center: [defaultLocation.longitude, defaultLocation.latitude],
 				zoom: defaultLocation.zoom,
 				maxZoom: _settings.maxZoom,
 				maxBounds: (_settings.maxBounds ? _settings.maxBounds : null),	// [W,S,E,N]
-				// #!# Hash does not include layer; ideally would be added to: https://github.com/mapbox/mapbox-gl-js/blob/master/src/ui/hash.js perhaps using a monkey-patch: http://me.dt.in.th/page/JavaScript-override/
+				// #!# Hash does not include layer; ideally would be added (without prefix) to: https://github.com/mapbox/mapbox-gl-js/blob/master/src/ui/hash.js perhaps using a monkey-patch: http://me.dt.in.th/page/JavaScript-override/
 				hash: true
 				// boxZoom is enabled, but mapbox-gl-draw causes it to fail: https://github.com/mapbox/mapbox-gl-draw/issues/571
 			});
@@ -1723,10 +1724,11 @@ var layerviewer = (function ($) {
 			$.each (_settings.tileUrls, function (tileLayerId, tileLayerAttributes) {
 				
 				// Register vector tiles or traditional raster (bitmap) background map layers
+				// These are prefixed with _backgroundStylesInternalPrefix to provide basic namespacing against foreground layers
 				if (tileLayerAttributes.vectorTiles) {
-					_backgroundMapStyles[tileLayerId] = layerviewer.defineVectorBackgroundMapLayer (tileLayerAttributes);
+					_backgroundMapStyles[_backgroundStylesInternalPrefix + tileLayerId] = layerviewer.defineVectorBackgroundMapLayer (tileLayerAttributes);
 				} else {
-					_backgroundMapStyles[tileLayerId] = layerviewer.defineRasterTilesLayer (tileLayerAttributes, 'background-' + tileLayerId);
+					_backgroundMapStyles[_backgroundStylesInternalPrefix + tileLayerId] = layerviewer.defineRasterTilesLayer (tileLayerAttributes, _backgroundStylesInternalPrefix + tileLayerId);
 				}
 			});
 		},
@@ -2256,7 +2258,7 @@ var layerviewer = (function ($) {
 			// Load a style from the cookie, if it exists
 			if (Cookies.get ('mapstyle')) {
 				var styleId = Cookies.get ('mapstyle');
-				var style = _backgroundMapStyles[styleId];
+				var style = _backgroundMapStyles[_backgroundStylesInternalPrefix + styleId];
 				_map.setStyle (style);
 				
 				// Set the background map style flag to the new ID
@@ -2276,8 +2278,9 @@ var layerviewer = (function ($) {
 			var image;
 			var labelContent;
 			$.each (_backgroundMapStyles, function (styleId, style) {
-				name = (_settings.tileUrls[styleId].label ? _settings.tileUrls[styleId].label : layerviewer.ucfirst (styleId));
-				description = (_settings.tileUrls[styleId].description ? _settings.tileUrls[styleId].description : '');
+				var unprefixedStyleId = styleId.replace (_backgroundStylesInternalPrefix, '');
+				name = (_settings.tileUrls[unprefixedStyleId].label ? _settings.tileUrls[unprefixedStyleId].label : layerviewer.ucfirst (unprefixedStyleId));
+				description = (_settings.tileUrls[unprefixedStyleId].description ? _settings.tileUrls[unprefixedStyleId].description : '');
 				if (_settings.styleSwitcherGraphical) {
 					image = '/images/mapstyle/' + styleId + '.png';
 					labelContent  = '<img src="' + image + '" alt="' + name + '" />';
@@ -2294,10 +2297,10 @@ var layerviewer = (function ($) {
 			
 			// Switch to selected style
 			function switchStyle (style) {
-				var styleId = style.target.id;
-				var style = _backgroundMapStyles[styleId];
+				var styleId = style.target.id.replace (_backgroundStylesInternalPrefix, '');
+				var style = _backgroundMapStyles[_backgroundStylesInternalPrefix + styleId];
 				_map.setStyle (style);
-
+				
 				// Save this style as a cookie
 				Cookies.set ('mapstyle', styleId);
 				
