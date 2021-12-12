@@ -1509,7 +1509,7 @@ var layerviewer = (function ($) {
 		// Function to set the legend contents
 		// NB polygonColourStops take precedence over lineColourStops
 		// #!# Currently no support for lineWidthStops
-		setLegend: function (layerId, sublayerIntervals, sublayerLineColourStops)
+		setLegend: function (layerId)
 		{
 			// Determine the intervals and polygon/line colour stops for the current layer
 			var intervals = _layerConfig[layerId].legend;
@@ -1518,6 +1518,9 @@ var layerviewer = (function ($) {
 			
 			// In sublayer mode, do not display unless a sublayer is specified
 			if (_layerConfig[layerId].sublayerParameter) {
+				
+				// Determine sublayer intervals support
+				var sublayerIntervals = (_layerConfig[layerId].sublayerParameter ? layerviewer.sublayerableConfig ('legend', layerId) : false);
 				
 				// If sublayer support is enabled, end if no sublayer specified, clearing the legend if present
 				if (!sublayerIntervals) {
@@ -1528,7 +1531,7 @@ var layerviewer = (function ($) {
 				// Allocate sublayer intervals and line colour stops
 				// #!# No support yet for polygonColourStops in sublayer mode
 				intervals = sublayerIntervals;
-				lineColourStops = sublayerLineColourStops;
+				lineColourStops = layerviewer.sublayerableConfig ('lineColourStops', layerId);
 			}
 			
 			// End if intervals not required for this layer
@@ -2441,9 +2444,7 @@ var layerviewer = (function ($) {
 			layerviewer.createPopups (layerId, popupHtmlTemplate);
 			
 			// Set the legend
-			var sublayerIntervals = (_layerConfig[layerId].sublayerParameter ? layerviewer.sublayerableConfig ('legend', layerId) : false);
-			var lineColourStops = layerviewer.sublayerableConfig ('lineColourStops', layerId);
-			layerviewer.setLegend (layerId, sublayerIntervals, lineColourStops);
+			layerviewer.setLegend (layerId);
 
 			// Register a dialog box handler for showing additional details if required
 			if (_layerConfig[layerId].detailsOverlay) {
