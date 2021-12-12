@@ -2443,6 +2443,9 @@ var layerviewer = (function ($) {
 				_map.flyTo ({zoom: _layerConfig[layerId].zoomInitial});
 			}
 			
+			// Register right-click feedback handler if required
+			layerviewer.addLocateFeedbackHandler (layerId);
+			
 			// GeoJSON layer, which is the default type
 			var isGeojsonLayer = (!_layerConfig[layerId].heatmap && !_layerConfig[layerId].vector && !_layerConfig[layerId].tileLayer);
 			if (isGeojsonLayer) {
@@ -2509,9 +2512,6 @@ var layerviewer = (function ($) {
 					layerviewer.getData (layerId, _parameters[layerId]);
 				});
 			}
-			
-			// Register right-click feedback handler if required
-			layerviewer.addLocateFeedbackHandler (layerId);
 		},
 		
 		
