@@ -2436,11 +2436,6 @@ var layerviewer = (function ($) {
 				layerviewer.addHeatmapLayer (layerId);
 			}
 			
-			// For line style, add hover state handlers if enabled; see: https://docs.mapbox.com/mapbox-gl-js/example/hover-styles/
-			if (_settings.hover || _layerConfig[layerId].hover) {
-				layerviewer.hoverStateHandlers (layerId + '_' + 'linestring', layerId);
-			}
-			
 			// Enable popups if required
 			var popupHtmlTemplate = layerviewer.sublayerableConfig ('popupHtml', layerId);
 			layerviewer.createPopups (layerId, popupHtmlTemplate);
@@ -3016,7 +3011,6 @@ var layerviewer = (function ($) {
 		},
 		
 		
-		
 		// Function to add a layer for each feature type
 		addFeatureTypeLayerSet: function (layerId)
 		{
@@ -3046,6 +3040,11 @@ var layerviewer = (function ($) {
 				};
 				_map.addLayer (layer);
 			});
+			
+			// For line style, add hover state handlers if enabled; see: https://docs.mapbox.com/mapbox-gl-js/example/hover-styles/
+			if (_settings.hover || _layerConfig[layerId].hover) {
+				layerviewer.hoverStateHandlers (layerId + '_' + 'linestring', layerId);
+			}
 		},
 		
 		
