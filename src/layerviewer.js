@@ -3075,12 +3075,9 @@ var layerviewer = (function ($) {
 		// Function to add a native vector layer; vector layers are assumed to be static
 		addVectorLayer: function (vectorLayerAttributes, layerId)
 		{
-			// Construct the ID, namespaced to avoid clashes with background layers
-			var id = 'vector-' + layerId;
-			
 			// Amend the ID in the layer specification
-			vectorLayerAttributes.layer.id = id;
-			vectorLayerAttributes.layer.source = id;
+			vectorLayerAttributes.layer.id = layerId;
+			vectorLayerAttributes.layer.source = layerId;
 			
 			// Convert absolute tile source paths to full URL, as otherwise an 'Unable to parse URL' error will result
 			$.each (vectorLayerAttributes.source.tiles, function (index, url) {
@@ -3097,7 +3094,7 @@ var layerviewer = (function ($) {
 			vectorLayerAttributes.layer = $.extend (vectorLayerAttributes.layer, defaultStylesByType[vectorLayerAttributes.layer.type]);
 			
 			// Register the source and layer
-			_map.addSource (id, vectorLayerAttributes.source);		// source will contain {type: 'vector', tiles: [...], etc}
+			_map.addSource (layerId, vectorLayerAttributes.source);		// source will contain {type: 'vector', tiles: [...], etc}
 			_map.addLayer (vectorLayerAttributes.layer);			// layer will contain {id: ..., type: 'circle', source: ..., 'source-layer': ..., 'paint': {...}}
 		},
 		
@@ -3117,8 +3114,8 @@ var layerviewer = (function ($) {
 				});
 			}
 			
-			// Construct the ID, namespaced to avoid clashes with background layers, incorporating any parameters to ensure uniqueness
-			var id = 'overlay-' + layerId + '-' + jQuery.param (parameters);	// E.g. overlay-abc-style=blue
+			// Construct the ID, incorporating any parameters to ensure uniqueness
+			var id = layerId + '-' + jQuery.param (parameters);	// E.g. abc-style=blue
 			
 			// Leave current setup in place if already present, with the same style options
 			if (_tileOverlayLayer == id) {
@@ -3145,12 +3142,9 @@ var layerviewer = (function ($) {
 		// Function to remove a vector layer
 		removeVectorLayer: function (layerId)
 		{
-			// Construct the ID, namespaced to avoid clashes with background layers
-			var id = 'vector-' + layerId;
-			
 			// Remove the layer and the source, and reset the layer value
-			_map.removeLayer (id);
-			_map.removeSource (id);
+			_map.removeLayer (layerId);
+			_map.removeSource (layerId);
 		},
 		
 		
