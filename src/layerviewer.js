@@ -470,8 +470,8 @@ var layerviewer = (function ($) {
 			layout: {},		// Not applicable
 			paint: {
 				'fill-color': '#888',
-				'fill-opacity': 0.4
-				// NB Outline line width cannot be changed: https://github.com/mapbox/mapbox-gl-js/issues/3018#issuecomment-240381965
+				'fill-opacity': 0.4,
+				'fill-outline-color': 'rgba(0,0,0,0.5)'	// See: https://github.com/mapbox/mapbox-gl-js/issues/3018#issuecomment-365767174
 			}
 		}
 	};
