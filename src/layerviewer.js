@@ -3251,7 +3251,7 @@ var layerviewer = (function ($) {
 			// Reduce each value
 			var i;
 			for (i = 0; i < coordinates.length; i++) {
-				coordinates[i] = parseFloat(coordinates[i]).toFixed(accuracy);
+				coordinates[i] = +parseFloat(coordinates[i]).toFixed(accuracy);
 			}
 			
 			// Return the modified set
@@ -4387,13 +4387,9 @@ var layerviewer = (function ($) {
 				
 				// Reduce coordinate accuracy to 6dp (c. 1m) to avoid over-long URLs
 				var coordinates = geojsonValue.features[0].geometry.coordinates[0];
-				var accuracy = 6;	// Decimal points; gives 0.1m accuracy; see: https://en.wikipedia.org/wiki/Decimal_degrees
 				var i;
-				var j;
 				for (i = 0; i < coordinates.length; i++) {
-					for (j = 0; j < coordinates[i].length; j++) {
-						coordinates[i][j] = +coordinates[i][j].toFixed(accuracy);
-					}
+					coordinates[i] = layerviewer.reduceCoordinateAccuracy (coordinates[i]);
 				}
 				geojsonValue.features[0].geometry.coordinates[0] = coordinates;
 				
