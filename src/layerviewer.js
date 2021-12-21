@@ -47,6 +47,7 @@ var layerviewer = (function ($) {
 		
 		// Enable/disable drawing feature
 		enableDrawing: true,
+		drawingGeometryType: 'Polygon',		// Or LineString
 		
 		// Map scale
 		enableScale: false,
@@ -1707,7 +1708,7 @@ var layerviewer = (function ($) {
 			
 			// Add drawing support if enabled
 			if (_settings.enableDrawing) {
-				layerviewer.drawing ('#geometry', true, '');
+				layerviewer.drawing ('#geometry', true, '', _settings.drawingGeometryType);
 			}
 			
 			// Add map scale if required
@@ -4290,23 +4291,13 @@ var layerviewer = (function ($) {
 		
 		
 		// Drawing functionality, wrapping mapbox-gl-draw
-		drawing: function (targetField, fragmentOnly, defaultValueString)
+		drawing: function (targetField, fragmentOnly, defaultValueString, geometryType)
 		{
 			// Disable drawing on mobile, as it interferes with popups, pending workaround for https://github.com/mapbox/mapbox-gl-draw/issues/617
 			if (_isTouchDevice) {return;}
 			
 			// Define drawing styles; based on https://github.com/NYCPlanning/labs-factfinder/blob/a617955c652b05dd81308e8d4158cfd76c01d1e2/app/layers/draw-styles.js
 			var styles = [
-				// Polygon fill
-				{
-					id: 'gl-draw-polygon-fill',
-					type: 'fill',
-					paint: {
-						'fill-color': '#D20C0C',
-						'fill-outline-color': '#D20C0C',
-						'fill-opacity': 0.1
-					}
-				},
 				// Polygon outline stroke
 				{
 					id: 'gl-draw-polygon-stroke-active',
@@ -4343,6 +4334,19 @@ var layerviewer = (function ($) {
 				}
 			];
 			
+			// For Polygon type, also add fill
+			if (geometryType == 'Polygon') {
+				styles.push ({
+					id: 'gl-draw-polygon-fill',
+					type: 'fill',
+					paint: {
+						'fill-color': '#D20C0C',
+						'fill-outline-color': '#D20C0C',
+						'fill-opacity': 0.1
+					}
+				});
+			}
+			
 			// See example at: https://docs.mapbox.com/mapbox-gl-js/example/mapbox-gl-draw/
 			// See also support for circle drawing (potential future feature) at: https://medium.com/nyc-planning-digital/building-a-custom-draw-mode-for-mapbox-gl-draw-1dab71d143ee
 			var draw = new MapboxDraw ({
@@ -4355,43 +4359,56 @@ var layerviewer = (function ($) {
 			_map.on ('draw.create', updateArea);
 			_map.on ('draw.update', updateArea);
 			
-			// Add default value if supplied; currently only polygon type supplied; see: https://github.com/mapbox/mapbox-gl-draw/blob/master/docs/API.md#addgeojson-object--arraystring
+			// Add default value if supplied; see: https://github.com/mapbox/mapbox-gl-draw/blob/master/docs/API.md#addgeojson-object--arraystring
 			if (defaultValueString) {	// E.g. '[[-0.106355,51.510595],[-0.106709,51.51082],[-0.105666,51.511347],[-0.106355,51.510595]]'
 				
 				// Convert the string to an array of lat,lon values
-				var polygonPoints = JSON.parse (defaultValueString);
+				var featurePoints = JSON.parse (defaultValueString);
 				
 				// Construct the feature
-				var defaultPolygonFeature = {type: 'Polygon', coordinates: [polygonPoints]};
+				var defaultFeature = {type: geometryType, coordinates: [featurePoints]};
 				
 				// Add the polygon
-				draw.add (defaultPolygonFeature);
+				draw.add (defaultFeature);
 			}
 			
 			// Enable the polygon drawing when the button is clicked
-			$('.draw.area').click(function() {
+			$('.draw.area, .draw.line').click (function() {
 				
 				// Clear any existing features - allow only a single polygon at present
 				// #!# Remove this when the server-side allows multiple polygons
 				draw.deleteAll ();
 				
 				// Start drawing
-				draw.changeMode ('draw_polygon');
+				var drawMode = (geometryType == 'Polygon' ? 'draw_polygon' : 'draw_line_string');	// See: https://github.com/mapbox/mapbox-gl-draw/blob/main/docs/API.md#modes
+				draw.changeMode (drawMode);
 			});
 			
-			// Handle created polygons
+			// Handle created features
 			function updateArea (e) {
 				
 				// Capture the data, which will be GeoJSON
 				var geojsonValue = draw.getAll ();
 				
 				// Reduce coordinate accuracy to 6dp (c. 1m) to avoid over-long URLs
-				var coordinates = geojsonValue.features[0].geometry.coordinates[0];
+				var coordinates;
 				var i;
-				for (i = 0; i < coordinates.length; i++) {
-					coordinates[i] = layerviewer.reduceCoordinateAccuracy (coordinates[i]);
+				switch (geometryType) {
+					case 'Polygon':
+						coordinates = geojsonValue.features[0].geometry.coordinates[0];		// Single ring
+						for (i = 0; i < coordinates.length; i++) {
+							coordinates[i] = layerviewer.reduceCoordinateAccuracy (coordinates[i]);
+						}
+						geojsonValue.features[0].geometry.coordinates[0] = coordinates;
+						break;
+					case 'LineString':
+						coordinates = geojsonValue.features[0].geometry.coordinates;
+						for (i = 0; i < coordinates.length; i++) {
+							coordinates[i] = layerviewer.reduceCoordinateAccuracy (coordinates[i]);
+						}
+						geojsonValue.features[0].geometry.coordinates = coordinates;
+						break;
 				}
-				geojsonValue.features[0].geometry.coordinates[0] = coordinates;
 				
 				// If required, send only the coordinates fragment
 				if (fragmentOnly) {
@@ -4399,20 +4416,20 @@ var layerviewer = (function ($) {
 				}
 				
 				// Send to receiving input form
-				$(targetField).val(JSON.stringify(geojsonValue));
+				$(targetField).val (JSON.stringify (geojsonValue));
 				
 				// Trigger jQuery change event, so that .change() behaves as expected for the hidden field; see: https://stackoverflow.com/a/8965804
 				// #!# Note that this fires twice for some reason - see notes to the answer in the above URL
-				$(targetField).trigger('change');
+				$(targetField).trigger ('change');
 			}
 			
-			// Cancel button clears drawn polygon and clears the form value
-			$('.edit-clear').click(function() {
+			// Cancel button clears drawn feature and clears the form value
+			$('.edit-clear').click (function () {
 				draw.trash ();
-				$(targetField).val('');
+				$(targetField).val ('');
 			
 				// Trigger jQuery change event, so that .change() behaves as expected for the hidden field; see: https://stackoverflow.com/a/8965804
-				$(targetField).trigger('change');
+				$(targetField).trigger ('change');
 			});
 			
 			// Undo button; not yet implemented: https://github.com/mapbox/mapbox-gl-draw/issues/791
