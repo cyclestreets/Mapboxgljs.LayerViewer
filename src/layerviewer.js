@@ -3088,12 +3088,14 @@ var layerviewer = (function ($) {
 				}
 			});
 			
-			// Merge any supplied styles into the defaults
-			var defaultStylesByType = {};
-			$.each (_defaultStyles, function (opengisType, style) {
-				defaultStylesByType[style.type] = style;
-			});
-			vectorLayerAttributes.layer = $.extend (vectorLayerAttributes.layer, defaultStylesByType[vectorLayerAttributes.layer.type]);
+			// If no style defined, merge any supplied global styles into the defaults
+			if (!vectorLayerAttributes.layer.hasOwnProperty ('paint')) {
+				var defaultStylesByType = {};
+				$.each (_defaultStyles, function (opengisType, style) {
+					defaultStylesByType[style.type] = style;
+				});
+				vectorLayerAttributes.layer = $.extend (vectorLayerAttributes.layer, defaultStylesByType[vectorLayerAttributes.layer.type]);
+			}
 			
 			// Register the source and layer
 			_map.addSource (layerId, vectorLayerAttributes.source);		// source will contain {type: 'vector', tiles: [...], etc}
