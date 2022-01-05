@@ -318,7 +318,8 @@ var layerviewer = (function ($) {
 				weight: 5
 			},
 			
-			// If drawing lines, the field that contains the value used to determine the colour, and the colour stops for this, as an array of pairs of upper limit value and colour
+			// If drawing lines, the field that contains the value used to determine the colour, and the colour stops for this, as an array of pairs of upper limit value and colour, or fixed colour
+			lineColour: false,		// Fixed value
 			lineColourField: 'value',
 			lineColourStops: [
 				[200, '#ff0000'],
@@ -334,6 +335,7 @@ var layerviewer = (function ($) {
 			pointSize: 8,
 			
 			// Line width
+			lineWidth: false,		// Fixed value
 			lineWidthField: 'width',
 			lineWidthStops: [
 				[250, 10],
@@ -3876,7 +3878,12 @@ var layerviewer = (function ($) {
 				styles['LineString']['paint']['line-color'] = ['get', _layerConfig[layerId].lineColourApiField];
 			}
 			
-			// Set line colour if required; uses original 'stops' method, see: https://github.com/mapbox/mapbox-gl-js/commit/9ac35b1059ed5f9f7798c37700b52259ce9a815d#diff-bde08934db09c688e8b1d2c0a4d2bce0
+			// Fixed line colour
+			if (_layerConfig[layerId].lineColour) {
+				styles['LineString']['paint']['line-color'] = _layerConfig[layerId].lineColour;
+			}
+			
+			// Set line colour from data if required; uses original 'stops' method, see: https://github.com/mapbox/mapbox-gl-js/commit/9ac35b1059ed5f9f7798c37700b52259ce9a815d#diff-bde08934db09c688e8b1d2c0a4d2bce0
 			if (lineColourField && lineColourStops) {
 				styles['LineString']['paint']['line-color'] = layerviewer.stopsExpression (lineColourField, lineColourStops.slice().reverse());	// Reverse the original definition: https://stackoverflow.com/a/30610528/180733
 			}
@@ -3884,6 +3891,11 @@ var layerviewer = (function ($) {
 			// Set point size if required
 			if (_layerConfig[layerId].pointSize) {
 				styles['Point']['paint']['circle-radius'] = _layerConfig[layerId].pointSize;
+			}
+			
+			// Fixed line width
+			if (_layerConfig[layerId].lineWidth) {
+				styles['LineString']['paint']['line-width'] = _layerConfig[layerId].lineWidth;
 			}
 			
 			// Set line width from stops, if required
