@@ -511,6 +511,8 @@ var layerviewer = (function ($) {
 	var _geolocationAvailable = false; // Store geolocation availability, to automatically disable location tracking if user has not selected the right permissions
 	var _customPanningIndicatorAction = false; // Custom function that can be run on click action panning on and off, i.e. to control the visual state of a custom panning button
 	var _customGeolocationButtonAction = false; // Custom function that can be run on click event on geolocation control, i.e. to control the visual state of a custom geolocation control
+	var _drawingHappening = false;
+	var _popupClickHandlers = {};
 	
 	return {
 		
@@ -4007,8 +4009,8 @@ var layerviewer = (function ($) {
 			// Initialise the feature ID handle
 			var popupFeatureId = null;
 			
-			// Add the click handler
-			_map.on ('click', layerVariantId, function (e) {
+			// Define a popup click handler for this layer; this is registered to a property so that it can be disabled using map.off()/map.on(); see: https://stackoverflow.com/a/45665068/180733
+			_popupClickHandlers[layerId] = function (e) {
 				var feature = e.features[0];
 				
 				// Remove the popup if already opened and clicked again (implied close)
@@ -4067,7 +4069,10 @@ var layerviewer = (function ($) {
 				
 				// Register the marker so it can be removed on redraw
 				_popups[layerId].push (popup);
-			});
+			};
+			
+			// Register the handler
+			_map.on ('click', layerId, _popupClickHandlers[layerId]);
 		},
 		
 		
@@ -4387,11 +4392,15 @@ var layerviewer = (function ($) {
 			}
 			
 			// Enable the polygon drawing when the button is clicked
-			$('.draw.area, .draw.line').click (function() {
+			$('.draw.area, .draw.line').click (function () {
 				
 				// Clear any existing features - allow only a single polygon at present
 				// #!# Remove this when the server-side allows multiple polygons
 				draw.deleteAll ();
+				
+				// Set state
+				_drawingHappening = true;
+				layerviewer.disablePopupHandlers ();
 				
 				// Start drawing
 				var drawMode = (geometryType == 'Polygon' ? 'draw_polygon' : 'draw_line_string');	// See: https://github.com/mapbox/mapbox-gl-draw/blob/main/docs/API.md#modes
@@ -4435,6 +4444,10 @@ var layerviewer = (function ($) {
 				// Trigger jQuery change event, so that .change() behaves as expected for the hidden field; see: https://stackoverflow.com/a/8965804
 				// #!# Note that this fires twice for some reason - see notes to the answer in the above URL
 				$(targetField).trigger ('change');
+				
+				// Set state
+				_drawingHappening = false;
+				layerviewer.reenablePopupHandlers ();
 			}
 			
 			// Cancel button clears drawn feature and clears the form value
@@ -4444,6 +4457,12 @@ var layerviewer = (function ($) {
 			
 				// Trigger jQuery change event, so that .change() behaves as expected for the hidden field; see: https://stackoverflow.com/a/8965804
 				$(targetField).trigger ('change');
+				
+				// If drawing is in progress and the clear button is clicked without the drawing being auto-closed, end it; if drawing already finished automatically, do not re-reenable popup handlers as that will newly create an additional set
+				if (_drawingHappening) {
+					_drawingHappening = false;
+					layerviewer.reenablePopupHandlers ();
+				}
 			});
 			
 			// Undo button; not yet implemented: https://github.com/mapbox/mapbox-gl-draw/issues/791
@@ -4452,6 +4471,37 @@ var layerviewer = (function ($) {
 				//
 			});
 			*/
+		},
+		
+		
+		// Disable click handler for underlying layers
+		disablePopupHandlers: function ()
+		{
+			// Close any popups currently open
+			$.each (_layers, function (layerId, popups) {		// #!# For some reason, iterating through _popups doesn't work, so _layers used for now
+				layerviewer.removePopups (layerId);
+			});
+			
+			// Disable the popup click handler for each layer
+			$.each (_layers, function (layerId, layerEnabled) {
+				if (_popupClickHandlers.hasOwnProperty (layerId)) {
+					_map.off ('click', layerId, _popupClickHandlers[layerId]);
+				}
+			});
+		},
+		
+		
+		// Re-enable click handler for underlying layers
+		reenablePopupHandlers: function ()
+		{
+			// Re-enable the popup click handler for each layer
+			setTimeout (function () {		// Short delay as the existing popup click handler will trigger first
+				$.each (_layers, function (layerId, layerEnabled) {
+					if (_popupClickHandlers.hasOwnProperty (layerId)) {
+						_map.on ('click', layerId, _popupClickHandlers[layerId]);
+					}
+				});
+			}, 200);
 		},
 		
 		
