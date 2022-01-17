@@ -5174,7 +5174,7 @@ var layerviewer = (function ($) {
 		
 		
 		// Function to add a GeoJSON layer directly
-		addDirectGeojson: function (data /* as FeatureCollection */, /* assign this: */ layerId)
+		addDirectGeojson: function (data /* as FeatureCollection */, /* assign this: */ layerId, layerConfig)
 		{
 			// If the layer is already present, update the data
 			if (_layerConfig[layerId]) {
@@ -5189,6 +5189,11 @@ var layerviewer = (function ($) {
 				bbox: false,
 				static: true
 			};
+			
+			// Merge in any layer configuration, e.g. iconUrl
+			if (layerConfig) {
+				$.extend (_layerConfig[layerId], layerConfig);
+			}
 			
 			// Enable the layer
 			layerviewer.enableLayer (layerId);
