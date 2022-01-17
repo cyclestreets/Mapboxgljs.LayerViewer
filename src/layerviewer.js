@@ -5170,8 +5170,43 @@ var layerviewer = (function ($) {
 			
 			// Remove the handler
 			_map.off ('contextmenu', _locateHandlerFunction);
+		},
+		
+		
+		// Function to add a GeoJSON layer directly
+		addDirectGeojson: function (data /* as FeatureCollection */, /* assign this: */ layerId)
+		{
+			// If the layer is already present, update the data
+			if (_layerConfig[layerId]) {
+				layerviewer.showCurrentData (layerId, data, '_fixed');
+				return;
+			}
+			
+			// Register the new layer
+			_layerConfig[layerId] = {
+				data: data,
+				apiCall: false,
+				bbox: false,
+				static: true
+			};
+			
+			// Enable the layer
+			layerviewer.enableLayer (layerId);
+		},
+		
+		
+		// Function to erase contents of a directly-added GeoJSON layer; the layer itself will continue to exist
+		eraseDirectGeojson: function (layerId)
+		{
+			// End if not present
+			if (!_layerConfig[layerId]) {return;}
+			
+			// Leave the layer in place, but set the data to empty
+			var data = {type: 'FeatureCollection', 'features': []};
+			layerviewer.showCurrentData (layerId, data, '_fixed');
 		}
 	};
 	
 } (jQuery));
+
 
