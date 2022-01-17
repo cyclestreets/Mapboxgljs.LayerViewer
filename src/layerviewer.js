@@ -256,6 +256,9 @@ var layerviewer = (function ($) {
 			// API key specific to this layer's API call
 			apiKey: false,
 			
+			// Or fixed data, for GeoJSON layers
+			data: false,
+			
 			// Fixed parameters required by this API
 			apiFixedParameters: {
 				key: 'value',
@@ -3016,10 +3019,16 @@ var layerviewer = (function ($) {
 		// Function to add a GeoJSON source
 		addGeojsonSource: function (layerId)
 		{
+			// Define the initial GeoJSON state
+			var data = {type: 'FeatureCollection', 'features': []};	// Empty GeoJSON; see: https://github.com/mapbox/mapbox-gl-js/issues/5986
+			if (_layerConfig[layerId].data !== false) {
+				var data = _layerConfig[layerId].data;
+			}
+			
 			// Define the data source
 			_map.addSource (layerId, {
 				type: 'geojson',
-				data: {type: 'FeatureCollection', 'features': []},		// Empty GeoJSON; see: https://github.com/mapbox/mapbox-gl-js/issues/5986
+				data: data,
 				generateId: true	// NB See: https://github.com/mapbox/mapbox-gl-js/issues/8133
 			});
 		},
