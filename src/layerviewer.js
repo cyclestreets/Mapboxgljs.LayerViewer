@@ -329,6 +329,10 @@ var layerviewer = (function ($) {
 				[50, '#e27474'],
 				[0, '#61fa61']
 			],
+			lineColourValues: {
+				'red': '#ff00',
+				'ash': '#b2beb5'
+			},
 			
 			// Point/Line colour from API response, e.g. 'colour' value in API
 			pointColourApiField: false,
@@ -3624,7 +3628,7 @@ var layerviewer = (function ($) {
 			$.each (data.features, function (index, feature) {
 				
 				// Ensure data is numeric for the line colour field, to enable correct comparison
-				if (lineColourField) {
+				if (!isNaN (data.features[index].properties[lineColourField])) {
 					data.features[index].properties[lineColourField] = Number (feature.properties[lineColourField]);
 				}
 				
@@ -3872,6 +3876,7 @@ var layerviewer = (function ($) {
 			// #!# This merge-style operation should be dealt with generically at top-level
 			var lineColourField = layerviewer.sublayerableConfig ('lineColourField', layerId);
 			var lineColourStops = layerviewer.sublayerableConfig ('lineColourStops', layerId);
+			var lineColourValues = layerviewer.sublayerableConfig ('lineColourValues', layerId);
 			var lineWidthField = layerviewer.sublayerableConfig ('lineWidthField', layerId);
 			var lineWidthStops = layerviewer.sublayerableConfig ('lineWidthStops', layerId);
 			var lineWidthValues = layerviewer.sublayerableConfig ('lineWidthValues', layerId);
@@ -3898,6 +3903,20 @@ var layerviewer = (function ($) {
 			if (lineColourField && lineColourStops) {
 				styles['LineString']['paint']['line-color'] = layerviewer.stopsExpression (lineColourField, lineColourStops.slice().reverse());	// Reverse the original definition: https://stackoverflow.com/a/30610528/180733
 			}
+
+			// Set line colour from lookups, if required
+			if (lineColourField && lineColourValues) {
+				var styleDefinition = [];
+				styleDefinition.push ('case');
+				$.each (lineColourValues, function (key, value) {
+					styleDefinition.push (['==', ['get', lineColourField], key]);
+					styleDefinition.push (value);
+				});
+				styleDefinition.push (/* fallback: */ 'red');
+				styles['LineString']['paint']['line-color'] = styleDefinition;
+			}
+			
+
 			
 			// Set point size if required
 			if (_layerConfig[layerId].pointSize) {
