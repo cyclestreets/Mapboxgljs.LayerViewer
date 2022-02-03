@@ -240,7 +240,10 @@ var layerviewer = (function ($) {
 		useJqueryTabsRendering: true,
 		
 		// Rounding decimal places in popups
-		popupsRoundingDP: 0
+		popupsRoundingDP: 0,
+
+		// Clicking "Clear line" also stops the drawing
+		stopDrawingWhenClearingLine: true
 	};
 	
 	// Layer definitions, which should be overriden by being supplied as an argument by the calling application
@@ -4502,16 +4505,24 @@ var layerviewer = (function ($) {
 			
 			// Cancel button clears drawn feature and clears the form value
 			$('.edit-clear').click (function () {
-				_draw.trash ();
+				if (_settings.stopDrawingWhenClearingLine) {
+					_draw.trash ();
+				} else {
+					_draw.deleteAll ();
+					_draw.changeMode ('draw_line_string');
+				}
+
 				$(targetField).val ('');
 			
 				// Trigger jQuery change event, so that .change() behaves as expected for the hidden field; see: https://stackoverflow.com/a/8965804
 				$(targetField).trigger ('change');
 				
 				// If drawing is in progress and the clear button is clicked without the drawing being auto-closed, end it; if drawing already finished automatically, do not re-reenable popup handlers as that will newly create an additional set
-				if (_drawing.happening) {
-					_drawing.happening = false;
-					layerviewer.reenablePopupHandlers ();
+				if (_settings.stopDrawingWhenClearingLine) {
+					if (_drawing.happening) {
+						_drawing.happening = false;
+						layerviewer.reenablePopupHandlers ();
+					}
 				}
 			});
 			
