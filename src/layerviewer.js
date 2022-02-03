@@ -518,7 +518,22 @@ var layerviewer = (function ($) {
 	var _geolocationAvailable = false; // Store geolocation availability, to automatically disable location tracking if user has not selected the right permissions
 	var _customPanningIndicatorAction = false; // Custom function that can be run on click action panning on and off, i.e. to control the visual state of a custom panning button
 	var _customGeolocationButtonAction = false; // Custom function that can be run on click event on geolocation control, i.e. to control the visual state of a custom geolocation control
-	var _drawingHappening = false;
+	var _drawing = { // Object to control drawing, accessible externally to LayerViewer via registering a listener
+		happeningInternal: false,
+		happeningListener: function (val) { },
+		set happening(val) {
+			this.happeningInternal = val;
+			this.happeningListener(val);
+		},
+		get happening() {
+			return this.happeningInternal;
+		},
+		registerListener: function (listener) {
+			this.happeningListener = listener;
+		}
+	}
+
+	var _draw = null; // Store the Mapbox draw object
 	var _popupClickHandlers = {};
 	
 	return {
@@ -706,6 +721,13 @@ var layerviewer = (function ($) {
 		getMap: function ()
 		{
 			return _map;
+		},
+
+
+		// Getter for _draw object
+		getDrawObject: function ()
+		{
+			return _drawing;
 		},
 		
 		
@@ -4396,11 +4418,11 @@ var layerviewer = (function ($) {
 			
 			// See example at: https://docs.mapbox.com/mapbox-gl-js/example/mapbox-gl-draw/
 			// See also support for circle drawing (potential future feature) at: https://medium.com/nyc-planning-digital/building-a-custom-draw-mode-for-mapbox-gl-draw-1dab71d143ee
-			var draw = new MapboxDraw ({
+			_draw = new MapboxDraw ({
 				displayControlsDefault: false,
 				styles: styles
 			});
-			_map.addControl (draw);
+			_map.addControl (_draw);
 			
 			// Register handlers for data creation/update
 			_map.on ('draw.create', updateArea);
@@ -4416,7 +4438,7 @@ var layerviewer = (function ($) {
 				var defaultFeature = {type: geometryType, coordinates: [featurePoints]};
 				
 				// Add the polygon
-				draw.add (defaultFeature);
+				_draw.add (defaultFeature);
 			}
 			
 			// Enable the polygon drawing when the button is clicked
@@ -4424,22 +4446,22 @@ var layerviewer = (function ($) {
 				
 				// Clear any existing features - allow only a single polygon at present
 				// #!# Remove this when the server-side allows multiple polygons
-				draw.deleteAll ();
+				_draw.deleteAll ();
 				
 				// Set state
-				_drawingHappening = true;
+				_drawing.happening = true;
 				layerviewer.disablePopupHandlers ();
 				
 				// Start drawing
 				var drawMode = (geometryType == 'Polygon' ? 'draw_polygon' : 'draw_line_string');	// See: https://github.com/mapbox/mapbox-gl-draw/blob/main/docs/API.md#modes
-				draw.changeMode (drawMode);
+				_draw.changeMode (drawMode);
 			});
 			
 			// Handle created features
 			function updateArea (e) {
 				
 				// Capture the data, which will be GeoJSON
-				var geojsonValue = draw.getAll ();
+				var geojsonValue = _draw.getAll ();
 				
 				// Reduce coordinate accuracy to 6dp (c. 1m) to avoid over-long URLs
 				var coordinates;
@@ -4474,21 +4496,21 @@ var layerviewer = (function ($) {
 				$(targetField).trigger ('change');
 				
 				// Set state
-				_drawingHappening = false;
+				_drawing.happening = false;
 				layerviewer.reenablePopupHandlers ();
 			}
 			
 			// Cancel button clears drawn feature and clears the form value
 			$('.edit-clear').click (function () {
-				draw.trash ();
+				_draw.trash ();
 				$(targetField).val ('');
 			
 				// Trigger jQuery change event, so that .change() behaves as expected for the hidden field; see: https://stackoverflow.com/a/8965804
 				$(targetField).trigger ('change');
 				
 				// If drawing is in progress and the clear button is clicked without the drawing being auto-closed, end it; if drawing already finished automatically, do not re-reenable popup handlers as that will newly create an additional set
-				if (_drawingHappening) {
-					_drawingHappening = false;
+				if (_drawing.happening) {
+					_drawing.happening = false;
 					layerviewer.reenablePopupHandlers ();
 				}
 			});
@@ -4499,6 +4521,18 @@ var layerviewer = (function ($) {
 				//
 			});
 			*/
+		},
+
+
+		// Finish the drawing at a given point
+		finishDrawing: function ()
+		{
+			// Reenable popup handlers
+			_drawing.happening = false;
+			layerviewer.reenablePopupHandlers ();
+
+			// Stop drawing mode
+			_draw.changeMode ('simple_select');
 		},
 		
 		
