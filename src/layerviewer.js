@@ -727,21 +727,28 @@ var layerviewer = (function ($) {
 		},
 
 
-		// Getter for _draw object
-		getDrawObject: function ()
+		// Getter for _drawingHappening object
+		getDrawingStatusObject: function ()
 		{
 			return _drawing;
 		},
-		
-		
+
+
+		// Getter for _draw object
+		getDrawObject: function ()
+		{
+			return _draw;
+		},
+
+
 		// Function to determine if the device is a touch device
 		isTouchDevice: function ()
 		{
 			// See https://stackoverflow.com/a/13470899/180733
 			return 'ontouchstart' in window || navigator.msMaxTouchPoints;		// https://stackoverflow.com/a/13470899/180733
 		},
-		
-		
+
+
 		// Password protection; this is intended to provide a simple, basic level of protection only
 		passwordProtection: function ()
 		{
