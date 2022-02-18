@@ -4451,9 +4451,9 @@ var layerviewer = (function ($) {
 				_draw.add (defaultFeature);
 			}
 			
-			// Enable the polygon drawing when the button is clicked
+			// Enable polygon/line drawing when the button is clicked
 			$('body').on ('click', '.draw.area, .draw.line', function () {
-				// Clear any existing features - allow only a single polygon at present
+				// Clear any existing features - allow only a single feature at present
 				// #!# Remove this when the server-side allows multiple polygons
 				_draw.deleteAll ();
 
@@ -4466,9 +4466,9 @@ var layerviewer = (function ($) {
 				_draw.changeMode (drawMode);
 			});
 
-			// Enable the line drawing mode
+			// Enable point drawing when the button is clicked
 			$('body').on('click', '.draw.point', function () {
-				// Clear any existing features - allow only a single polygon at present
+				// Clear any existing features - allow only a single feature at present
 				_draw.deleteAll ();
 
 				// Set state
