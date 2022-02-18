@@ -4452,20 +4452,33 @@ var layerviewer = (function ($) {
 			}
 			
 			// Enable the polygon drawing when the button is clicked
-			$('.draw.area, .draw.line').click (function () {
-				
+			$('body').on ('click', '.draw.area, .draw.line', function () {
 				// Clear any existing features - allow only a single polygon at present
 				// #!# Remove this when the server-side allows multiple polygons
 				_draw.deleteAll ();
-				
+
 				// Set state
 				_drawing.happening = true;
 				layerviewer.disablePopupHandlers ();
-				
+
 				// Start drawing
 				var drawMode = (geometryType == 'Polygon' ? 'draw_polygon' : 'draw_line_string');	// See: https://github.com/mapbox/mapbox-gl-draw/blob/main/docs/API.md#modes
 				_draw.changeMode (drawMode);
 			});
+
+			// Enable the line drawing mode
+			$('body').on('click', '.draw.point', function () {
+				// Clear any existing features - allow only a single polygon at present
+				_draw.deleteAll ();
+
+				// Set state
+				_drawing.happening = true;
+				layerviewer.disablePopupHandlers ();
+
+				// Start drawing
+				_draw.changeMode ('draw_point');
+			});
+
 			
 			// Handle created features
 			function updateArea (e) {
