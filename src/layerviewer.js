@@ -681,7 +681,7 @@ var layerviewer = (function ($) {
 				});
 			});
 			
-			// If an ID is supplied in the URL, load it 
+			// If an ID is supplied in the URL, load it
 			layerviewer.loadIdFromUrl (urlParameters);
 			
 			// Toggle map data layers on/off when checkboxes changed
@@ -5281,6 +5281,10 @@ var layerviewer = (function ($) {
 			
 			// Enable the layer
 			layerviewer.enableLayer (layerId);
+			
+			// Show the data
+			// #!# This should not be necessary, but somewhere within the enableLayer () tree, the data is not being set
+			layerviewer.showCurrentData (layerId, data, '_fixed');
 		},
 		
 		
