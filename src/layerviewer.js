@@ -3057,7 +3057,7 @@ var layerviewer = (function ($) {
 		{
 			// Define the initial GeoJSON state
 			var data = {type: 'FeatureCollection', 'features': []};	// Empty GeoJSON; see: https://github.com/mapbox/mapbox-gl-js/issues/5986
-			if (_layerConfig[layerId].data !== false) {
+			if (_layerConfig[layerId].hasOwnProperty ('data') && _layerConfig[layerId].data !== false) {
 				var data = _layerConfig[layerId].data;
 			}
 			
