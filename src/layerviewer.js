@@ -521,21 +521,7 @@ var layerviewer = (function ($) {
 	var _geolocationAvailable = false; // Store geolocation availability, to automatically disable location tracking if user has not selected the right permissions
 	var _customPanningIndicatorAction = false; // Custom function that can be run on click action panning on and off, i.e. to control the visual state of a custom panning button
 	var _customGeolocationButtonAction = false; // Custom function that can be run on click event on geolocation control, i.e. to control the visual state of a custom geolocation control
-	var _drawing = { // Object to control drawing, accessible externally to LayerViewer via registering a listener
-		happeningInternal: false,
-		happeningListener: function (val) { },
-		set happening(val) {
-			this.happeningInternal = val;
-			this.happeningListener(val);
-		},
-		get happening() {
-			return this.happeningInternal;
-		},
-		registerListener: function (listener) {
-			this.happeningListener = listener;
-		}
-	}
-
+	var _drawing = {} // Object to control drawing, accessible externally to LayerViewer via registering a listener; structure defined in drawing () function
 	var _draw = null; // Store the Mapbox draw object
 	var _popupClickHandlers = {};
 	
@@ -4372,6 +4358,22 @@ var layerviewer = (function ($) {
 		// Drawing functionality, wrapping mapbox-gl-draw
 		drawing: function (targetField, fragmentOnly, defaultValueString, geometryType)
 		{
+			// Define the structure
+			_drawing = {
+				happeningInternal: false,
+				happeningListener: function (val) { },
+				set happening (val) {
+					this.happeningInternal = val;
+					this.happeningListener (val);
+				},
+				get happening () {
+					return this.happeningInternal;
+				},
+				registerListener: function (listener) {
+					this.happeningListener = listener;
+				}
+			};
+			
 			// Disable drawing on mobile, as it interferes with popups, pending workaround for https://github.com/mapbox/mapbox-gl-draw/issues/617
 			if (_isTouchDevice) {return;}
 			
