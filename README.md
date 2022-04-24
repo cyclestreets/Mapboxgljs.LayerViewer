@@ -41,9 +41,9 @@ Layers and settings are defined using a simple, high-level, declarative structur
 ## Examples
 
 - [CycleStreets Bikedata](https://github.com/cyclestreets/bikedata/)
-- [CyIPT](https://github.com/cyipt/cyipt-website/)
 - [CycleStreets mobile web UI](https://github.com/cyclestreets/mobileweb/)
 - [ActDev alpha map UI](https://github.com/cyipt/actdev-ui/)
+- [Low Traffic Neighbourhoods](https://www.lowtrafficneighbourhoods.org/)
 
 
 ## License and copyright
