@@ -1,0 +1,9 @@
+{
+  "name": "Mapboxgljs.LayerViewer",
+  "version": "1.0.0",
+  "description": "UI framework for showing multiple layers in Mapbox GL JS",
+  "main": "src/layerviewer.js",
+  "repository": "https://github.com/cyclestreets/Mapboxgljs.LayerViewer/",
+  "author": "CycleStreets Ltd",
+  "license": "GPL-3.0-only"
+}

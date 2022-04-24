@@ -38,6 +38,13 @@ Layers and settings are defined using a simple, high-level, declarative structur
 - Clustering support
 
 
+## Install dependencies
+
+```
+yarn install
+``
+
+
 ## Examples
 
 - [CycleStreets Bikedata](https://github.com/cyclestreets/bikedata/)
