@@ -5,5 +5,20 @@
   "main": "src/layerviewer.js",
   "repository": "https://github.com/cyclestreets/Mapboxgljs.LayerViewer/",
   "author": "CycleStreets Ltd",
-  "license": "GPL-3.0-only"
+  "license": "GPL-3.0-only",
+  "dependencies": {
+    "@benmajor/jquery-touch-events": "^2.0.3",
+    "@hughsk/fulltilt": "^0.7.1",
+    "@mapbox/geojson-extent": "^1.0.1",
+    "@mapbox/mapbox-gl-draw": "^1.3.0",
+    "@mapbox/togeojson": "^0.16.0",
+    "geojson": "^0.5.0",
+    "jquery": "^3.6.0",
+    "js-cookie": "^3.0.1",
+    "jssha": "^3.2.0",
+    "leaflet": "^1.8.0",
+    "mapbox-gl": "^2.8.2",
+    "papaparse": "^5.3.2",
+    "vex-js": "^4.1.0"
+  }
 }
