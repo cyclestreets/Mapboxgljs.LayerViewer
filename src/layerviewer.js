@@ -1462,14 +1462,40 @@ var layerviewer = (function ($) {
 		setFormValues: function (formParameters)
 		{
 			// Set form values, where they exist
-			var elementPath;
+			var elementPathsTry;
+			var elementWidgets;
+			var valueList;
 			$.each (formParameters, function (layerId, values) {
 				if (_layerConfig[layerId]) {	// Validate against layer registry
 					$.each (values, function (inputName, value) {
-						elementPath = '#sections #' + layerId + ' :input[name="' + inputName + '"]';
-						if ($(elementPath).length) {
-							$(elementPath).val(value);
-						}
+						
+						// Element paths may have [] appended, e.g. for checkboxes
+						elementPathsTry = [
+							'#sections #' + layerId + ' :input[name="' + inputName + '"]',
+							'#sections #' + layerId + ' :input[name="' + inputName + '[]' + '"]'
+						];
+						
+						// Try each path variant
+						$.each (elementPathsTry, function (index, elementPath) {
+							elementWidgets = $(elementPath).length;
+							if (elementWidgets) {
+								
+								// Handle standard singular elements
+								if (elementWidgets == 1) {
+									$(elementPath).val(value);
+								}
+								
+								// Handle checkboxes, which have more than one widget each with matching name
+								if (elementWidgets > 1) {
+									valueList = value.split (',');
+									$.each ($(elementPath), function (index, subElement) {
+										if (valueList.indexOf (subElement.value) !== -1) {		// i.e. if present
+											$(subElement).attr ('checked', true);
+										}
+									});
+								}
+							}
+						});
 					});
 				}
 			});
