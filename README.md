@@ -42,7 +42,7 @@ Layers and settings are defined using a simple, high-level, declarative structur
 
 ```
 yarn install
-``
+```
 
 
 ## Examples
