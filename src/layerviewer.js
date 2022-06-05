@@ -4754,6 +4754,14 @@ var layerviewer = (function ($) {
 		},
 		
 		
+		// Function to convert newlines to linebreak
+		nl2br: function (string)
+		{
+			if (typeof string !== 'string') {return string;}
+			return string.replace (/\n/g, '<br />');
+		},
+		
+		
 		// Function to make first character upper-case; see: https://stackoverflow.com/a/1026087/180733
 		ucfirst: function (string)
 		{
