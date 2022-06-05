@@ -612,6 +612,14 @@ var layerviewer = (function ($) {
 			// Add slider value display support
 			layerviewer.sliderValueDisplayHandler ();
 			
+			// Determine the enabled layers
+			layerviewer.determineLayerStatus ();
+			
+			// Determine the initial form state as specified in the fixed HTML, irrespective of URL-supplied values, for all layers
+			$.each (_layers, function (layerId, layerEnabled) {
+				_virginFormState[layerId] = layerviewer.parseFormValues (layerId);
+			});
+			
 			// Set form values specified in the URL
 			layerviewer.setFormValues (urlParameters.formParameters);
 			
@@ -645,14 +653,6 @@ var layerviewer = (function ($) {
 			// Enable feedback handler
 			layerviewer.feedbackHandler ();
 			
-			// Determine the enabled layers
-			layerviewer.determineLayerStatus ();
-			
-			// Determine the initial form state as specified in the fixed HTML, for all layers
-			$.each (_layers, function (layerId, layerEnabled) {
-				_virginFormState[layerId] = layerviewer.parseFormValues (layerId);
-			});
-
 			// Populate each layer with popupLabels if fieldLabelsCsv is provided
 			$.each (_layers, function (layerId, layerEnable) {
 				layerviewer.populateFieldLabels (layerId);
@@ -1230,54 +1230,80 @@ var layerviewer = (function ($) {
 		// Function to convert form parameters to a URL slug
 		formParametersToUrlSlug: function ()
 		{
-			// Copy (clone) the parameter state for the purposes of determining the URL
-			var urlParameters = $.extend (true, {}, _parameters);	// See: https://stackoverflow.com/a/12690181/180733
-			
 			// Define system-wide parameters that are not layer-specific
 			var genericParameters = ['bbox', 'boundary'];
 			
 			// Filter for enabled layers
 			var enabledLayers = [];
-			var component;
-			
+			var urlComponent;
+			var urlParameters;
+			var submittedValue;
 			$.each (_layers, function (layerId, isEnabled) {
 				if (isEnabled) {
 					
-					// Start with the layer ID
-					component = layerId;
+					// Start an array of URL parameters for this layer; this will remain empty if the form matches its virgin state
+					urlParameters = {};
 					
-					// Deal with parameters for each layer
-					if (urlParameters[layerId]) {
-						
-						// Omit generic parameters which the API will automatically receive
-						$.each (genericParameters, function (index, parameter) {
-							if (urlParameters[layerId].hasOwnProperty (parameter)) {
-								delete urlParameters[layerId][parameter];
+					// Determine the difference in the form parameters against the virgin state, to keep the URL as short as possible
+					// This has to compute the difference of the virgin form state and the supplied parameters
+					// This must be done in BOTH directions, as otherwise a select with a non-empty default parameter like '20' would not register a change to the empty '' first value
+					// E.g. for:
+					//	 Virgin form state:  {field:casualties: 'Cyclist', field:speed_limit: '20', foo: 'bar'}
+					//	 URL parameters array:  {field:casualties: 'Cyclist', since: '2020-01-01', field:road_type: '2', foo: 'qux'}
+					// the result should be:
+					//   foo=qux,field:speed_limit=,since=2020-01-01,field:road_type=2
+					
+					// Firstly, where the virgin form field is present in the submitted parameters, but the submitted value is not the default, include the submitted value
+					// In the example above, this applies to field 'foo'
+					$.each (_virginFormState[layerId], function (field, virginValue) {
+						if (_parameters[layerId].hasOwnProperty (field)) {
+							submittedValue = _parameters[layerId][field];
+							if (submittedValue !== virginValue) {
+								urlParameters[field] = submittedValue;
 							}
-						});
-						
-						// Omit parameters whose value matches the virgin form state, to keep the URL as short as possible
-						$.each (_virginFormState[layerId], function (parameter, virginValue) {
-							if (urlParameters[layerId].hasOwnProperty (parameter) && (urlParameters[layerId][parameter] == virginValue)) {
-								delete urlParameters[layerId][parameter];
-							} else {
-								urlParameters[layerId][parameter] = '';		// Deal with scenario of e.g. checkbox ticked by default, and unticked, thus not being the default but not being present in the form parameter list
-							}
-						});
-						
-						// If there are now parameters remaining, add these to this layer's component
-						if (!$.isEmptyObject (urlParameters[layerId])) {
-							component += ':' + $.param (urlParameters[layerId]);
 						}
+					});
+					
+					// Next, where the virgin form field is not present in the submitted parameters at all, it has been changed from a non-empty default to an empty string, so include the empty value
+					// In the example above, this applies to field 'field:speed_limit'
+					$.each (_virginFormState[layerId], function (field, virginValue) {
+						if (!_parameters[layerId].hasOwnProperty (field)) {
+							urlParameters[field] = '';		// Present but empty
+						}
+					});
+					
+					// Lastly, looking conversely - where a submitted parameters field is not present in the virgin form fields, include the submitted value
+					// In the example above, this applies to fields 'since' and 'field:road_type'
+					$.each (_parameters[layerId], function (field, submittedValue) {
+						if (!_virginFormState[layerId].hasOwnProperty (field)) {
+							urlParameters[field] = submittedValue;
+						}
+					});
+					
+					// Strip out generic parameters which the API will automatically receive
+					$.each (genericParameters, function (index, field) {
+						if (urlParameters.hasOwnProperty (field)) {
+							delete urlParameters[field];
+						}
+					});
+					
+					// Assemble the URL component representing this layer, combining the layer name with any parameters if present, e.g. 'collisions' or 'collisions:foo=bar,...'
+					urlComponent = layerId;
+					if (!$.isEmptyObject (urlParameters)) {
+						urlComponent += ':' + $.param (urlParameters);
 					}
 					
 					// Register the component
-					enabledLayers.push (component);
+					enabledLayers.push (urlComponent);
 				}
 			});
 			
 			// Construct the URL slug, joining by comma
-			var urlSlug = enabledLayers.join(',') + (enabledLayers.length ? '/' : '');
+			var urlSlug = enabledLayers.join (',') + (enabledLayers.length ? '/' : '');
+			
+			//console.log ('Virgin form state: ', _virginFormState);
+			//console.log ('URL parameters array: ', _parameters);
+			//console.log ('Resulting URL slug: ', urlSlug);
 			
 			// Return the URL slug
 			return urlSlug;
