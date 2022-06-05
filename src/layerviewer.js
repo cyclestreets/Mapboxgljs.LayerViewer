@@ -1256,7 +1256,7 @@ var layerviewer = (function ($) {
 					// Firstly, where the virgin form field is present in the submitted parameters, but the submitted value is not the default, include the submitted value
 					// In the example above, this applies to field 'foo'
 					$.each (_virginFormState[layerId], function (field, virginValue) {
-						if (_parameters[layerId].hasOwnProperty (field)) {
+						if (_parameters.hasOwnProperty (layerId) && _parameters[layerId].hasOwnProperty (field)) {
 							submittedValue = _parameters[layerId][field];
 							if (submittedValue !== virginValue) {
 								urlParameters[field] = submittedValue;
@@ -1267,7 +1267,7 @@ var layerviewer = (function ($) {
 					// Next, where the virgin form field is not present in the submitted parameters at all, it has been changed from a non-empty default to an empty string, so include the empty value
 					// In the example above, this applies to field 'field:speed_limit'
 					$.each (_virginFormState[layerId], function (field, virginValue) {
-						if (!_parameters[layerId].hasOwnProperty (field)) {
+						if (_parameters.hasOwnProperty (layerId) && !_parameters[layerId].hasOwnProperty (field)) {
 							urlParameters[field] = '';		// Present but empty
 						}
 					});
