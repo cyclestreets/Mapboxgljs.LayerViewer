@@ -4108,7 +4108,7 @@ var layerviewer = (function ($) {
 			var popupFeatureId = null;
 			
 			// Define a popup click handler for this layer; this is registered to a property so that it can be disabled using map.off()/map.on(); see: https://stackoverflow.com/a/45665068/180733
-			_popupClickHandlers[layerId] = function (e) {
+			_popupClickHandlers[layerVariantId] = function (e) {
 				var feature = e.features[0];
 				
 				// Remove the popup if already opened and clicked again (implied close)
@@ -4127,7 +4127,7 @@ var layerviewer = (function ($) {
 				// Set the location of the click; for a point, look up the feature's actual location
 				var coordinates = e.lngLat;	// Actual lat/lon clicked on
 				if (geometryType == 'Point') {
-					coordinates = feature.geometry.coordinates.slice();	// https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/
+					coordinates = feature.geometry.coordinates.slice ();	// https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/
 				}
 				
 				// Workaround to fix up string "null" to null; see: https://github.com/mapbox/vector-tile-spec/issues/62
@@ -4170,7 +4170,7 @@ var layerviewer = (function ($) {
 			};
 			
 			// Register the handler
-			_map.on ('click', layerId, _popupClickHandlers[layerId]);
+			_map.on ('click', layerVariantId, _popupClickHandlers[layerVariantId]);
 		},
 		
 		
