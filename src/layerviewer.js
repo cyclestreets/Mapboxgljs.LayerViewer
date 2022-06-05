@@ -3683,7 +3683,7 @@ var layerviewer = (function ($) {
 			
 			// Convert from flat JSON to GeoJSON if required
 			if (_layerConfig[layerId].flatJson) {
-				data = GeoJSON.parse(data, {Point: _layerConfig[layerId].flatJson});
+				data = GeoJSON.parse (data, {Point: _layerConfig[layerId].flatJson});
 				//console.log(data);
 			}
 			
@@ -3809,6 +3809,9 @@ var layerviewer = (function ($) {
 					// Initiate the popup
 					var popup = new mapboxgl.Popup ({className: layerId})
 						.setHTML (popupContentHtml);
+					
+					// Register the popup so it can be removed on redraw
+					_popups[layerId].push (popup);
 					
 					// Determine whether to use a local fixed icon, a local icon set, or an icon field in the data, or no marker at all (if no iconUrl)
 					var iconUrl = layerviewer.getIconUrl (layerId, feature);
