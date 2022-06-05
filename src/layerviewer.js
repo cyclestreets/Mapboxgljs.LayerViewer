@@ -4632,25 +4632,40 @@ var layerviewer = (function ($) {
 				layerviewer.removePopups (layerId);
 			});
 			
-			// Disable the popup click handler for each layer
+			// Disable the popup click handler for each variant layer
+			var layerVariantId;
 			$.each (_layers, function (layerId, layerEnabled) {
-				if (_popupClickHandlers.hasOwnProperty (layerId)) {
-					_map.off ('click', layerId, _popupClickHandlers[layerId]);
-				}
+				$.each (_defaultStyles, function (geometryType, styleIgnored) {
+					layerVariantId = layerviewer.layerVariantId (layerId, geometryType);
+					if (_popupClickHandlers.hasOwnProperty (layerVariantId)) {
+						_map.off ('click', layerVariantId, _popupClickHandlers[layerVariantId]);
+					}
+				});
 			});
+			
+			// #!# Currently there is no support for popups added using .setPopup in drawIcons ()
 		},
 		
 		
 		// Re-enable click handler for underlying layers
 		reenablePopupHandlers: function ()
 		{
-			// Re-enable the popup click handler for each layer
-			setTimeout (function () {		// Short delay as the existing popup click handler will trigger first
+			// Short delay as the existing popup click handler will trigger first
+			setTimeout (function () {
+				
+				// Re-enable the popup click handler for each variant layer
+				var layerVariantId;
 				$.each (_layers, function (layerId, layerEnabled) {
-					if (_popupClickHandlers.hasOwnProperty (layerId)) {
-						_map.on ('click', layerId, _popupClickHandlers[layerId]);
-					}
+					$.each (_defaultStyles, function (geometryType, styleIgnored) {
+						layerVariantId = layerviewer.layerVariantId (layerId, geometryType);
+						if (_popupClickHandlers.hasOwnProperty (layerVariantId)) {
+							_map.on ('click', layerVariantId, _popupClickHandlers[layerVariantId]);
+						}
+					});
 				});
+				
+				// #!# Currently there is no support for popups added using .setPopup in drawIcons ()
+				
 			}, 200);
 		},
 		
