@@ -283,7 +283,7 @@ var layerviewer = (function ($) {
 			fitInitialPadding: false,	// Defaults to 20
 			
 			// Whether to zoom initially upon loading
-			zoomInitial: false,
+			zoomInitialMin: false,
 			
 			// Minimum zoom required for this layer
 			minZoom: false,
@@ -2521,8 +2521,10 @@ var layerviewer = (function ($) {
 			}
 			
 			// Perform initial zoom, if required
-			if (_layerConfig[layerId].zoomInitial) {
-				_map.flyTo ({zoom: _layerConfig[layerId].zoomInitial});
+			if (_layerConfig[layerId].zoomInitialMin) {
+				if (_map.getZoom () < _layerConfig[layerId].zoomInitialMin) {
+					_map.flyTo ({zoom: _layerConfig[layerId].zoomInitialMin});
+				}
 			}
 			
 			// Register to show/hide message based on zoom level
