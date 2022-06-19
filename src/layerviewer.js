@@ -4637,6 +4637,13 @@ var layerviewer = (function ($) {
 			// Disable the popup click handler for each variant layer
 			var layerVariantId;
 			$.each (_layers, function (layerId, layerEnabled) {
+				
+				// Direct layer IDs, e.g. vector layers, e.g. 'foo'
+				if (_popupClickHandlers.hasOwnProperty (layerId)) {
+					_map.off ('click', layerId, _popupClickHandlers[layerId]);
+				}
+				
+				// Variant layers, e.g. GeoJSON layers, e.g. 'foo_point', 'foo_linestring', 'foo_polygon'
 				$.each (_defaultStyles, function (geometryType, styleIgnored) {
 					layerVariantId = layerviewer.layerVariantId (layerId, geometryType);
 					if (_popupClickHandlers.hasOwnProperty (layerVariantId)) {
@@ -4658,6 +4665,13 @@ var layerviewer = (function ($) {
 				// Re-enable the popup click handler for each variant layer
 				var layerVariantId;
 				$.each (_layers, function (layerId, layerEnabled) {
+					
+					// Direct layer IDs, e.g. vector layers, e.g. 'foo'
+					if (_popupClickHandlers.hasOwnProperty (layerId)) {
+						_map.on ('click', layerId, _popupClickHandlers[layerId]);
+					}
+					
+					// Variant layers, e.g. GeoJSON layers, e.g. 'foo_point', 'foo_linestring', 'foo_polygon'
 					$.each (_defaultStyles, function (geometryType, styleIgnored) {
 						layerVariantId = layerviewer.layerVariantId (layerId, geometryType);
 						if (_popupClickHandlers.hasOwnProperty (layerVariantId)) {
