@@ -1049,6 +1049,11 @@
   resolved "https://registry.yarnpkg.com/@tmcw/togeojson/-/togeojson-5.2.1.tgz#3e9f08d521d30c968ea4a489116c76efe34a0a1c"
   integrity sha512-fEmZ29r5SiCqhQTC0mzIDgw2TC+zJIyhTac8hFHpvFFPnqGERM3d94dbbtzor4latESCX+uSBdBJyQ33nwkARg==
 
+"@types/geojson@^7946.0.8":
+  version "7946.0.8"
+  resolved "https://registry.yarnpkg.com/@types/geojson/-/geojson-7946.0.8.tgz#30744afdb385e2945e22f3b033f897f76b1f12ca"
+  integrity sha512-1rkryxURpr6aWP7R786/UQOkJ3PcpQiWkAXBmdWc7ryFWqN6a4xfK7BtjXvFBKO9LjQ+MWQSWxYeZX1OApnArA==
+
 ansi-styles@^3.2.1:
   version "3.2.1"
   resolved "https://registry.yarnpkg.com/ansi-styles/-/ansi-styles-3.2.1.tgz#41fbb20243e50b12be0f04b8dedbf07520ce841d"
