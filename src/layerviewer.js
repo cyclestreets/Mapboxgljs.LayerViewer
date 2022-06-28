@@ -243,7 +243,10 @@ var layerviewer = (function ($) {
 		popupsRoundingDP: 0,
 
 		// Clicking "Clear line" also stops the drawing
-		stopDrawingWhenClearingLine: true
+		stopDrawingWhenClearingLine: true,
+		
+		// Additional layers, e.g. drawn polygons, that should be reset to be on top after layer changes
+		forceTopLayers: []
 	};
 	
 	// Layer definitions, which should be overriden by being supplied as an argument by the calling application
@@ -2542,20 +2545,20 @@ var layerviewer = (function ($) {
 			var isGeojsonLayer = (!_layerConfig[layerId].heatmap && !_layerConfig[layerId].vector && !_layerConfig[layerId].tileLayer);
 			if (isGeojsonLayer) {
 				layerviewer.addGeojsonLayer (layerId);
-				layerviewer.drawingLayerResetOrder ();
+				layerviewer.layersOrderResetTop ();
 			}
 			
 			// Native vector layer, assumed to be static (i.e. not dependent on map moves)
 			if (_layerConfig[layerId].vector) {
 				layerviewer.addVectorLayer (_layerConfig[layerId].vector, layerId);
-				layerviewer.drawingLayerResetOrder ();
+				layerviewer.layersOrderResetTop ();
 				return;		// Layer is static so no getData calls
 			}
 			
 			// Heatmap layer
 			if (_layerConfig[layerId].heatmap) {
 				layerviewer.addHeatmapLayer (layerId);
-				layerviewer.drawingLayerResetOrder ();
+				layerviewer.layersOrderResetTop ();
 			}
 			
 			// Fetch the data
@@ -4520,7 +4523,7 @@ var layerviewer = (function ($) {
 				_draw.deleteAll ();
 				
 				// Move the drawing layer (actually sublayers) to the top
-				layerviewer.drawingLayerResetOrder ();
+				layerviewer.layersOrderResetTop ();
 				
 				// Set state
 				_drawing.happening = true;
@@ -4620,11 +4623,18 @@ var layerviewer = (function ($) {
 		},
 		
 		
-		// Function to move the drawing layer (actually sublayers) to the top
-		drawingLayerResetOrder: function ()
+		// Function to move specified layers and the drawing layer (actually sublayers) to the top
+		layersOrderResetTop: function ()
 		{
+			// Ensure any additional topmost layers are moved to the front
+			$.each (_settings.forceTopLayers, function (index, layerId) {
+				if (_map.getLayer (layerId)) {
+					_map.moveLayer (layerId);
+				}
+			});
+			
 			// Add each gl-draw-* layer to the top, if present; see: https://docs.mapbox.com/mapbox-gl-js/api/map/#map#movelayer
-			// #!# Doesn't actually work on subsequent calls after a layer has been removed and then readded
+			// #!# Doesn't actually work on subsequent calls after a layer has been removed and then re-added
 			$.each (_map.getStyle().layers, function (index, layer) {
 				if (layer.id.startsWith ('gl-draw-')) {
 					_map.moveLayer (layer.id);		// E.g. gl-draw-polygon-stroke-active.cold, gl-draw-polygon-and-line-vertex-halo-active.cold, etc.
