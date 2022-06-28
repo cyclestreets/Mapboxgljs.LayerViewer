@@ -4634,7 +4634,6 @@ var layerviewer = (function ($) {
 			});
 			
 			// Add each gl-draw-* layer to the top, if present; see: https://docs.mapbox.com/mapbox-gl-js/api/map/#map#movelayer
-			// #!# Doesn't actually work on subsequent calls after a layer has been removed and then re-added
 			$.each (_map.getStyle().layers, function (index, layer) {
 				if (layer.id.startsWith ('gl-draw-')) {
 					_map.moveLayer (layer.id);		// E.g. gl-draw-polygon-stroke-active.cold, gl-draw-polygon-and-line-vertex-halo-active.cold, etc.
