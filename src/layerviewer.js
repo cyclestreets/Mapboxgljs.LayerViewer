@@ -45,6 +45,9 @@ var layerviewer = (function ($) {
 		// Enable/disable 3D terrain (Mapbox GL JS v.2.0.0+)
 		enable3dTerrain: false,
 		
+		// Enable placenames to be above layers
+		placenamesOnTop: true,
+		
 		// Enable/disable drawing feature
 		enableDrawing: true,
 		drawingGeometryType: 'Polygon',		// Or LineString
@@ -99,17 +102,20 @@ var layerviewer = (function ($) {
 			mapboxstreets: {
 				vectorTiles: 'mapbox://styles/mapbox/streets-v11',
 				label: 'Streets',
-				description: 'A general-purpose map that emphasizes legible styling of road and transit networks.'
+				description: 'A general-purpose map that emphasizes legible styling of road and transit networks.',
+				placenamesLayers: ['country-label', 'state-label', 'settlement-label', 'settlement-subdivision-label']
 			},
 			light: {
 				vectorTiles: 'mapbox://styles/mapbox/light-v10',
 				label: 'Light',
-				description: 'A light-fade background map.'
+				description: 'A light-fade background map.',
+				placenamesLayers: ['country-label', 'state-label', 'settlement-label', 'settlement-subdivision-label']
 			},
 			night: {
 				vectorTiles: 'mapbox://styles/mapbox/dark-v10',
 				label: 'Night',
-				description: 'A subtle, full-featured map designed to provide minimalist geographic context.'
+				description: 'A subtle, full-featured map designed to provide minimalist geographic context.',
+				placenamesLayers: ['country-label', 'state-label', 'settlement-label', 'settlement-subdivision-label']
 			},
 			satellite: {
 				vectorTiles: 'mapbox://styles/mapbox/satellite-v9',
@@ -127,7 +133,8 @@ var layerviewer = (function ($) {
 			osoutdoor: {
 				vectorTiles: 'https://s3-eu-west-1.amazonaws.com/tiles.os.uk/styles/open-zoomstack-outdoor/style.json',
 				label: 'OS outdoor',
-				description: 'Display footpaths, rights of way, open access land and the vegetation on the land.'
+				description: 'Display footpaths, rights of way, open access land and the vegetation on the land.',
+				placenamesLayers: ['Country names', 'Capital City names', 'City names', 'Town names']
 			},
 			osopendata: {
 				tiles: 'https://{s}.tile.cyclestreets.net/osopendata/{z}/{x}/{y}.png',
@@ -135,7 +142,8 @@ var layerviewer = (function ($) {
 				attribution: 'Contains Ordnance Survey data &copy; Crown copyright and database right 2010',
 				tileSize: 256,
 				label: 'OS Open Data',
-				description: "The OS's most detailed, street-level mapping product available, using open data sources."
+				description: "The OS's most detailed, street-level mapping product available, using open data sources.",
+				placenamesLayers: ['Country names', 'Capital City names', 'City names', 'Town names']
 			},
 			bartholomew: {
 				tiles: 'https://{s}.tile.cyclestreets.net/bartholomew/{z}/{x}/{y}@2x.png',
@@ -4626,6 +4634,21 @@ var layerviewer = (function ($) {
 		// Function to move specified layers and the drawing layer (actually sublayers) to the top
 		layersOrderResetTop: function ()
 		{
+			//console.log (_map.getStyle().layers);
+			
+			// If required, ensure place names are on top
+			if (_settings.placenamesOnTop) {
+				$.each (_settings.tileUrls, function (tileLayerId, tileLayer) {
+					if (tileLayer.hasOwnProperty ('placenamesLayers')) {
+						$.each (tileLayer.placenamesLayers, function (index, layerId) {
+							if (_map.getLayer (layerId)) {
+								_map.moveLayer (layerId);
+							}
+						});
+					}
+				});
+			}
+			
 			// Ensure any additional topmost layers are moved to the front
 			$.each (_settings.forceTopLayers, function (index, layerId) {
 				if (_map.getLayer (layerId)) {
