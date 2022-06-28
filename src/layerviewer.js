@@ -2542,17 +2542,20 @@ var layerviewer = (function ($) {
 			var isGeojsonLayer = (!_layerConfig[layerId].heatmap && !_layerConfig[layerId].vector && !_layerConfig[layerId].tileLayer);
 			if (isGeojsonLayer) {
 				layerviewer.addGeojsonLayer (layerId);
+				layerviewer.drawingLayerResetOrder ();
 			}
 			
 			// Native vector layer, assumed to be static (i.e. not dependent on map moves)
 			if (_layerConfig[layerId].vector) {
 				layerviewer.addVectorLayer (_layerConfig[layerId].vector, layerId);
+				layerviewer.drawingLayerResetOrder ();
 				return;		// Layer is static so no getData calls
 			}
 			
 			// Heatmap layer
 			if (_layerConfig[layerId].heatmap) {
 				layerviewer.addHeatmapLayer (layerId);
+				layerviewer.drawingLayerResetOrder ();
 			}
 			
 			// Fetch the data
@@ -4515,7 +4518,10 @@ var layerviewer = (function ($) {
 				// Clear any existing features - allow only a single feature at present
 				// #!# Remove this when the server-side allows multiple polygons
 				_draw.deleteAll ();
-
+				
+				// Move the drawing layer (actually sublayers) to the top
+				layerviewer.drawingLayerResetOrder ();
+				
 				// Set state
 				_drawing.happening = true;
 				layerviewer.disablePopupHandlers ();
@@ -4611,6 +4617,19 @@ var layerviewer = (function ($) {
 				//
 			});
 			*/
+		},
+		
+		
+		// Function to move the drawing layer (actually sublayers) to the top
+		drawingLayerResetOrder: function ()
+		{
+			// Add each gl-draw-* layer to the top, if present; see: https://docs.mapbox.com/mapbox-gl-js/api/map/#map#movelayer
+			// #!# Doesn't actually work on subsequent calls after a layer has been removed and then readded
+			$.each (_map.getStyle().layers, function (index, layer) {
+				if (layer.id.startsWith ('gl-draw-')) {
+					_map.moveLayer (layer.id);		// E.g. gl-draw-polygon-stroke-active.cold, gl-draw-polygon-and-line-vertex-halo-active.cold, etc.
+				}
+			});
 		},
 
 
