@@ -374,7 +374,7 @@ var layerviewer = (function ($) {
 			// Legend, either array of values (as same format as polygonColourStops/lineColourStops), or boolean true to use polygonColourStops/lineColourStops if either exists (in that order of precedence)
 			legend: true,
 			
-			// Polygon style; currently supported values are 'grid' (blue boxes with dashed lines, intended for tessellating data), 'green', 'red', 'blue', or key/value pairs giving named colours if a polygonColourField is supplied
+			// Polygon style; currently supported values are 'grid' (blue boxes with dashed lines, intended for tessellating data), 'green', 'red', 'blue'
 			polygonStyle: 'grid',
 			polygonColourField: false,
 			polygonColourStops: [
@@ -382,6 +382,10 @@ var layerviewer = (function ($) {
 				[50, '#e27474'],
 				[0, '#61fa61']
 			],
+			polygonColourValues: {
+				'foo': '#ff0',
+				'bar': '#b2beb5'
+			},
 			fillOpacity: 0.6
 			
 			// A secondary API call, used to get a specific ID
@@ -419,7 +423,7 @@ var layerviewer = (function ($) {
 			streetview: true,
 			
 			// Make lookups (Popups / line colour stops) dependent on the value of a specified request parameter
-			// Currently supported for: lineColourField, lineColourStops, lineWidthField, lineWidthStops, popupHtml, legend
+			// Currently supported for: lineColourField, lineColourStops, lineWidthField, lineWidthStops, polygonColourField, polygonColourValues, popupHtml, legend
 			// #!# This is currently a poor architecture; each supported config type has to be enabled deep in the execution tree, whereas this should be done as a single generic hit near the start of getData ()
 			sublayerParameter: false,
 			
@@ -3969,6 +3973,8 @@ var layerviewer = (function ($) {
 			var lineWidthField = layerviewer.sublayerableConfig ('lineWidthField', layerId);
 			var lineWidthStops = layerviewer.sublayerableConfig ('lineWidthStops', layerId);
 			var lineWidthValues = layerviewer.sublayerableConfig ('lineWidthValues', layerId);
+			var polygonColourField = layerviewer.sublayerableConfig ('polygonColourField', layerId);
+			var polygonColourValues = layerviewer.sublayerableConfig ('polygonColourValues', layerId);
 			
 			// Start styles
 			var styles = $.extend (true, {}, _defaultStyles);	// Clone
@@ -4019,18 +4025,18 @@ var layerviewer = (function ($) {
 			}
 			
 			// If we have polygonColourStops
-			if (_layerConfig[layerId].polygonColourField && _layerConfig[layerId].polygonColourStops) {
-				styles['Polygon']['paint']['fill-color'] = layerviewer.stopsExpression (_layerConfig[layerId].polygonColourField, _layerConfig[layerId].polygonColourStops.slice().reverse(), true, true);	// Reverse the original definition: https://stackoverflow.com/a/30610528/180733
+			if (polygonColourField && _layerConfig[layerId].polygonColourStops) {
+				styles['Polygon']['paint']['fill-color'] = layerviewer.stopsExpression (polygonColourField, _layerConfig[layerId].polygonColourStops.slice().reverse(), true, true);	// Reverse the original definition: https://stackoverflow.com/a/30610528/180733
 				styles['Polygon']['paint']['fill-outline-color'] = '#aaa';
 				if (_layerConfig[layerId].fillOpacity) {
 					styles['Polygon']['paint']['fill-opacity'] = _layerConfig[layerId].fillOpacity;
 				}
 				
-			// Set key,value colour field
-			} else if (_layerConfig[layerId].polygonColourField && _layerConfig[layerId].polygonStyle) {
-				styles['Polygon']['paint']['fill-color'] = layerviewer.valuesExpression (_layerConfig[layerId].polygonColourField, _layerConfig[layerId].polygonStyle, '#03f');
+			// Set polygon style from values
+			} else if (polygonColourField && polygonColourValues) {
+				styles['Polygon']['paint']['fill-color'] = layerviewer.valuesExpression (polygonColourField, polygonColourValues, '#03f');
 				
-			// Set polygon style if required: grid / fixed styles
+			// Set pre-defined polygon style if required: grid / fixed styles
 			} else if (_layerConfig[layerId].polygonStyle) {
 				switch (_layerConfig[layerId].polygonStyle) {
 					
