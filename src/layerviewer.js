@@ -344,8 +344,8 @@ var layerviewer = (function ($) {
 				[0, '#61fa61']
 			],
 			lineColourValues: {
-				'red': '#ff00',
-				'ash': '#b2beb5'
+				'foo': '#ff0000',
+				'bar': '#b2beb5'
 			},
 			
 			// Point/Line colour from API response, e.g. 'colour' value in API
@@ -3988,24 +3988,15 @@ var layerviewer = (function ($) {
 				styles['LineString']['paint']['line-color'] = _layerConfig[layerId].lineColour;
 			}
 			
-			// Set line colour from data if required; uses original 'stops' method, see: https://github.com/mapbox/mapbox-gl-js/commit/9ac35b1059ed5f9f7798c37700b52259ce9a815d#diff-bde08934db09c688e8b1d2c0a4d2bce0
+			// Set line colour from data if required
 			if (lineColourField && lineColourStops) {
 				styles['LineString']['paint']['line-color'] = layerviewer.stopsExpression (lineColourField, lineColourStops.slice().reverse());	// Reverse the original definition: https://stackoverflow.com/a/30610528/180733
 			}
 
 			// Set line colour from lookups, if required
 			if (lineColourField && lineColourValues) {
-				var styleDefinition = [];
-				styleDefinition.push ('case');
-				$.each (lineColourValues, function (key, value) {
-					styleDefinition.push (['==', ['get', lineColourField], key]);
-					styleDefinition.push (value);
-				});
-				styleDefinition.push (/* fallback: */ 'red');
-				styles['LineString']['paint']['line-color'] = styleDefinition;
+				styles['LineString']['paint']['line-color'] = layerviewer.valuesExpression (lineColourField, lineColourValues, 'red');
 			}
-			
-
 			
 			// Set point size if required
 			if (_layerConfig[layerId].pointSize) {
@@ -4024,14 +4015,7 @@ var layerviewer = (function ($) {
 			
 			// Set line width from lookups, if required
 			if (lineWidthField && lineWidthValues) {
-				var styleDefinition = [];
-				styleDefinition.push ('case');
-				$.each (lineWidthValues, function (key, value) {
-					styleDefinition.push (['==', ['get', lineWidthField], key]);
-					styleDefinition.push (value);
-				});
-				styleDefinition.push (/* fallback: */ 5);
-				styles['LineString']['paint']['line-width'] = styleDefinition;
+				styles['LineString']['paint']['line-width'] = layerviewer.valuesExpression (lineWidthField, lineWidthValues, 5);
 			}
 			
 			// If we have polygonColourStops
@@ -4044,15 +4028,7 @@ var layerviewer = (function ($) {
 				
 			// Set key,value colour field
 			} else if (_layerConfig[layerId].polygonColourField) {
-				// Construct the style definition; see e.g. https://stackoverflow.com/a/49611427 and https://docs.mapbox.com/mapbox-gl-js/example/cluster-html/
-				var styleDefinition = [];
-				styleDefinition.push ('case');
-				$.each (_layerConfig[layerId].polygonStyle, function (key, value) {
-					styleDefinition.push (['==', ['get', _layerConfig[layerId].polygonColourField], key]);
-					styleDefinition.push (value);
-				});
-				styleDefinition.push (/* fallback: */ '#03f');
-				styles['Polygon']['paint']['fill-color'] = styleDefinition;
+				styles['Polygon']['paint']['fill-color'] = layerviewer.valuesExpression (_layerConfig[layerId].polygonColourField, _layerConfig[layerId].polygonStyle, '#03f');
 				
 			// Set polygon style if required: grid / fixed styles
 			} else if (_layerConfig[layerId].polygonStyle) {
@@ -4268,6 +4244,27 @@ var layerviewer = (function ($) {
 						expression
 				];
 			}
+			
+			// Return the completed expression
+			return expression;
+		},
+		
+		
+		// Function to render a case expression; see e.g. https://stackoverflow.com/a/49611427 and https://docs.mapbox.com/mapbox-gl-js/example/cluster-html/
+		valuesExpression: function (property, values, fallback)
+		{
+			// Start the expression
+			var expression = [];
+			expression.push ('case');
+			
+			// Loop through each value
+			$.each (values, function (key, value) {
+				expression.push (['==', ['get', property], key]);
+				expression.push (value);
+			});
+			
+			// Add the fallback
+			expression.push (fallback);
 			
 			// Return the completed expression
 			return expression;
