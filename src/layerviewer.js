@@ -4027,7 +4027,7 @@ var layerviewer = (function ($) {
 				}
 				
 			// Set key,value colour field
-			} else if (_layerConfig[layerId].polygonColourField) {
+			} else if (_layerConfig[layerId].polygonColourField && _layerConfig[layerId].polygonStyle) {
 				styles['Polygon']['paint']['fill-color'] = layerviewer.valuesExpression (_layerConfig[layerId].polygonColourField, _layerConfig[layerId].polygonStyle, '#03f');
 				
 			// Set polygon style if required: grid / fixed styles
