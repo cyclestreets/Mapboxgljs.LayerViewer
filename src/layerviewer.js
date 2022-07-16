@@ -3139,7 +3139,7 @@ var layerviewer = (function ($) {
 		addFeatureTypeLayerSet: function (layerId)
 		{
 			// Assemble the styles definition
-			var styles = layerviewer.assembleStylesDefinition (layerId);
+			var styles = layerviewer.assembleStylesDefinition (layerId, true);
 			
 			// Add renderers for each different feature type; see: https://docs.mapbox.com/mapbox-gl-js/example/multiple-geometries/
 			var layer;
@@ -3985,7 +3985,7 @@ var layerviewer = (function ($) {
 		
 		
 		// Function assemble the styles definition for a layer
-		assembleStylesDefinition: function (layerId)
+		assembleStylesDefinition: function (layerId, useDefaultStyles)
 		{
 			// Determine definitions
 			// #!# This merge-style operation should be dealt with generically at top-level
@@ -3998,8 +3998,17 @@ var layerviewer = (function ($) {
 			var polygonColourField = layerviewer.sublayerableConfig ('polygonColourField', layerId);
 			var polygonColourValues = layerviewer.sublayerableConfig ('polygonColourValues', layerId);
 			
-			// Start styles
-			var styles = $.extend (true, {}, _defaultStyles);	// Clone
+			// Initialise empty styles structure
+			var styles = {
+				'Point':      { type: 'circle', layout: {}, paint: {} },
+				'LineString': { type: 'line',   layout: {}, paint: {} },
+				'Polygon':    { type: 'fill',   layout: {}, paint: {} }
+			};
+			
+			// Use default styles if required
+			if (useDefaultStyles) {
+				styles = $.extend (true, {}, _defaultStyles);	// Clone
+			}
 			
 			// Support for point colour directly from the API response
 			if (_layerConfig[layerId].pointColourApiField) {
