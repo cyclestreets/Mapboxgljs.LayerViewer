@@ -471,6 +471,13 @@ var layerviewer = (function ($) {
 		*/
 	};
 	
+	// Define the supported OpenGIS types; this registry is currently only used for popups
+	var _opengisTypes = [
+		'Point',
+		'LineString',
+		'Polygon'
+	];
+	
 	// Define the geometry types and their default styles
 	var _defaultStyles = {
 		'Point' : {
@@ -3097,7 +3104,7 @@ var layerviewer = (function ($) {
 			// Enable popups if required, for each of the three geometry types
 			var popupHtmlTemplate = layerviewer.sublayerableConfig ('popupHtml', layerId);
 			var layerVariantId;
-			$.each (_defaultStyles, function (geometryType, styleIgnored) {
+			$.each (_opengisTypes, function (index, geometryType) {
 				layerVariantId = layerviewer.layerVariantId (layerId, geometryType);
 				layerviewer.createPopups (layerId, layerVariantId, geometryType, popupHtmlTemplate);
 			});
@@ -4709,7 +4716,7 @@ var layerviewer = (function ($) {
 				}
 				
 				// Variant layers, e.g. GeoJSON layers, e.g. 'foo_point', 'foo_linestring', 'foo_polygon'
-				$.each (_defaultStyles, function (geometryType, styleIgnored) {
+				$.each (_opengisTypes, function (index, geometryType) {
 					layerVariantId = layerviewer.layerVariantId (layerId, geometryType);
 					if (_popupClickHandlers.hasOwnProperty (layerVariantId)) {
 						_map.off ('click', layerVariantId, _popupClickHandlers[layerVariantId]);
@@ -4737,7 +4744,7 @@ var layerviewer = (function ($) {
 					}
 					
 					// Variant layers, e.g. GeoJSON layers, e.g. 'foo_point', 'foo_linestring', 'foo_polygon'
-					$.each (_defaultStyles, function (geometryType, styleIgnored) {
+					$.each (_opengisTypes, function (index, geometryType) {
 						layerVariantId = layerviewer.layerVariantId (layerId, geometryType);
 						if (_popupClickHandlers.hasOwnProperty (layerVariantId)) {
 							_map.on ('click', layerVariantId, _popupClickHandlers[layerVariantId]);
