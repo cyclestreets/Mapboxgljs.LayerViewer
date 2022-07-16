@@ -3211,7 +3211,7 @@ var layerviewer = (function ($) {
 			var useDefaultStyles = (!vectorLayerAttributes.layer.hasOwnProperty ('paint') && !vectorLayerAttributes.layer.hasOwnProperty ('layout'));
 			if (useDefaultStyles) {
 				var layerType = vectorLayerAttributes.layer.type;	// I.e. circle/line/fill
-				var defaultStylesByType = layerviewer.defaultStylesByType ();
+				var defaultStylesByType = layerviewer.stylesBySymboliserType (_defaultStyles);
 				vectorLayerAttributes.layer.paint  = defaultStylesByType[layerType].paint;
 				vectorLayerAttributes.layer.layout = defaultStylesByType[layerType].layout;
 			}
@@ -3233,10 +3233,10 @@ var layerviewer = (function ($) {
 		
 		
 		// Function to arrange default styles by symboliser type, e.g. indexed by 'line' rather than OpenGIS type LineString
-		defaultStylesByType: function ()
+		stylesBySymboliserType: function (stylesByOpengisType)
 		{
 			var defaultStylesByType = {};
-			$.each (_defaultStyles, function (opengisType, style) {
+			$.each (stylesByOpengisType, function (opengisType, style) {
 				defaultStylesByType[style.type] = style;
 			});
 			return defaultStylesByType;
