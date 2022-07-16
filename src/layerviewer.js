@@ -3206,14 +3206,22 @@ var layerviewer = (function ($) {
 			// Styles allocation precedence is as follows; NB see paint vs layout definition at: https://docs.mapbox.com/help/glossary/layout-paint-property/
 			// - If the layer defines paint (and possibly layout) styles, then that acts as the starting point
 			// - If paint and layout are both not defined, the default styles (which has paint and sometimes layout) will be put in
+			// - If there are layer settings -defined styles, e.g. (e.g. polygonColourField, polygonColourValues, etc.) they will then override specific styles; currently only paint is supported
 			
 			// If no style defined in the vector definition, i.e. no paint and no layout, use default styles
 			var useDefaultStyles = (!vectorLayerAttributes.layer.hasOwnProperty ('paint') && !vectorLayerAttributes.layer.hasOwnProperty ('layout'));
+			var layerType = vectorLayerAttributes.layer.type;	// I.e. circle/line/fill
 			if (useDefaultStyles) {
-				var layerType = vectorLayerAttributes.layer.type;	// I.e. circle/line/fill
 				var defaultStylesByType = layerviewer.stylesBySymboliserType (_defaultStyles);
 				vectorLayerAttributes.layer.paint  = defaultStylesByType[layerType].paint;
 				vectorLayerAttributes.layer.layout = defaultStylesByType[layerType].layout;
+			}
+			
+			// Override any styles with layer settings -defined styles (e.g. polygonColourField, polygonColourValues, etc); currently only paint is supported
+			var layerSettingsStyles = layerviewer.layerSettingsStyles (layerId, false);
+			var layerSettingsStylesByType = layerviewer.stylesBySymboliserType (layerSettingsStyles);
+			if (!$.isEmptyObject (layerSettingsStylesByType[layerType].paint)) {
+				vectorLayerAttributes.layer.paint  = layerSettingsStylesByType[layerType].paint;
 			}
 			
 			// Register the source and layer
