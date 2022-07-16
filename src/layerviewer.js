@@ -480,7 +480,7 @@ var layerviewer = (function ($) {
 	
 	// Define the geometry types and their default styles
 	var _defaultStyles = {
-		'Point' : {
+		'Point': {
 			// NB Icons, if present, are also drawn over the points
 			type: 'circle',
 			layout: {},		// Not applicable
@@ -4056,7 +4056,7 @@ var layerviewer = (function ($) {
 				
 			// Set polygon style from values
 			} else if (polygonColourField && polygonColourValues) {
-				styles['Polygon']['paint']['fill-color'] = layerviewer.valuesExpression (polygonColourField, polygonColourValues, '#03f');
+				styles['Polygon']['paint']['fill-color'] = layerviewer.valuesExpression (polygonColourField, polygonColourValues, _defaultStyles['Polygon']['paint']['fill-color']);
 				
 			// Set pre-defined polygon style if required: grid / fixed styles
 			} else if (_layerConfig[layerId].polygonStyle) {
