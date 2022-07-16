@@ -3139,7 +3139,7 @@ var layerviewer = (function ($) {
 		addFeatureTypeLayerSet: function (layerId)
 		{
 			// Assemble the styles definition
-			var styles = layerviewer.assembleStylesDefinition (layerId, true);
+			var styles = layerviewer.layerSettingsStyles (layerId, true);
 			
 			// Add renderers for each different feature type; see: https://docs.mapbox.com/mapbox-gl-js/example/multiple-geometries/
 			var layer;
@@ -3984,8 +3984,8 @@ var layerviewer = (function ($) {
 		},
 		
 		
-		// Function assemble the styles definition for a layer
-		assembleStylesDefinition: function (layerId, useDefaultStyles)
+		// Function assemble the styles definition for a layer from the layer settings
+		layerSettingsStyles: function (layerId, useDefaultStyles)
 		{
 			// Determine definitions
 			// #!# This merge-style operation should be dealt with generically at top-level
