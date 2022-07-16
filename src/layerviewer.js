@@ -485,7 +485,7 @@ var layerviewer = (function ($) {
 			type: 'circle',
 			layout: {},		// Not applicable
 			paint: {
-			'circle-radius': 8,
+				'circle-radius': 8,
 				'circle-color': '#007cbf'
 			}
 		},
@@ -3203,11 +3203,17 @@ var layerviewer = (function ($) {
 				}
 			});
 			
-			// If no style defined in the vector definition, merge any supplied global styles into the defaults
-			var useDefaultStyles = (!vectorLayerAttributes.layer.hasOwnProperty ('paint'));
+			// Styles allocation precedence is as follows; NB see paint vs layout definition at: https://docs.mapbox.com/help/glossary/layout-paint-property/
+			// - If the layer defines paint (and possibly layout) styles, then that acts as the starting point
+			// - If paint and layout are both not defined, the default styles (which has paint and sometimes layout) will be put in
+			
+			// If no style defined in the vector definition, i.e. no paint and no layout, use default styles
+			var useDefaultStyles = (!vectorLayerAttributes.layer.hasOwnProperty ('paint') && !vectorLayerAttributes.layer.hasOwnProperty ('layout'));
 			if (useDefaultStyles) {
+				var layerType = vectorLayerAttributes.layer.type;	// I.e. circle/line/fill
 				var defaultStylesByType = layerviewer.defaultStylesByType ();
-				vectorLayerAttributes.layer = $.extend (vectorLayerAttributes.layer, defaultStylesByType[vectorLayerAttributes.layer.type]);
+				vectorLayerAttributes.layer.paint  = defaultStylesByType[layerType].paint;
+				vectorLayerAttributes.layer.layout = defaultStylesByType[layerType].layout;
 			}
 			
 			// Register the source and layer
