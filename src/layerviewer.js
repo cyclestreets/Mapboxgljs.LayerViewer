@@ -3198,17 +3198,14 @@ var layerviewer = (function ($) {
 			
 			// Convert absolute tile source paths to full URL, as otherwise an 'Unable to parse URL' error will result
 			$.each (vectorLayerAttributes.source.tiles, function (index, url) {
-				if (url.match (/^\//)) {
+				if (url.match (/^\//)) {		// I.e. starts with /
 					vectorLayerAttributes.source.tiles[index] = window.location.origin + url;
 				}
 			});
 			
 			// If no style defined, merge any supplied global styles into the defaults
 			if (!vectorLayerAttributes.layer.hasOwnProperty ('paint')) {
-				var defaultStylesByType = {};
-				$.each (_defaultStyles, function (opengisType, style) {
-					defaultStylesByType[style.type] = style;
-				});
+				var defaultStylesByType = layerviewer.defaultStylesByType ();
 				vectorLayerAttributes.layer = $.extend (vectorLayerAttributes.layer, defaultStylesByType[vectorLayerAttributes.layer.type]);
 			}
 			
@@ -3225,6 +3222,17 @@ var layerviewer = (function ($) {
 			
 			// Register in-popup feedback button handler if required
 			layerviewer.addPopupFeedbackHandler (layerId);
+		},
+		
+		
+		// Function to arrange default styles by symboliser type, e.g. indexed by 'line' rather than OpenGIS type LineString
+		defaultStylesByType: function ()
+		{
+			var defaultStylesByType = {};
+			$.each (_defaultStyles, function (opengisType, style) {
+				defaultStylesByType[style.type] = style;
+			});
+			return defaultStylesByType;
 		},
 		
 		
