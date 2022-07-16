@@ -4038,32 +4038,7 @@ var layerviewer = (function ($) {
 				
 			// Set pre-defined polygon style if required: grid / fixed styles
 			} else if (_layerConfig[layerId].polygonStyle) {
-				switch (_layerConfig[layerId].polygonStyle) {
-					
-					// Blue boxes with dashed lines, intended for data that is likely to tessellate, e.g. adjacent box grid
-					case 'grid':
-						styles['Polygon']['paint']['fill-color'] = ['case', ['has', 'colour'], ['get', 'colour'], /* fallback: */ '#03f'];	// See: https://github.com/mapbox/mapbox-gl-js/issues/4079#issuecomment-385196151 and https://docs.mapbox.com/mapbox-gl-js/example/data-driven-lines/
-						//styles['Polygon']['paint']['fill-outline-dasharray'] = [5, 5];
-						break;
-						
-					// Red
-					case 'red':
-						styles['Polygon']['paint']['fill-outline-color'] = 'darkred';
-						styles['Polygon']['paint']['fill-color'] = 'red';
-						break;
-						
-					// Green
-					case 'green':
-						styles['Polygon']['paint']['fill-outline-color'] = 'green';
-						styles['Polygon']['paint']['fill-color'] = '#090';
-						break;
-						
-					// Blue
-					case 'blue':
-						styles['Polygon']['paint']['fill-outline-color'] = 'darkblue';
-						styles['Polygon']['paint']['fill-color'] = '#3388ff';
-						break;
-				}
+				styles = layerviewer.polygonStylePresets (styles, _layerConfig[layerId].polygonStyle);
 			}
 			
 			// Start from global style if supplied
@@ -4088,6 +4063,42 @@ var layerviewer = (function ($) {
 			}
 			
 			// Return the definition
+			return styles;
+		},
+		
+		
+		// Function to assign preset polygon styles
+		polygonStylePresets: function (styles /* current object so far, to be modified */, polygonStyle)
+		{
+			// Select polygon style
+			switch (polygonStyle) {
+				
+				// Blue boxes with dashed lines, intended for data that is likely to tessellate, e.g. adjacent box grid
+				case 'grid':
+					styles['Polygon']['paint']['fill-color'] = ['case', ['has', 'colour'], ['get', 'colour'], /* fallback: */ '#03f'];	// See: https://github.com/mapbox/mapbox-gl-js/issues/4079#issuecomment-385196151 and https://docs.mapbox.com/mapbox-gl-js/example/data-driven-lines/
+					//styles['Polygon']['paint']['fill-outline-dasharray'] = [5, 5];
+					break;
+					
+				// Red
+				case 'red':
+					styles['Polygon']['paint']['fill-outline-color'] = 'darkred';
+					styles['Polygon']['paint']['fill-color'] = 'red';
+					break;
+					
+				// Green
+				case 'green':
+					styles['Polygon']['paint']['fill-outline-color'] = 'green';
+					styles['Polygon']['paint']['fill-color'] = '#090';
+					break;
+					
+				// Blue
+				case 'blue':
+					styles['Polygon']['paint']['fill-outline-color'] = 'darkblue';
+					styles['Polygon']['paint']['fill-color'] = '#3388ff';
+					break;
+			}
+			
+			// Return the modified styles object
 			return styles;
 		},
 		
