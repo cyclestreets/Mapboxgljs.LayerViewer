@@ -3203,8 +3203,9 @@ var layerviewer = (function ($) {
 				}
 			});
 			
-			// If no style defined, merge any supplied global styles into the defaults
-			if (!vectorLayerAttributes.layer.hasOwnProperty ('paint')) {
+			// If no style defined in the vector definition, merge any supplied global styles into the defaults
+			var useDefaultStyles = (!vectorLayerAttributes.layer.hasOwnProperty ('paint'));
+			if (useDefaultStyles) {
 				var defaultStylesByType = layerviewer.defaultStylesByType ();
 				vectorLayerAttributes.layer = $.extend (vectorLayerAttributes.layer, defaultStylesByType[vectorLayerAttributes.layer.type]);
 			}
