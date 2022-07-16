@@ -217,7 +217,7 @@ var layerviewer = (function ($) {
 		// Form rescan path
 		formRescanPath: 'form#data #{layerId}',
 		
-		// Custom selector the for selector
+		// Selector for the form selector
 		selector: '#selector',
 		
 		// Custom data loading spinner selector for layerviewer. For layer specific spinner, should contain layerId
