@@ -130,11 +130,14 @@ var layerviewer = (function ($) {
 				label: 'OpenStreetMap',
 				description : 'The default OpenStreetMap style, emphasising road type and surrounding buildings.'
 			},
+			// See: https://www.ordnancesurvey.co.uk/documents/os-open-zoomstack-vector-tile-api.pdf
+			// Also later release, requiring a key, at: https://www.ordnancesurvey.co.uk/newsroom/blog/creating-your-own-vector-tiles
 			osoutdoor: {
 				vectorTiles: 'https://s3-eu-west-1.amazonaws.com/tiles.os.uk/styles/open-zoomstack-outdoor/style.json',
 				label: 'OS outdoor',
 				description: 'Display footpaths, rights of way, open access land and the vegetation on the land.',
-				placenamesLayers: ['Country names', 'Capital City names', 'City names', 'Town names']
+				placenamesLayers: ['Country names', 'Capital City names', 'City names', 'Town names'],
+				attribution: 'Contains Ordnance Survey data &copy; Crown copyright and database rights 2018'
 			},
 			osopendata: {
 				tiles: 'https://{s}.tile.cyclestreets.net/osopendata/{z}/{x}/{y}.png',
