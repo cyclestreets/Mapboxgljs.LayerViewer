@@ -515,6 +515,8 @@ var layerviewer = (function ($) {
 	var _map = null;
 	var _layers = {};	// Layer status registry
 	var _backgroundMapStyles = {};
+	var _backgroundMapStylesManualAttributions = {};
+	var _manualAttribution = null;
 	var _currentBackgroundMapStyleId;
 	var _backgroundStylesInternalPrefix = 'background-';
 	var _markers = [];
@@ -1781,6 +1783,9 @@ var layerviewer = (function ($) {
 				// boxZoom is enabled, but mapbox-gl-draw causes it to fail: https://github.com/mapbox/mapbox-gl-draw/issues/571
 			});
 			
+			// Set manual attribution if required
+			layerviewer.handleManualAttribution (defaultTileLayer);
+			
 			// Set the map background style flag
 			_currentBackgroundMapStyleId = defaultTileLayer;
 			
@@ -1821,6 +1826,27 @@ var layerviewer = (function ($) {
 		},
 		
 		
+		// Function to handle attribution manually where required
+		// Where a vector style is not a mapbox://... type, its URL will not be sufficient to set the attribution, so an attribution value must be set in the layer specification
+		// This function when called always clears any existing attribution and then sets a customAttribution using map.addControl if needed
+		handleManualAttribution: function (styleId)
+		{
+			// Clear anything if present, so that any change starts from no control
+			if (_manualAttribution !== null) {
+				_map.removeControl (_manualAttribution);
+				_manualAttribution = null;
+			}
+			
+			// Set attribution
+			if (_backgroundMapStylesManualAttributions[styleId]) {
+				_manualAttribution = new mapboxgl.AttributionControl ({
+					customAttribution: _backgroundMapStylesManualAttributions[styleId]
+				});
+				_map.addControl (_manualAttribution);
+			}
+		},
+		
+		
 		// Define background map styles
 		getBackgroundMapStyles: function ()
 		{
@@ -1830,7 +1856,7 @@ var layerviewer = (function ($) {
 				// Register vector tiles or traditional raster (bitmap) background map layers
 				// These are prefixed with _backgroundStylesInternalPrefix to provide basic namespacing against foreground layers
 				if (tileLayerAttributes.vectorTiles) {
-					_backgroundMapStyles[_backgroundStylesInternalPrefix + tileLayerId] = layerviewer.defineVectorBackgroundMapLayer (tileLayerAttributes);
+					_backgroundMapStyles[_backgroundStylesInternalPrefix + tileLayerId] = layerviewer.defineVectorBackgroundMapLayer (tileLayerAttributes, tileLayerId);
 				} else {
 					_backgroundMapStyles[_backgroundStylesInternalPrefix + tileLayerId] = layerviewer.defineRasterTilesLayer (tileLayerAttributes, _backgroundStylesInternalPrefix + tileLayerId);
 				}
@@ -1839,13 +1865,15 @@ var layerviewer = (function ($) {
 		
 		
 		// Function to define a vector background map layer definition
-		defineVectorBackgroundMapLayer: function (tileLayerAttributes)
+		defineVectorBackgroundMapLayer: function (tileLayerAttributes, tileLayerId)
 		{
-			// Support native vector tiles format
-			if (tileLayerAttributes.vectorTiles) {
-				return tileLayerAttributes.vectorTiles;
+			// Register manual attribution handling
+			if (tileLayerAttributes.hasOwnProperty ('attribution')) {
+				_backgroundMapStylesManualAttributions[tileLayerId] = tileLayerAttributes.attribution;
 			}
 			
+			// Support native vector tiles URL format, e.g. mapbox://... ; see: https://docs.mapbox.com/mapbox-gl-js/api/map/#map-parameters -> options.style
+			return tileLayerAttributes.vectorTiles;
 		},
 		
 		
@@ -2344,6 +2372,9 @@ var layerviewer = (function ($) {
 				var style = _backgroundMapStyles[_backgroundStylesInternalPrefix + styleId];
 				_map.setStyle (style);
 				
+				// Set manual attribution if required
+				layerviewer.handleManualAttribution (styleId);
+				
 				// Set the background map style flag to the new ID
 				_currentBackgroundMapStyleId = styleId;
 				
@@ -2383,6 +2414,9 @@ var layerviewer = (function ($) {
 				var styleId = style.target.id.replace (_backgroundStylesInternalPrefix, '');
 				var style = _backgroundMapStyles[_backgroundStylesInternalPrefix + styleId];
 				_map.setStyle (style);
+				
+				// Set manual attribution if required
+				layerviewer.handleManualAttribution (styleId);
 				
 				// Save this style as a cookie
 				Cookies.set ('mapstyle', styleId);
