@@ -1846,27 +1846,6 @@ var layerviewer = (function ($) {
 				return tileLayerAttributes.vectorTiles;
 			}
 			
-			// Otherwise compile the layer definition
-			// #!# Appears to be WIP code
-			var layerDefinition = {
-				version: 8,
-				sources: {
-					vector: {
-						type: 'vector',
-						tiles: [tileLayerAttributes.vectorTiles]
-					}
-				},
-				layers: [{
-					id: 'vector-tiles',
-					type: 'vector',
-					source: 'vector',
-					'source-layer': 'vector',
-					paint : {'raster-opacity' : 0.7}	// https://stackoverflow.com/a/48016804/180733
-				}]
-			};
-			
-			// Return the layer definition
-			return layerDefinition;
 		},
 		
 		
