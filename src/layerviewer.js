@@ -4396,31 +4396,30 @@ var layerviewer = (function ($) {
 		// Function to obtain a value from a sublayerable configuration parameter
 		sublayerableConfig: function (layerConfigField, layerId)
 		{
-			var value = false;
-			if (_layerConfig[layerId][layerConfigField]) {
-				
-				// For clarity, create a local variable for the config definition for the current config field of the current layer
-				var configDefinition = _layerConfig[layerId][layerConfigField];
-				
-				// If enabled, select settings dependent on the value of a parameter in the user (form) parameters; otherwise, pass through unchanged
-				if (_layerConfig[layerId].sublayerParameter) {
-					
-					// Pre-process the definition if multiple value keys (string, separated by comma) are present, splitting out; e.g. 'quietest,balanced,fastest' becomes three separate keys, each having the same value
-					configDefinition = layerviewer.expandListKeys (configDefinition);
-					
-					// If sublayer parameterisation is enabled, i.e. layer style is dependent on a form value, obtain the layer value, then look up the config definition value
-					if (_layerConfig[layerId].sublayerParameter) {		// Check for clarity, but not actually needed as _sublayerValues[layerId] derived from this
-						if (_sublayerValues[layerId]) {
-							var sublayerValue = _sublayerValues[layerId];
-							
-							// Allocate the values
-							value = configDefinition[sublayerValue];
-						}
-					}
-				} else {
-					value = configDefinition;
-				}
+			// End, returning false, if no such config for this field
+			if (!_layerConfig[layerId][layerConfigField]) {return false;}
+			
+			// For clarity, create a local variable for the config definition for the current config field of the current layer
+			var configDefinition = _layerConfig[layerId][layerConfigField];
+			
+			// If not enabled, pass through unchanged
+			if (!_layerConfig[layerId].sublayerParameter) {
+				return configDefinition;
 			}
+			
+			// If no sublayer values set in the form for this layer, return false
+			if (!_sublayerValues[layerId]) {
+				return false;
+			}
+			
+			// Now that we have confirme that sublayer parameterisation is enabled, i.e. layer style is dependent on a form value, obtain the layer value, then look up the config definition value
+			var sublayerValue = _sublayerValues[layerId];
+			
+			// Pre-process the definition if multiple value keys (string, separated by comma) are present, splitting out; e.g. 'quietest,balanced,fastest' becomes three separate keys, each having the same value
+			configDefinition = layerviewer.expandListKeys (configDefinition);
+			
+			// Allocate the value
+			var value = configDefinition[sublayerValue];
 			
 			// Return the value
 			return value;
