@@ -4405,16 +4405,8 @@ var layerviewer = (function ($) {
 				// If enabled, select settings dependent on the value of a parameter in the user (form) parameters; otherwise, pass through unchanged
 				if (_layerConfig[layerId].sublayerParameter) {
 					
-					// If multiple value keys (string, separated by comma) are present, split out; e.g. 'quietest,balanced,fastest' becomes three separate keys, each having the same value
-					$.each (configDefinition, function (key, value) {
-						if (key.indexOf (',') !== -1) {		// I.e. contains comma
-							var newKeys = key.split (',');
-							$.each (newKeys, function (index, newKey) {
-								configDefinition[newKey] = value;
-							});
-							delete (configDefinition[key]);
-						}
-					});
+					// Pre-process the definition if multiple value keys (string, separated by comma) are present, splitting out; e.g. 'quietest,balanced,fastest' becomes three separate keys, each having the same value
+					configDefinition = layerviewer.expandListKeys (configDefinition);
 					
 					// If sublayer parameterisation is enabled, i.e. layer style is dependent on a form value, obtain the layer value, then look up the config definition value
 					if (_layerConfig[layerId].sublayerParameter) {		// Check for clarity, but not actually needed as _sublayerValues[layerId] derived from this
@@ -4432,6 +4424,25 @@ var layerviewer = (function ($) {
 			
 			// Return the value
 			return value;
+		},
+		
+		
+		// Function to expand (split out) keys containing a list, e.g. {'a' => 'foo', 'b,c' => 'bar'} becomes {'a' => 'foo', 'b' => 'bar', 'c' => 'bar'}
+		expandListKeys: function (configDefinition)
+		{
+			// Split where required
+			$.each (configDefinition, function (key, value) {
+				if (key.indexOf (',') !== -1) {		// I.e. contains comma
+					var newKeys = key.split (',');
+					$.each (newKeys, function (index, newKey) {
+						configDefinition[newKey] = value;
+					});
+					delete (configDefinition[key]);
+				}
+			});
+			
+			// Return the definition
+			return configDefinition;
 		},
 		
 		
