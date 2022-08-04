@@ -2543,7 +2543,7 @@ var layerviewer = (function ($) {
 			
 			// If sublayer parameterisation is enabled, i.e. layer style is dependent on a form value that has caused the layer to be reloaded, inject the new form value
 			// #!# Currently, it is assumed that the calling application will write a handler to disable + re-enable the layer - this should be generalised as a setting
-			_sublayerValues[layerId] = false;
+			_sublayerValues[layerId] = false;	// This ensures there is always a value for each layer, even if the form itself transmits an empty value string ''
 			if (_layerConfig[layerId].sublayerParameter) {
 				if (_parameters[layerId][_layerConfig[layerId].sublayerParameter]) {
 					_sublayerValues[layerId] = _parameters[layerId][_layerConfig[layerId].sublayerParameter];
@@ -2829,6 +2829,7 @@ var layerviewer = (function ($) {
 				}
 				
 				// For all other input types, if there is a value, register it
+				// Design decision here that an empty value '' will not get registered, as this is assumed to be an uninteresting default
 				if (value.length > 0) {
 					parameters[name] = value;	// Set value
 					return;	// Continue to next input
@@ -4402,27 +4403,25 @@ var layerviewer = (function ($) {
 			// For clarity, create a local variable for the config definition for the current config field of the current layer
 			var configDefinition = _layerConfig[layerId][layerConfigField];
 			
-			// If not enabled, pass through unchanged
+			// If sublayering not enabled, i.e. is not dependent on a form value within the layer, pass through unchanged
 			if (!_layerConfig[layerId].sublayerParameter) {
 				return configDefinition;
 			}
 			
 			// If no sublayer values set in the form for this layer, return false
-			if (!_sublayerValues[layerId]) {
+			if (!_sublayerValues[layerId]) {		// I.e. if no form widget or if form widget value is empty, thus `_sublayerValues[layerId] = false;` will have been set
 				return false;
 			}
-			
-			// Now that we have confirme that sublayer parameterisation is enabled, i.e. layer style is dependent on a form value, obtain the layer value, then look up the config definition value
-			var sublayerValue = _sublayerValues[layerId];
 			
 			// Pre-process the definition if multiple value keys (string, separated by comma) are present, splitting out; e.g. 'quietest,balanced,fastest' becomes three separate keys, each having the same value
 			configDefinition = layerviewer.expandListKeys (configDefinition);
 			
-			// Allocate the value
-			var value = configDefinition[sublayerValue];
+			// Now that we have confirmed that sublayer parameterisation is enabled, i.e. layer style is dependent on a form value, obtain the layer value, then look up the config definition value
+			var sublayerValue = _sublayerValues[layerId];
+			var configSubdefinition = configDefinition[sublayerValue];
 			
-			// Return the value
-			return value;
+			// Return the config sub-definition
+			return configSubdefinition;
 		},
 		
 		
