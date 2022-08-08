@@ -4413,6 +4413,13 @@ var layerviewer = (function ($) {
 				return false;
 			}
 			
+			// If a wildcard '*' is used, dynamically determine the field, i.e. map directly
+			// The form value then maps directly to the chosen field; this is useful for a styling dropdown where each field has its own values, e.g. form value 'foo' sets the parameter to be 'foo', hence looking at field 'foo' in data
+			if (_layerConfig[layerId][layerConfigField] == '*') {
+				var formParameter = _layerConfig[layerId].sublayerParameter;
+				return _parameters[layerId][formParameter];
+			}
+			
 			// Pre-process the definition if multiple value keys (string, separated by comma) are present, splitting out; e.g. 'quietest,balanced,fastest' becomes three separate keys, each having the same value
 			configDefinition = layerviewer.expandListKeys (configDefinition);
 			
