@@ -48,6 +48,10 @@ var layerviewer = (function ($) {
 		// Enable placenames to be above layers
 		placenamesOnTop: true,
 		
+		// Enable/disable full screen map control
+		enableFullScreen: false,
+		fullScreenPosition: 'top-left',
+		
 		// Enable/disable drawing feature
 		enableDrawing: true,
 		drawingGeometryType: 'Polygon',		// Or LineString
@@ -1800,9 +1804,14 @@ var layerviewer = (function ($) {
 			// Add buildings
 			layerviewer.addBuildings ();
 			
-			// Add 3D terrain
+			// Enable 3D terrain, if required
 			if (_settings.enable3dTerrain) {
 				layerviewer.add3dTerrain ();
+			}
+			
+			// Add full screen control, if required
+			if (_settings.enableFullScreen) {
+				_map.addControl (new mapboxgl.FullscreenControl (), _settings.fullScreenPosition);
 			}
 			
 			// Add style (backround layer) switching
