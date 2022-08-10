@@ -3754,7 +3754,7 @@ var layerviewer = (function ($) {
 				//console.log(data);
 			}
 			
-			// Convert from KML to GeoJSON if required; see: https://github.com/mapbox/togeojson
+			// Convert from KML to GeoJSON if required; see: https://github.com/placemark/togeojson
 			if (_layerConfig[layerId].dataType && _layerConfig[layerId].dataType == 'kml') {
 				data = toGeoJSON.kml (data);
 			}
