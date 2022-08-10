@@ -4093,9 +4093,6 @@ var layerviewer = (function ($) {
 			if (polygonColourField && _layerConfig[layerId].polygonColourStops) {
 				styles['Polygon']['paint']['fill-color'] = layerviewer.stopsExpression (polygonColourField, _layerConfig[layerId].polygonColourStops.slice().reverse(), true, true);	// Reverse the original definition: https://stackoverflow.com/a/30610528/180733
 				styles['Polygon']['paint']['fill-outline-color'] = '#aaa';
-				if (_layerConfig[layerId].fillOpacity) {
-					styles['Polygon']['paint']['fill-opacity'] = _layerConfig[layerId].fillOpacity;
-				}
 				
 			// Set polygon style from values
 			} else if (polygonColourField && polygonColourValues) {
@@ -4104,6 +4101,11 @@ var layerviewer = (function ($) {
 			// Set pre-defined polygon style if required: grid / fixed styles
 			} else if (_layerConfig[layerId].polygonStyle) {
 				styles = layerviewer.polygonStylePresets (styles, _layerConfig[layerId].polygonStyle);
+			}
+			
+			// Polygon fill
+			if (_layerConfig[layerId].fillOpacity) {
+				styles['Polygon']['paint']['fill-opacity'] = _layerConfig[layerId].fillOpacity;
 			}
 			
 			// Start from global style if supplied
