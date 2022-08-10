@@ -393,7 +393,8 @@ var layerviewer = (function ($) {
 				'foo': '#ff0',
 				'bar': '#b2beb5'
 			},
-			fillOpacity: 0.6
+			fillOpacity: 0.6,
+			fillOutlineColor: 'rgba(0, 0, 0, 0.2)',
 			
 			// A secondary API call, used to get a specific ID
 			apiCallId: {
@@ -4103,9 +4104,12 @@ var layerviewer = (function ($) {
 				styles = layerviewer.polygonStylePresets (styles, _layerConfig[layerId].polygonStyle);
 			}
 			
-			// Polygon fill
+			// Polygon fill and outline
 			if (_layerConfig[layerId].fillOpacity) {
 				styles['Polygon']['paint']['fill-opacity'] = _layerConfig[layerId].fillOpacity;
+			}
+			if (_layerConfig[layerId].fillOutlineColor) {
+				styles['Polygon']['paint']['fill-outline-color'] = _layerConfig[layerId].fillOoutlineColor;
 			}
 			
 			// Start from global style if supplied
