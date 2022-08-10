@@ -4109,7 +4109,7 @@ var layerviewer = (function ($) {
 				styles['Polygon']['paint']['fill-opacity'] = _layerConfig[layerId].fillOpacity;
 			}
 			if (_layerConfig[layerId].fillOutlineColor) {
-				styles['Polygon']['paint']['fill-outline-color'] = _layerConfig[layerId].fillOoutlineColor;
+				styles['Polygon']['paint']['fill-outline-color'] = _layerConfig[layerId].fillOutlineColor;
 			}
 			
 			// Start from global style if supplied
