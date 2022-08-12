@@ -2414,19 +2414,20 @@ var layerviewer = (function ($) {
 			$(container).append (styleSwitcherHtml);
 			
 			// Switch to selected style
-			function switchStyle (style) {
-				var styleId = style.target.id.replace (_backgroundStylesInternalPrefix, '');
-				var style = _backgroundMapStyles[_backgroundStylesInternalPrefix + styleId];
+			function switchStyle (style)
+			{
+				var tileLayerId = style.target.id.replace (_backgroundStylesInternalPrefix, '');
+				var style = _backgroundMapStyles[_backgroundStylesInternalPrefix + tileLayerId];
 				_map.setStyle (style);
 				
 				// Set manual attribution if required
-				layerviewer.handleManualAttribution (styleId);
+				layerviewer.handleManualAttribution (tileLayerId);
 				
 				// Save this style as a cookie
-				Cookies.set ('mapstyle', styleId);
+				Cookies.set ('mapstyle', tileLayerId);
 				
 				// Set the style flag to the new ID
-				_currentBackgroundMapStyleId = styleId;
+				_currentBackgroundMapStyleId = tileLayerId;
 				
 				// Fire an event; see: https://javascript.info/dispatch-events
 				layerviewer.styleChanged ();
