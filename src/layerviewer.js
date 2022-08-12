@@ -3031,7 +3031,7 @@ var layerviewer = (function ($) {
 					_xhrRequests[layerId] = null;
 					
 					// Stop data loading spinner for this layer
-					$(dataLoadingSpinnerSelector).hide();
+					$(dataLoadingSpinnerSelector).hide ();
 					
 					/* Commented out as can be obtrusive if an API endpoint is slow/down
 					// Catch cases of being unable to access the server, e.g. no internet access; avoids "Unexpected token u in JSON at position 0" errors
@@ -3808,11 +3808,12 @@ var layerviewer = (function ($) {
 			layerviewer.removeMarkers (layerId);
 			
 			// Set the data
+			// Note that for DOM icon -based layers, while setData is done, the data is actually put on the map in drawManualDomIcons below
 			_map.getSource (layerId).setData (data);
 			
 			// Show icons, where Points present
 			var popupHtmlTemplate = layerviewer.sublayerableConfig ('popupHtml', layerId);
-			layerviewer.drawIcons (data, layerId, popupHtmlTemplate);
+			layerviewer.drawManualDomIcons (data, layerId, popupHtmlTemplate);
 		},
 		
 		
@@ -3855,7 +3856,7 @@ var layerviewer = (function ($) {
 		// See: https://github.com/mapbox/mapbox-gl-js/issues/4736 and https://github.com/mapbox/mapbox-gl-js/issues/822
 		// See: https://stackoverflow.com/questions/50411046/add-custom-marker-to-mapbox-map
 		// This approach cannot work as it requires loadImage/addImage pairs to be done before map loading: https://gomasuga.com/blog/switch-from-google-maps-to-mapbox
-		drawIcons: function (data, layerId, popupHtmlTemplate)
+		drawManualDomIcons: function (data, layerId, popupHtmlTemplate)
 		{
 			// Do not use for heatmap
 			if (_layerConfig[layerId].heatmap) {return;}
@@ -4803,7 +4804,7 @@ var layerviewer = (function ($) {
 				});
 			});
 			
-			// #!# Currently there is no support for popups added using .setPopup in drawIcons ()
+			// #!# Currently there is no support for popups added using .setPopup in drawManualDomIcons ()
 		},
 		
 		
@@ -4831,7 +4832,7 @@ var layerviewer = (function ($) {
 					});
 				});
 				
-				// #!# Currently there is no support for popups added using .setPopup in drawIcons ()
+				// #!# Currently there is no support for popups added using .setPopup in drawManualDomIcons ()
 				
 			}, 200);
 		},
