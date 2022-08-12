@@ -4502,7 +4502,7 @@ var layerviewer = (function ($) {
 				delete _dataRefreshHandlers[layerId];
 			}
 			
-			// Remove the layer(s) and source, checking first to ensure each exists
+			// Remove the layer(s), checking first to ensure each exists
 			var geometryTypes = ['point', 'linestring', 'polygon', 'heatmap'];
 			$.each (geometryTypes, function (index, geometryType) {
 				var geometryTypeId = layerId + '_' + geometryType;
@@ -4510,7 +4510,10 @@ var layerviewer = (function ($) {
 					_map.removeLayer (geometryTypeId);
 				}
 			});
-			if (_map.getSource (layerId)) {	// See: https://github.com/mapbox/mapbox-gl-js/issues/4466#issuecomment-288177042
+			
+			// Remove the source
+			// The 'if' check should not be necessary, but occasionally otherwise this will generate a 'There is no source with this ID' error, presumably due to a timing issue. See also: https://github.com/mapbox/mapbox-gl-js/issues/4466#issuecomment-288177042
+			if (_map.getSource (layerId)) {
 				_map.removeSource (layerId);
 			}
 			
