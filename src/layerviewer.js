@@ -700,6 +700,25 @@ var layerviewer = (function ($) {
 				});
 			});
 			
+			// On style (background map) change, reload layers
+			// This area of Mapbox GL JS is highly buggy; see: https://github.com/mapbox/mapbox-gl-js/issues/8691
+			$('body').on ('style-changed', function (event) {
+				$.each (_layers, function (layerId, layerEnabled) {
+					if (layerEnabled) {
+						
+						// Remove the layer
+						layerviewer.removeLayer (layerId);
+						
+						// After a short delay, re-enable the layer; it seems removeLayer takes some time to unload, so the delay is essential as otherwise layers will not re-appear
+						setTimeout (function () {
+							layerviewer.enableLayer (layerId);
+						}, 200);
+						
+						// #!# NB Drawing layer may disappear
+					}
+				});
+			});
+			
 			// If an ID is supplied in the URL, load it
 			layerviewer.loadIdFromUrl (urlParameters);
 			
@@ -2445,7 +2464,7 @@ var layerviewer = (function ($) {
 		// Cannot use _map.on(style.load) directly, as that does not fire when loading a raster after another raster: https://github.com/mapbox/mapbox-gl-js/issues/7579
 		styleChanged: function ()
 		{
-			// Delay for 200ms in a loop until the style is loaded; see: https://stackoverflow.com/a/47313389/180733
+			// Delay for a short while in a loop until the style is loaded; see: https://stackoverflow.com/a/47313389/180733
 			if (!_map.isStyleLoaded()) {
 				setTimeout (function () {
 					layerviewer.styleChanged ();	// Done inside a function to avoid "Maximum Call Stack Size Exceeded"
@@ -2608,11 +2627,6 @@ var layerviewer = (function ($) {
 				};
 				_map.on ('moveend', _dataRefreshHandlers[layerId]);
 			}
-			
-			// Reload data on style change
-			$('body').on ('style-changed', function (event) {
-				layerviewer.getData (layerId, _parameters[layerId]);
-			});
 			
 			// Reload the data for this layer, using a rescan of the form parameters for the layer, when any change is made
 			var rescanPathBase = layerviewer.parseSettingSelector ('formRescanPath', layerId);
