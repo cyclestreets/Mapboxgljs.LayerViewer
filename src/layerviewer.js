@@ -1778,11 +1778,17 @@ var layerviewer = (function ($) {
 		// Create the map
 		createMap: function (defaultLocation, defaultTileLayer)
 		{
+			// Determine the tile layer to load, setting the default but which can be overridden if a cookie was previously set
+			var tileLayerId = defaultTileLayer;
+			if (Cookies.get ('mapstyle')) {
+				var tileLayerId = Cookies.get ('mapstyle');
+			}
+			
 			// Create the map in the 'map' div, set the view to a given place and zoom
 			mapboxgl.accessToken = _settings.mapboxApiKey;
 			_map = new mapboxgl.Map ({
 				container: 'map',
-				style: _backgroundMapStyles[_backgroundStylesInternalPrefix + defaultTileLayer],
+				style: _backgroundMapStyles[_backgroundStylesInternalPrefix + tileLayerId],
 				center: [defaultLocation.longitude, defaultLocation.latitude],
 				zoom: defaultLocation.zoom,
 				maxZoom: _settings.maxZoom,
@@ -1793,10 +1799,10 @@ var layerviewer = (function ($) {
 			});
 			
 			// Set manual attribution if required
-			layerviewer.handleManualAttribution (defaultTileLayer);
+			layerviewer.handleManualAttribution (tileLayerId);
 			
 			// Set the map background style flag
-			_currentBackgroundMapStyleId = defaultTileLayer;
+			_currentBackgroundMapStyleId = tileLayerId;
 			
 			// Enable zoom in/out buttons
 			if (_settings.useDefaultNavigationControls) {
@@ -2378,22 +2384,6 @@ var layerviewer = (function ($) {
 			if (!_settings.styleSwitcherGraphical) {
 				var containerId = 'styleswitcher';
 				layerviewer.createControl (containerId, 'bottom-left', 'expandable');
-			}
-			
-			// Load a style from the cookie, if it exists
-			if (Cookies.get ('mapstyle')) {
-				var styleId = Cookies.get ('mapstyle');
-				var style = _backgroundMapStyles[_backgroundStylesInternalPrefix + styleId];
-				_map.setStyle (style);
-				
-				// Set manual attribution if required
-				layerviewer.handleManualAttribution (styleId);
-				
-				// Set the background map style flag to the new ID
-				_currentBackgroundMapStyleId = styleId;
-				
-				// Fire an event; see: https://javascript.info/dispatch-events
-				layerviewer.styleChanged ();
 			}
 			
 			// Determine the container path
