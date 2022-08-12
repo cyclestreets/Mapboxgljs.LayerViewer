@@ -4501,6 +4501,10 @@ var layerviewer = (function ($) {
 			layerviewer.removePopups (layerId);
 			layerviewer.removeMarkers (layerId);
 			
+			// Deregister popup and locate feedback handler for a layer
+			layerviewer.removePopupFeedbackHandler (layerId);
+			layerviewer.removeLocateFeedbackHandler (layerId);
+			
 			// Deregister handler to refresh data on map move; note that some native dormancy handling was added in: https://github.com/mapbox/mapbox-gl-js/issues/5145
 			if (!_layerConfig[layerId].static) {
 				_map.off ('moveend', _dataRefreshHandlers[layerId]);
@@ -4528,10 +4532,6 @@ var layerviewer = (function ($) {
 				$('#sections #' + layerId + ' div.export p').removeClass('enabled');
 				$('#sections #' + layerId + ' div.export span').remove();
 			}
-			
-			// Deregister popup and locate feedback handler for a layer
-			layerviewer.removePopupFeedbackHandler (layerId);
-			layerviewer.removeLocateFeedbackHandler (layerId);
 		},
 		
 		
