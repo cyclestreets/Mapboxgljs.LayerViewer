@@ -534,6 +534,7 @@ var layerviewer = (function ($) {
 	var _panningEnabled = false;
 	var _virginFormState = {};
 	var _parameters = {};
+	var _dataRefreshHandlers = {};
 	var _xhrRequests = {};
 	var _requestCache = {};
 	var _sublayerValues = {};
@@ -2611,9 +2612,10 @@ var layerviewer = (function ($) {
 			
 			// Register to refresh data on map move
 			if (!_layerConfig[layerId].static) {	// Unless marked as static, i.e. no change based on map location
-				_map.on ('moveend', function (e) {
+				_dataRefreshHandlers[layerId] = function (e) {
 					layerviewer.getData (layerId, _parameters[layerId]);
-				});
+				};
+				_map.on ('moveend', _dataRefreshHandlers[layerId]);
 			}
 			
 			// Reload data on style change
@@ -2882,7 +2884,7 @@ var layerviewer = (function ($) {
 		// Function to manipulate the map based on form interactions
 		getData: function (layerId, parameters)
 		{
-			// End if the layer has been disabled (as the event handler from _map.on('moveend', ...) may still be firing)
+			// End if the layer has been disabled
 			if (!_layers[layerId]) {return;}
 			
 			// If a minimum zoom is specified, end if the zoom is too low
@@ -4498,6 +4500,12 @@ var layerviewer = (function ($) {
 			// Remove any existing markers and popups, neither of which are technically bound to a feature
 			layerviewer.removePopups (layerId);
 			layerviewer.removeMarkers (layerId);
+			
+			// Deregister handler to refresh data on map move; note that some native dormancy handling was added in: https://github.com/mapbox/mapbox-gl-js/issues/5145
+			if (!_layerConfig[layerId].static) {
+				_map.off ('moveend', _dataRefreshHandlers[layerId]);
+				delete _dataRefreshHandlers[layerId];
+			}
 			
 			// Remove the layer(s) and source, checking first to ensure each exists
 			var geometryTypes = ['point', 'linestring', 'polygon', 'heatmap'];
