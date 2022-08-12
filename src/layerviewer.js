@@ -2445,7 +2445,7 @@ var layerviewer = (function ($) {
 		// Cannot use _map.on(style.load) directly, as that does not fire when loading a raster after another raster: https://github.com/mapbox/mapbox-gl-js/issues/7579
 		styleChanged: function ()
 		{
-			// Delay for 200 minutes in a loop until the style is loaded; see: https://stackoverflow.com/a/47313389/180733
+			// Delay for 200ms in a loop until the style is loaded; see: https://stackoverflow.com/a/47313389/180733
 			if (!_map.isStyleLoaded()) {
 				setTimeout (function () {
 					layerviewer.styleChanged ();	// Done inside a function to avoid "Maximum Call Stack Size Exceeded"
@@ -3316,7 +3316,9 @@ var layerviewer = (function ($) {
 		{
 			// Remove the layer and the source, and reset the layer value
 			_map.removeLayer (layerId);
-			_map.removeSource (layerId);
+			if (_map.getSource (layerId)) {
+				_map.removeSource (layerId);
+			}
 		},
 		
 		
@@ -3325,7 +3327,9 @@ var layerviewer = (function ($) {
 		{
 			// Remove the layer and the source, and reset the layer value
 			_map.removeLayer (_tileOverlayLayer);
-			_map.removeSource (_tileOverlayLayer);
+			if (_map.getSource (layerId)) {
+				_map.removeSource (layerId);
+			}
 			_tileOverlayLayer = false;
 		},
 		
