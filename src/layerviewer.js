@@ -2419,15 +2419,15 @@ var layerviewer = (function ($) {
 				name = (_settings.tileUrls[unprefixedStyleId].label ? _settings.tileUrls[unprefixedStyleId].label : layerviewer.ucfirst (unprefixedStyleId));
 				description = (_settings.tileUrls[unprefixedStyleId].description ? _settings.tileUrls[unprefixedStyleId].description : '');
 				if (_settings.styleSwitcherGraphical) {
-					image = '/images/mapstyle/' + styleId + '.png';
+					image = '/images/mapstyle/' + unprefixedStyleId + '.png';
 					labelContent  = '<img src="' + image + '" alt="' + name + '" />';
 					labelContent += '<h3>' + name + '</h3>';
 					labelContent += '<p>' + description + '</p>';
 				} else {
 					labelContent = '<abbr title="' + description + '">' + name + '</abbr>';
 				}
-				styleSwitcherHtml += '<li><input id="' + styleId + '" type="radio" name="styleswitcher" value="' + styleId + '"' + (styleId == _settings.defaultTileLayer ? ' checked="checked"' : '') + '>';
-				styleSwitcherHtml += '<label for="' + styleId + '">' + labelContent + '</label></li>';
+				styleSwitcherHtml += '<li><input id="' + unprefixedStyleId + '" type="radio" name="styleswitcher" value="' + unprefixedStyleId + '"' + (unprefixedStyleId == _settings.defaultTileLayer ? ' checked="checked"' : '') + '>';
+				styleSwitcherHtml += '<label for="' + unprefixedStyleId + '">' + labelContent + '</label></li>';
 			});
 			styleSwitcherHtml += '</ul>';
 			$(container).append (styleSwitcherHtml);
