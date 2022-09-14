@@ -61,6 +61,7 @@ var layerviewer = (function ($) {
 		
 		// First-run welcome message
 		firstRunMessageHtml: false,
+		firstRunMessageEmbedMode: true,
 		
 		// Google API key for Street View images
 		gmapApiKey: 'YOUR_API_KEY',
@@ -1299,7 +1300,7 @@ var layerviewer = (function ($) {
 					// Determine the difference in the form parameters against the virgin state, to keep the URL as short as possible
 					// This has to compute the difference of the virgin form state and the supplied parameters
 					// This must be done in BOTH directions, as otherwise a select with a non-empty default parameter like '20' would not register a change to the empty '' first value
-					// E.g. for:
+					// E.g. for a layer with:
 					//	 Virgin form state:  {field:casualties: 'Cyclist', field:speed_limit: '20', foo: 'bar'}
 					//	 URL parameters array:  {field:casualties: 'Cyclist', since: '2020-01-01', field:road_type: '2', foo: 'qux'}
 					// the result should be:
@@ -1614,6 +1615,13 @@ var layerviewer = (function ($) {
 		{
 			// End if no welcome message
 			if (!_settings.firstRunMessageHtml) {return;}
+			
+			// End if in embed mode, if required
+			if (!_settings.firstRunMessageEmbedMode) {
+				if (_embedMode) {
+					return;
+				}
+			}
 			
 			// End if cookie already set
 			var name = 'welcome';
