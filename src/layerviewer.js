@@ -2238,7 +2238,7 @@ var layerviewer = (function ($) {
 		},
 		
 
-		// Function to ascertain the geolocation status of the brwoser
+		// Function to ascertain the geolocation status of the browser
 		// If the class geolocationAvailability flag has been set to false, this function will not attempt to geolocate
 		// @param onSuccess: function to be called if geolocation is found
 		// @param onError: function to be called if geolocation is unavailable, or an error occurs doing search
@@ -2309,7 +2309,7 @@ var layerviewer = (function ($) {
 			}
 
 			// Main entrance to this function
-			if (layerviewer.getGeolocationAvailability () || force){
+			if (layerviewer.getGeolocationAvailability () || force) {
 				getLocation ();
 			} else {
 				return false;
@@ -2781,7 +2781,7 @@ var layerviewer = (function ($) {
 				if (_layerConfig[layerId].fullZoomMessage) {
 					var message = _layerConfig[layerId].fullZoomMessage;
 				} else {
-					var message = 'Zoom in to show all ' + layerviewer.layerNameFromId (layerId).toLowerCase() + ' markers - only a selection are shown due to the volume.';
+					var message = 'Zoom in to show all ' + layerviewer.layerNameFromId (layerId).toLowerCase() + ' markers - only a selection may be shown due to the volume.';
 				}
 				_message.show (message);
 				$(_settings.selector + ' li.' + layerId + ' p.total').hide();
