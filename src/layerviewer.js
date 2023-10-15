@@ -3058,8 +3058,10 @@ var layerviewer = (function ($) {
 					
 					// Show error, unless deliberately aborted
 					if (jqXHR.statusText != 'abort') {
-						var data = $.parseJSON(jqXHR.responseText);
-						vex.dialog.alert ('Error: ' + data.error);
+						if (typeof jqXHR.responseText === 'string') {
+							var data = $.parseJSON (jqXHR.responseText);
+							vex.dialog.alert ('Error: ' + data.error);
+						}
 					}
 				},
 				success: function (data, textStatus, jqXHR) {
