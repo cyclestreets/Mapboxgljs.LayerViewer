@@ -5328,7 +5328,7 @@ var layerviewer = (function ($) {
 				case 'GeometryCollection':
 					var centre;
 					$.each (geometry.geometries, function (index, geometryItem) {
-						centre = streetfocus.getCentre (geometryItem);		// Iterate
+						centre = layerviewer.getCentre (geometryItem);		// Iterate
 						longitudes.push (centre.lon);
 						latitudes.push (centre.lat);
 					});
