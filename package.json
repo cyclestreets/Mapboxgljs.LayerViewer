@@ -11,16 +11,16 @@
     "@hughsk/fulltilt": "^0.7.1",
     "@mapbox/geojson-extent": "^1.0.1",
     "@mapbox/mapbox-gl-draw": "^1.4.3",
-    "@tmcw/togeojson": "^5.2.2",
-    "@types/geojson": "^7946.0.8",
+    "@tmcw/togeojson": "^5.8.1",
+    "@types/geojson": "^7946.0.14",
     "geojson": "^0.5.0",
     "jquery": "^3.7.1",
     "jquery-ui-dist": "^1.13.2",
-    "js-cookie": "2.2.1",
-    "jssha": "^3.2.0",
-    "leaflet": "^1.8.0",
+    "js-cookie": "^3.0.5",
+    "jssha": "^3.3.1",
+    "leaflet": "^1.9.4",
     "mapbox-gl": "^3.3.0",
-    "papaparse": "^5.3.2",
+    "papaparse": "^5.4.1",
     "vex-js": "^4.1.0"
   }
 }

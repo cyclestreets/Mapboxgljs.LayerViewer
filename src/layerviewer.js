@@ -621,9 +621,10 @@ var layerviewer = (function ($) {
 			*/
 			
 			// If cookie state is provided, use that to select the sections
-			var state = Cookies.getJSON ('state');
 			var initialLayersCookies = [];
+			var state = Cookies.get ('state');
 			if (state) {
+				state = JSON.parse (state);
 				$.each (state, function (layerId, parameters) {
 					if (_layerConfig[layerId]) {
 						initialLayersCookies.push (layerId);
