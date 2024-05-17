@@ -3468,7 +3468,7 @@ var layerviewer = (function ($) {
 		// Function to set/update a cookie containing the full request state
 		setStateCookie: function ()
 		{
-			Cookies.set ('state', _requestCache, {expires: 14});
+			Cookies.set ('state', JSON.stringify (_requestCache), {expires: 14});
 		},
 		
 		
