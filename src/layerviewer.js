@@ -3,12 +3,13 @@
 /*jslint browser: true, white: true, single: true, for: true, long: true, unordered: true */
 /*global $, jQuery, mapboxgl, MapboxDraw, geojsonExtent, autocomplete, Cookies, vex, GeoJSON, FULLTILT, L, Papa, jsSHA, toGeoJSON, alert, console, window, history, DeviceOrientationEvent */
 
-var layerviewer = (function ($) {
+const layerviewer = (function ($) {
 	
 	'use strict';
 	
+	
 	// Settings defaults
-	var _settings = {
+	const _settings = {
 		
 		// API
 		apiBaseUrl: 'API_BASE_URL',
@@ -267,7 +268,7 @@ var layerviewer = (function ($) {
 	
 	// Layer definitions, which should be overriden by being supplied as an argument by the calling application
 	// #!# These do not actually represent defaults, unlike the main config - this should be enabled
-	var _layerConfig = {
+	let _layerConfig = {
 		
 		/* Example, showing all available options:
 		layerid: {
@@ -481,14 +482,14 @@ var layerviewer = (function ($) {
 	};
 	
 	// Define the supported OpenGIS types; this registry is currently only used for popups
-	var _opengisTypes = [
+	const _opengisTypes = [
 		'Point',
 		'LineString',
 		'Polygon'
 	];
 	
 	// Define the geometry types and their default styles
-	var _defaultStyles = {
+	const _defaultStyles = {
 		'Point': {
 			// NB Icons, if present, are also drawn over the points
 			type: 'circle',
@@ -521,43 +522,43 @@ var layerviewer = (function ($) {
 	};
 	
 	// Internal class properties
-	var _map = null;
-	var _layers = {};	// Layer status registry
-	var _backgroundMapStyles = {};
-	var _backgroundMapStylesManualAttributions = {};
-	var _manualAttribution = null;
-	var _currentBackgroundMapStyleId;
-	var _backgroundStylesInternalPrefix = 'background-';
-	var _markers = [];
-	var _popups = [];
-	var _tileOverlayLayer = false;
-	var _isTouchDevice;
-	var _panningEnabled = false;
-	var _virginFormState = {};
-	var _parameters = {};
-	var _dataRefreshHandlers = {};
-	var _xhrRequests = {};
-	var _requestCache = {};
-	var _sublayerValues = {};
-	var _fitInitial = {};
-	var _title = false;
-	var _embedMode = false;
-	var _betaMode = false;
-	var _message = {};
-	var _regionBounds = {};
-	var _regionSwitcherDefaultRegionFromUrl = false;
-	var _selectedRegion = false;
-	var _locateHandlerFunction;
-	var _locateHandlerMarker;
-	var _miniMaps = {};			// Handle to each mini map
-	var _miniMapLayers = {};	// Handle to each mini map's layer
-	var _geolocate = null; // Store the geolocation element
-	var _geolocationAvailable = false; // Store geolocation availability, to automatically disable location tracking if user has not selected the right permissions
-	var _customPanningIndicatorAction = false; // Custom function that can be run on click action panning on and off, i.e. to control the visual state of a custom panning button
-	var _customGeolocationButtonAction = false; // Custom function that can be run on click event on geolocation control, i.e. to control the visual state of a custom geolocation control
-	var _drawing = {} // Object to control drawing, accessible externally to LayerViewer via registering a listener; structure defined in drawing () function
-	var _draw = null; // Store the Mapbox draw object
-	var _popupClickHandlers = {};
+	let _map = null;
+	const _layers = {};	// Layer status registry
+	const _backgroundMapStyles = {};
+	const _backgroundMapStylesManualAttributions = {};
+	let _manualAttribution = null;
+	let _currentBackgroundMapStyleId;
+	const _backgroundStylesInternalPrefix = 'background-';
+	const _markers = [];
+	const _popups = [];
+	let _tileOverlayLayer = false;
+	let _isTouchDevice;
+	let _panningEnabled = false;
+	const _virginFormState = {};
+	const _parameters = {};
+	const _dataRefreshHandlers = {};
+	const _xhrRequests = {};
+	const _requestCache = {};
+	const _sublayerValues = {};
+	const _fitInitial = {};
+	let _title = false;
+	let _embedMode = false;
+	let _betaMode = false;
+	const _message = {};
+	const _regionBounds = {};
+	let _regionSwitcherDefaultRegionFromUrl = false;
+	let _selectedRegion = false;
+	let _locateHandlerFunction;
+	let _locateHandlerMarker;
+	const _miniMaps = {};			// Handle to each mini map
+	const _miniMapLayers = {};	// Handle to each mini map's layer
+	let _geolocate = null; // Store the geolocation element
+	let _geolocationAvailable = false; // Store geolocation availability, to automatically disable location tracking if user has not selected the right permissions
+	let _customPanningIndicatorAction = false; // Custom function that can be run on click action panning on and off, i.e. to control the visual state of a custom panning button
+	let _customGeolocationButtonAction = false; // Custom function that can be run on click event on geolocation control, i.e. to control the visual state of a custom geolocation control
+	let _drawing = {} // Object to control drawing, accessible externally to LayerViewer via registering a listener; structure defined in drawing () function
+	let _draw = null; // Store the Mapbox draw object
+	let _popupClickHandlers = {};
 	
 	return {
 		
@@ -594,11 +595,11 @@ var layerviewer = (function ($) {
 			_layerConfig = layerConfig;
 			
 			// Parse the URL
-			var urlParameters = layerviewer.parseUrl ();
+			const urlParameters = layerviewer.parseUrl ();
 
 			// Set the initial location and tile layer
-			var defaultLocation = (urlParameters.defaultLocation || _settings.defaultLocation);
-			var defaultTileLayer = (urlParameters.defaultTileLayer || _settings.defaultTileLayer);
+			const defaultLocation = (urlParameters.defaultLocation || _settings.defaultLocation);
+			const defaultTileLayer = (urlParameters.defaultTileLayer || _settings.defaultTileLayer);
 			
 			// Load background map style defitions
 			layerviewer.getBackgroundMapStyles ();
@@ -610,10 +611,10 @@ var layerviewer = (function ($) {
 			layerviewer.embedMode ();
 			
 			// If HTML5 History state is provided, use that to select the sections
-			var initialLayersPopstate = false;
+			let initialLayersPopstate = false;
 			/* Doesn't work yet, as is asyncronous - need to restructure the initialisation
 			$(window).on('popstate', function (e) {
-				var popstate = e.originalEvent.state;
+				const popstate = e.originalEvent.state;
 				if (popstate !== null) {
 					initialLayersPopstate = popstate;
 				}
@@ -621,8 +622,8 @@ var layerviewer = (function ($) {
 			*/
 			
 			// If cookie state is provided, use that to select the sections
-			var initialLayersCookies = [];
-			var state = Cookies.get ('state');
+			const initialLayersCookies = [];
+			let state = Cookies.get ('state');
 			if (state) {
 				state = JSON.parse (state);
 				$.each (state, function (layerId, parameters) {
@@ -633,7 +634,7 @@ var layerviewer = (function ($) {
 			}
 			
 			// Determine layers to use, checking for data in order of precedence
-			var initialLayers = initialLayersPopstate || (urlParameters.sections.length ? urlParameters.sections : false) || (initialLayersCookies.length ? initialLayersCookies : false) || _settings.defaultLayers;
+			const initialLayers = initialLayersPopstate || (urlParameters.sections.length ? urlParameters.sections : false) || (initialLayersCookies.length ? initialLayersCookies : false) || _settings.defaultLayers;
 			
 			// Load the tabs
 			layerviewer.loadTabs (initialLayers);
@@ -745,7 +746,7 @@ var layerviewer = (function ($) {
 		toggleDataLayer: function (target)
 		{
 			// Add class to facilitate display of an icon
-			var layerId = target.id.replace('show_', '');
+			const layerId = target.id.replace('show_', '');
 			if (target.checked) {
 				_layers[layerId] = true;
 				layerviewer.enableLayer (layerId);
@@ -793,9 +794,9 @@ var layerviewer = (function ($) {
 		passwordProtection: function ()
 		{
 			// Obtain the cookie if present
-			var hostSuffix = window.location.hostname.toLowerCase().replace(/[^a-z]+/g, '');
-			var cookieName = 'login' + hostSuffix;
-			var value = Cookies.get(cookieName);
+			const hostSuffix = window.location.hostname.toLowerCase().replace(/[^a-z]+/g, '');
+			const cookieName = 'login' + hostSuffix;
+			const value = Cookies.get (cookieName);
 			
 			// Validate if value supplied from cookie
 			if (value) {
@@ -805,13 +806,13 @@ var layerviewer = (function ($) {
 			}
 			
 			// Get the home page HTML and overwrite the content
-			var html = $('#home').html();
+			let html = $('#home').html ();
 			html = '<div id="protection">' + html + '</div>';
 			$('main').html (html);
 			
 			// Add a password form
 			$('#protection').append ('<p id="loginprompt">If you have been given a login password, please enter it below.</p>');
-			var form = $('<form id="password" method="post"></form>');
+			const form = $('<form id="password" method="post"></form>');
 			form.append('<input name="password" type="password" required="required" placeholder="Password" size="20" autofocus="autofocus" />');
 			form.append('<input type="submit" value="Submit" />');
 			$('#protection').append (form);
@@ -823,8 +824,8 @@ var layerviewer = (function ($) {
 				event.preventDefault();
 				
 				// Obtain the value and validate the password
-				var values = $(this).serializeArray ();
-				var password = values[0].value;
+				const values = $(this).serializeArray ();
+				const password = values[0].value;
 				if (layerviewer.validatePassword (password)) {
 					
 					// Set the cookie, storing the (low-security) entered value
@@ -835,9 +836,8 @@ var layerviewer = (function ($) {
 				} else {
 					
 					// Show message
-					var message = 'The password you gave is not correct. Please check and try again.';
 					vex.dialog.alert ({
-						message: message,
+						message: 'The password you gave is not correct. Please check and try again.',
 						showCloseButton: true,
 						className: 'vex vex-theme-plain',
 						afterClose: function () {
@@ -857,9 +857,9 @@ var layerviewer = (function ($) {
 		validatePassword: function (value)
 		{
 			// Hash the value
-			var shaObj = new jsSHA ('SHA-256', 'TEXT');
+			const shaObj = new jsSHA ('SHA-256', 'TEXT');
 			shaObj.update (value);
-			var hash = shaObj.getHash ('HEX');
+			const hash = shaObj.getHash ('HEX');
 			
 			// If a string, convert to array
 			if (typeof _settings.password == 'string') {
@@ -867,7 +867,7 @@ var layerviewer = (function ($) {
 			}
 			
 			// Compare against the correct password hash
-			var matched = false;
+			let matched = false;
 			$.each (_settings.password, function (index, password) {
 				if (hash === password) {
 					matched = true;
@@ -884,12 +884,12 @@ var layerviewer = (function ($) {
 		parseUrl: function ()
 		{
 			// Start a list of parameters
-			var urlParameters = {};
+			const urlParameters = {};
 			
 			// Split the path by slash; see: https://stackoverflow.com/a/8086637
-			var url = window.location.pathname;
+			let url = window.location.pathname;
 			url = url.substr (_settings.baseUrl.length);	// Remove baseUrl from start
-			var pathComponents = url.split ('/');
+			const pathComponents = url.split ('/');
 			if (pathComponents) {
 				
 				if (_settings.regionSwitcherPermalinks) {
@@ -898,7 +898,7 @@ var layerviewer = (function ($) {
 				}
 				
 				// Obtain the sections and form parameters from the URL
-				var formParameters = layerviewer.urlSlugToFormParameters (pathComponents[0]);
+				const formParameters = layerviewer.urlSlugToFormParameters (pathComponents[0]);
 				
 				// Obtain the section(s), checking against the available sections in the settings
 				urlParameters.sections = [];
@@ -934,7 +934,7 @@ var layerviewer = (function ($) {
 			urlParameters.defaultLocation = null;
 			urlParameters.defaultTileLayer = null;
 			if (window.location.hash) {
-				var hashParts = window.location.hash.match (/^#([0-9]{1,2}.?[0-9]*)\/([-.0-9]+)\/([-.0-9]+)\/([a-z0-9]+)$/);	// E.g. #17.21/51.51137/-0.10498/opencyclemap
+				const hashParts = window.location.hash.match (/^#([0-9]{1,2}.?[0-9]*)\/([-.0-9]+)\/([-.0-9]+)\/([a-z0-9]+)$/);	// E.g. #17.21/51.51137/-0.10498/opencyclemap
 				if (hashParts) {
 					urlParameters.defaultLocation = {
 						latitude: hashParts[2],
@@ -958,8 +958,8 @@ var layerviewer = (function ($) {
 		{
 			// See: https://stackoverflow.com/a/8649003/180733
 			if (!location.search.length) {return {};}
-			var queryString = location.search.substring(1);
-			var parameters = layerviewer.deparam (queryString);
+			const queryString = location.search.substring(1);
+			const parameters = layerviewer.deparam (queryString);
 			return parameters;
 		},
 		
@@ -997,27 +997,27 @@ var layerviewer = (function ($) {
 					if (_settings.regionsField) {
 						
 						// Create a popup, but don't add it to the map yet
-						var popup = new mapboxgl.Popup ({
+						const popup = new mapboxgl.Popup ({
 							closeButton: (_settings.regionsPopupFull),	// Enable close button if using full layer-style popups
 							closeOnClick: false
 						});
 						
 						// Handle popup; see: https://docs.mapbox.com/mapbox-gl-js/example/popup-on-hover/
-						var eventType = (_settings.regionsPopupFull ? 'click' : 'mouseenter');
+						const eventType = (_settings.regionsPopupFull ? 'click' : 'mouseenter');
 						_map.on (eventType, 'regionsOverlay', function (e) {
 							_map.getCanvas().style.cursor = 'pointer';
 							
 							// Set the co-ordinates
-							var feature = e.features[0];
-							var coordinates = layerviewer.polygonCentroid (feature);
+							const feature = e.features[0];
+							const coordinates = layerviewer.polygonCentroid (feature);
 							
 							// Add the region name as the popup content
-							var regionName = (_settings.regionsNameField ? feature.properties[_settings.regionsNameField] : layerviewer.ucfirst (feature.properties[_settings.regionsField]));
-							var popupHtml = layerviewer.htmlspecialchars (regionName);
+							const regionName = (_settings.regionsNameField ? feature.properties[_settings.regionsNameField] : layerviewer.ucfirst (feature.properties[_settings.regionsField]));
+							let popupHtml = layerviewer.htmlspecialchars (regionName);
 							
 							// Generate custom HTML popup, if enabled
 							if (_settings.regionsPopupFull) {
-								var regionsNullObjectName = '__regions';
+								const regionsNullObjectName = '__regions';
 								_layerConfig[regionsNullObjectName] = {};	// Temporarily emulate a layer using the Null Object design pattern, to ensure the popup renderer has a standard datastructure
 								popupHtml = layerviewer.renderDetailsHtml (feature, false, regionsNullObjectName);
 								delete _layerConfig[regionsNullObjectName];	// Remove the emulated layer
@@ -1039,7 +1039,7 @@ var layerviewer = (function ($) {
 					// Zoom to area and remove layer when clicked, unless disabled
 					if (_settings.initialRegionsViewRemovalClick) {
 						_map.on ('click', 'regionsOverlay', function (e) {
-							var feature = e.features[0];
+							const feature = e.features[0];
 							_map.fitBounds (geojsonExtent (feature));
 							_map.removeLayer ('regionsOverlay');
 							if (_settings.regionsField) {
@@ -1051,8 +1051,8 @@ var layerviewer = (function ($) {
 					// If polygons remain after initial regions view, treat a click on a different region as an implied drop-down change
 					if (!_settings.initialRegionsViewRemovalClick) {
 						_map.on ('click', 'regionsOverlay', function (e) {
-							var feature = e.features[0];
-							var switchToRegion = feature.properties[_settings.regionsField];
+							const feature = e.features[0];
+							const switchToRegion = feature.properties[_settings.regionsField];
 							if (switchToRegion != _selectedRegion) {	// Don't reload current if already loaded
 								$('#regionswitcher select').val (switchToRegion);
 								$('#regionswitcher select').trigger ('change');
@@ -1064,7 +1064,7 @@ var layerviewer = (function ($) {
 					if (_settings.initialRegionsViewRemovalZoom) {
 						_map.on ('zoomend', function (e) {
 							if (_map.getLayer ('regionsOverlay')) {
-								var currentZoom = _map.getZoom ();
+								const currentZoom = _map.getZoom ();
 								if (currentZoom >= _settings.initialRegionsViewRemovalZoom) {
 									_map.removeLayer ('regionsOverlay');
 								}
@@ -1080,7 +1080,7 @@ var layerviewer = (function ($) {
 		hoverStateHandlers: function (layerId, sourceId)
 		{
 			// Create the hover state ID
-			var hoveredStateId = null;
+			let hoveredStateId = null;
 			
 			// When the user moves their mouse over the state-fill layer, update the feature state for the feature under the mouse
 			_map.on ('mousemove', layerId, function (e) {
@@ -1108,8 +1108,8 @@ var layerviewer = (function ($) {
 		polygonCentroid: function (feature)
 		{
 			// Convert the feature to bbox bounds, and then get the centre of that bbox
-			var bounds = geojsonExtent (feature);
-			var coordinates = {
+			const bounds = geojsonExtent (feature);
+			const coordinates = {
 				lng: ((bounds[0] + bounds[2]) / 2),	// Average (centre) of W/E
 				lat: ((bounds[1] + bounds[3]) / 2)	// Average (centre) of S/N
 			};
@@ -1124,7 +1124,7 @@ var layerviewer = (function ($) {
 			if (!_embedMode) {return;}
 			
 			// If the site is being iframed, force target of each link to parent
-			var inIframe = layerviewer.inIframe ();
+			const inIframe = layerviewer.inIframe ();
 			if (inIframe) {
 				$('a').attr('target', '_parent');
 			}
@@ -1165,7 +1165,7 @@ var layerviewer = (function ($) {
 				
 				// If a default tab is defined (or several, in which case use the first), switch to its contents (controls); see: https://stackoverflow.com/a/7916955/180733
 				if (defaultLayers[0]) {
-					var index = $('nav li.' + defaultLayers[0]).index ();
+					const index = $('nav li.' + defaultLayers[0]).index ();
 					$('nav').tabs ('option', 'active', index);
 				}
 			}
@@ -1183,7 +1183,7 @@ var layerviewer = (function ($) {
 				if (_settings.useJqueryTabsRendering) {
 					// If enabling, switch to its tab contents (controls)
 					if (this.checked) {
-						var index = $(this).parent ().index ();
+						const index = $(this).parent ().index ();
 						$('nav').tabs ('option', 'active', index);
 					}
 				}
@@ -1207,7 +1207,7 @@ var layerviewer = (function ($) {
 		// Function for handlers of implicit selection of checkbox on form change
 		formChangeImplicitCheckbox: function (changedInputPath)
 		{
-			var layerId = $(changedInputPath).closest('#sections > div').attr('id');	// Assumes #sections contains layer DIVs directly
+			const layerId = $(changedInputPath).closest('#sections > div').attr('id');	// Assumes #sections contains layer DIVs directly
 			if ($(_settings.selector + ' input#show_' + layerId).prop ('checked') != true) {
 				$(_settings.selector + ' input#show_' + layerId).click ();
 			}
@@ -1260,7 +1260,7 @@ var layerviewer = (function ($) {
 			if (!history.pushState) {return;}
 			
 			// Obtain the URL slug
-			var urlSlug = layerviewer.formParametersToUrlSlug ();
+			let urlSlug = layerviewer.formParametersToUrlSlug ();
 			
 			// Obtain the region component, if enabled, prefixing it to the URL slug
 			if (_settings.regionSwitcherPermalinks) {
@@ -1268,12 +1268,12 @@ var layerviewer = (function ($) {
 			}
 			
 			// Construct the URL
-			var url = _settings.baseUrl;	// Absolute URL
+			let url = _settings.baseUrl;	// Absolute URL
 			url += urlSlug;
 			url += window.location.hash;
 			
 			// Construct the page title, based on the enabled layers
-			var title = layerviewer.pageTitle ();
+			const title = layerviewer.pageTitle ();
 			
 			// Push the URL state
 			history.pushState (urlSlug, title, url);
@@ -1285,18 +1285,15 @@ var layerviewer = (function ($) {
 		formParametersToUrlSlug: function ()
 		{
 			// Define system-wide parameters that are not layer-specific
-			var genericParameters = ['bbox', 'boundary'];
+			const genericParameters = ['bbox', 'boundary'];
 			
 			// Filter for enabled layers
-			var enabledLayers = [];
-			var urlComponent;
-			var urlParameters;
-			var submittedValue;
+			const enabledLayers = [];
 			$.each (_layers, function (layerId, isEnabled) {
 				if (isEnabled) {
 					
 					// Start an array of URL parameters for this layer; this will remain empty if the form matches its virgin state
-					urlParameters = {};
+					const urlParameters = {};
 					
 					// Determine the difference in the form parameters against the virgin state, to keep the URL as short as possible
 					// This has to compute the difference of the virgin form state and the supplied parameters
@@ -1311,7 +1308,7 @@ var layerviewer = (function ($) {
 					// In the example above, this applies to field 'foo'
 					$.each (_virginFormState[layerId], function (field, virginValue) {
 						if (_parameters.hasOwnProperty (layerId) && _parameters[layerId].hasOwnProperty (field)) {
-							submittedValue = _parameters[layerId][field];
+							let submittedValue = _parameters[layerId][field];
 							if (submittedValue !== virginValue) {
 								urlParameters[field] = submittedValue;
 							}
@@ -1342,7 +1339,7 @@ var layerviewer = (function ($) {
 					});
 					
 					// Assemble the URL component representing this layer, combining the layer name with any parameters if present, e.g. 'collisions' or 'collisions:foo=bar,...'
-					urlComponent = layerId;
+					let urlComponent = layerId;
 					if (!$.isEmptyObject (urlParameters)) {
 						urlComponent += ':' + $.param (urlParameters);
 					}
@@ -1353,7 +1350,7 @@ var layerviewer = (function ($) {
 			});
 			
 			// Construct the URL slug, joining by comma
-			var urlSlug = enabledLayers.join (',') + (enabledLayers.length ? '/' : '');
+			const urlSlug = enabledLayers.join (',') + (enabledLayers.length ? '/' : '');
 			
 			//console.log ('Virgin form state: ', _virginFormState);
 			//console.log ('URL parameters array: ', _parameters);
@@ -1371,14 +1368,14 @@ var layerviewer = (function ($) {
 			if (!urlSlug) {return {};}
 			
 			// Split by comma
-			var components = urlSlug.split (',');
+			const components = urlSlug.split (',');
 			
 			// Split each component by optional colon, then unpack the encoded string
-			var layers = {};
+			const layers = {};
 			$.each (components, function (index, component) {
-				var layerDetails = component.split (':', 2);
-				var layerId = layerDetails[0];
-				var parameters = (layerDetails[1] ? layerviewer.deparam (layerDetails[1]) : {});
+				const layerDetails = component.split (':', 2);
+				const layerId = layerDetails[0];
+				const parameters = (layerDetails[1] ? layerviewer.deparam (layerDetails[1]) : {});
 				layers[layerId] = parameters;
 			});
 			
@@ -1391,7 +1388,7 @@ var layerviewer = (function ($) {
 		deparam: function (string)
 		{
 			return string.split('&').reduce(function (params, param) {
-				var paramSplit = param.split('=').map(function (value) {
+				const paramSplit = param.split('=').map(function (value) {
 					return decodeURIComponent(value.replace('+', ' '));
 				});
 				params[paramSplit[0]] = paramSplit[1];
@@ -1404,8 +1401,8 @@ var layerviewer = (function ($) {
 		pageTitle: function ()
 		{
 			if (!_title) {_title = document.title;}		// Obtain and cache the original page title
-			var title = _title;
-			var layerTitles = [];
+			let title = _title;
+			const layerTitles = [];
 			$.each (_layers, function (layerId, isEnabled) {
 				if (isEnabled) {
 					layerTitles.push (layerviewer.layerNameFromId (layerId).toLowerCase());
@@ -1432,24 +1429,24 @@ var layerviewer = (function ($) {
 		{
 			// Support for "data-monthly-since" (e.g. = '2013-07') macro which populates a select with an option list of each month, grouped by optgroup years
 			// #!# Also need support for data-monthly-until
-			var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-			$('select[data-monthly-since]').val(function() {	// See: https://stackoverflow.com/a/16086337
-				var since = $(this).data('monthly-since');
+			const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+			$('select[data-monthly-since]').val (function () {	// See: https://stackoverflow.com/a/16086337
+				let since = $(this).data('monthly-since');
 				since = since.split('-');
-				var sinceYear = since[0];
-				var sinceMonth = since[1];
-				var html = '';
-				var yearToday = new Date().getFullYear();
-				var monthToday = new Date().getMonth() + 1;	// Index from 1
-				var year;
-				var month;
-				var month1Indexed;
+				const sinceYear = since[0];
+				const sinceMonth = since[1];
+				let html = '';
+				const yearToday = new Date().getFullYear();
+				const monthToday = new Date().getMonth() + 1;	// Index from 1
+				let year;
+				let month;
+				let month1Indexed;
 				for (year = yearToday; year >= sinceYear; year--) {	// See: https://stackoverflow.com/a/26511699
 					html += '<optgroup label="' + year + '">';
 					for (month = months.length - 1; month >= 0; month--) {	// Loop through backwards reliably; see: https://stackoverflow.com/a/4956313
 						month1Indexed = month + 1;
 						if ((year == yearToday) && (month1Indexed >= monthToday)) {continue;}	// Skip months not yet completed
-						var monthPadded = (month1Indexed < 10 ? '0' : '') + month1Indexed;	// Pad zeroes and cast as string
+						const monthPadded = (month1Indexed < 10 ? '0' : '') + month1Indexed;	// Pad zeroes and cast as string
 						html += '<option value="' + year + '-' + monthPadded + '">' + months[month] + ' ' + year + '</option>';
 						if ((year == sinceYear) && (monthPadded == sinceMonth)) {break;}	// End at last year and since month
 					}
@@ -1460,11 +1457,11 @@ var layerviewer = (function ($) {
 			
 			// Support for "data-yearly-since-unixtime" macro which populates a select with an option list of each year, expressed as Unixtime
 			$('select[data-yearly-since-unixtime]').val(function() {
-				var sinceYear = $(this).data('yearly-since-unixtime');
-				var yearToday = new Date().getFullYear();
-				var html = '';
-				var year;
-				var unixtime;
+				const sinceYear = $(this).data('yearly-since-unixtime');
+				const yearToday = new Date().getFullYear();
+				let html = '';
+				let year;
+				let unixtime;
 				for (year = yearToday; year >= sinceYear; year--) {	// See: https://stackoverflow.com/a/26511699
 					unixtime = parseInt((new Date(year, 1, 1).getTime() / 1000).toFixed(0));	// https://stackoverflow.com/a/28683720/180733
 					html += '<option value="' + unixtime + '">' + year + '</option>';
@@ -1473,18 +1470,18 @@ var layerviewer = (function ($) {
 			});
 			
 			// Support for "data-yearly-range-{since|until}-sqldate" macros which populate a select with an option list of each year in a comma-separated range, expressed as SQL time
-			var sqltimeMacros = {
+			const sqltimeMacros = {
 				'yearly-range-since-sqldate': '-01-01',
 				'yearly-range-until-sqldate': '-12-31'
 			};
 			$.each (sqltimeMacros, function (macroName, monthDateString) {
 				$('select[data-' + macroName + ']').val(function() {
-					var yearRange = $(this).data(macroName).split (',');
-					var startYear = yearRange[0];
-					var finishYear = yearRange[1];
-					var html = '';
-					var year;
-					var sqldate;
+					const yearRange = $(this).data(macroName).split (',');
+					const startYear = yearRange[0];
+					const finishYear = yearRange[1];
+					let html = '';
+					let year;
+					let sqldate;
 					for (year = finishYear; year >= startYear; year--) {	// See: https://stackoverflow.com/a/26511699
 						sqldate = year + monthDateString;
 						html += '<option value="' + sqldate + '">' + year + '</option>';
@@ -1499,13 +1496,13 @@ var layerviewer = (function ($) {
 		sliderValueDisplayHandler: function ()
 		{
 			// For each slider, show the input's value (at start, and on change), in the associated paragraph tag
-			//var sliderDivs = $('form#data .slider');
-			var sliderDivs = $('form .slider');
+			//const sliderDivs = $('form#data .slider');
+			const sliderDivs = $('form .slider');
 			$.each (sliderDivs, function (index, sliderDiv) {
-				var datalistLabel = $('datalist option[value="' + $('input', sliderDiv).val() + '"]', sliderDiv).text();
+				const datalistLabel = $('datalist option[value="' + $('input', sliderDiv).val() + '"]', sliderDiv).text();
 				$('p', sliderDiv).text (datalistLabel);
 				$('input', sliderDiv).on ('change', function (event) {
-					var datalistLabel = $('datalist option[value="' + event.target.value + '"]', sliderDiv).text();
+					const datalistLabel = $('datalist option[value="' + event.target.value + '"]', sliderDiv).text();
 					$('p', sliderDiv).text (datalistLabel);
 				});
 			});
@@ -1516,22 +1513,19 @@ var layerviewer = (function ($) {
 		setFormValues: function (formParameters)
 		{
 			// Set form values, where they exist
-			var elementPathsTry;
-			var elementWidgets;
-			var valueList;
 			$.each (formParameters, function (layerId, values) {
 				if (_layerConfig[layerId]) {	// Validate against layer registry
 					$.each (values, function (inputName, value) {
 						
 						// Element paths may have [] appended, e.g. for checkboxes
-						elementPathsTry = [
+						const elementPathsTry = [
 							'#sections #' + layerId + ' :input[name="' + inputName + '"]',
 							'#sections #' + layerId + ' :input[name="' + inputName + '[]' + '"]'
 						];
 						
 						// Try each path variant
 						$.each (elementPathsTry, function (index, elementPath) {
-							elementWidgets = $(elementPath).length;
+							const elementWidgets = $(elementPath).length;
 							if (elementWidgets) {
 								
 								// Handle standard singular elements
@@ -1541,7 +1535,7 @@ var layerviewer = (function ($) {
 								
 								// Handle checkboxes, which have more than one widget each with matching name
 								if (elementWidgets > 1) {
-									valueList = value.split (',');
+									const valueList = value.split (',');
 									$.each ($(elementPath), function (index, subElement) {
 										if (valueList.indexOf (subElement.value) !== -1) {		// i.e. if present
 											$(subElement).attr ('checked', true);
@@ -1581,10 +1575,10 @@ var layerviewer = (function ($) {
 			$('.moredetails').click (function (e) {
 				
 				// Obtain the field
-				var field = $(this).attr('data-field');
+				const field = $(this).attr('data-field');
 				
 				// Obtain the content; see: https://stackoverflow.com/a/14744011/180733 and https://stackoverflow.com/a/25183183/180733
-				var dialogBoxContentHtml = $('#aboutfields').find('h3.' + field).nextUntil('h3').addBack().map(function() {
+				let dialogBoxContentHtml = $('#aboutfields').find('h3.' + field).nextUntil('h3').addBack().map(function() {
 					return this.outerHTML;
 				}).get().join('');
 				if (!dialogBoxContentHtml) {
@@ -1625,11 +1619,11 @@ var layerviewer = (function ($) {
 			}
 			
 			// End if cookie already set
-			var name = 'welcome';
-			if (Cookies.get(name)) {return;}
+			const cookieName = 'welcome';
+			if (Cookies.get (cookieName)) {return;}
 			
 			// Set the cookie
-			Cookies.set(name, '1', {expires: 14});
+			Cookies.set (cookieName, '1', {expires: 14});
 			
 			// Show the dialog
 			vex.dialog.alert ({unsafeMessage: _settings.firstRunMessageHtml});
@@ -1655,15 +1649,15 @@ var layerviewer = (function ($) {
 		setLegend: function (layerId)
 		{
 			// Determine the intervals and polygon/line colour stops for the current layer
-			var intervals = _layerConfig[layerId].legend;
-			var polygonColourStops = _layerConfig[layerId].polygonColourStops;
-			var lineColourStops = _layerConfig[layerId].lineColourStops;
+			let intervals = _layerConfig[layerId].legend;
+			const polygonColourStops = _layerConfig[layerId].polygonColourStops;
+			let lineColourStops = _layerConfig[layerId].lineColourStops;
 			
 			// In sublayer mode, do not display unless a sublayer is specified
 			if (_layerConfig[layerId].sublayerParameter) {
 				
 				// Determine sublayer intervals support
-				var sublayerIntervals = (_layerConfig[layerId].sublayerParameter ? layerviewer.sublayerableConfig ('legend', layerId) : false);
+				const sublayerIntervals = (_layerConfig[layerId].sublayerParameter ? layerviewer.sublayerableConfig ('legend', layerId) : false);
 				
 				// If sublayer support is enabled, end if no sublayer specified, clearing the legend if present
 				if (!sublayerIntervals) {
@@ -1692,13 +1686,11 @@ var layerviewer = (function ($) {
 			// If intervals is 'range', and polygonColourStops/lineColourStops is defined, generate range labels from these
 			if ((intervals == 'range') && (polygonColourStops || lineColourStops)) {
 				intervals = [];
-				var label;
-				var colour;
-				var value;
-				var stops = polygonColourStops || lineColourStops;
+				const stops = polygonColourStops || lineColourStops;
 				$.each (stops, function (index, interval) {
-					colour = interval[1];
-					value = interval[0];
+					let label;
+					const colour = interval[1];
+					const value = interval[0];
 					if (index == 0) {
 						label = value + '+';
 					} else {
@@ -1709,20 +1701,20 @@ var layerviewer = (function ($) {
 			}
 			
 			// Create the labels
-			var labels = [];
+			const labels = [];
 			$.each (intervals, function (index, interval) {
 				labels.push (['<i style="background: ' + interval[1] + '"></i>', layerviewer.htmlspecialchars (layerviewer.ucfirst (interval[0]))]);
 			});
 			
 			// Compile the labels table
-			var labelsTable = '<table>';
+			let labelsTable = '<table>';
 			$.each (labels, function (index, label) {
 				labelsTable += '<tr><td>' + label[0] + '</td><td>' + label[1] + '</td></tr>';
 			});
 			labelsTable += '</table>';
 			
 			// Compile the HTML
-			var html = '';
+			let html = '';
 			if (_layerConfig[layerId].name) {
 				html += '<h4>' + layerviewer.htmlspecialchars (_layerConfig[layerId].name) + '</h4>';
 			}
@@ -1755,10 +1747,10 @@ var layerviewer = (function ($) {
 			layerviewer.createControl ('betaswitch', 'bottom-right', 'info');
 			
 			// Determine the label
-			var label = (_settings.enableBetaSwitch === true ? 'Beta' : _settings.enableBetaSwitch);
+			const label = (_settings.enableBetaSwitch === true ? 'Beta' : _settings.enableBetaSwitch);
 			
 			// Define the HTML
-			var html = '<form id="beta"><input type="checkbox" id="betabutton" name="betabutton" value="true" /><label for="betabutton"> ' + label + '</label></form>';
+			const html = '<form id="beta"><input type="checkbox" id="betabutton" name="betabutton" value="true" /><label for="betabutton"> ' + label + '</label></form>';
 			
 			// Add the content
 			$('#betaswitch').html (html);
@@ -1774,7 +1766,7 @@ var layerviewer = (function ($) {
 			
 			// Register a method to set and show the message
 			_message.show = function (html) {
-				var html = '<p>' + html + '</p>';
+				html = '<p>' + html + '</p>';
 				$('#message').html (html);
 				$('#message').show ();
 			};
@@ -1797,7 +1789,7 @@ var layerviewer = (function ($) {
 			
 			// Create a list of the enabled layers
 			$(_settings.selector + ' input:checked').map (function () {
-				var layerId = this.id.replace('show_', '');
+				const layerId = this.id.replace('show_', '');
 				_layers[layerId] = true;
 			});
 		},
@@ -1807,9 +1799,9 @@ var layerviewer = (function ($) {
 		createMap: function (defaultLocation, defaultTileLayer)
 		{
 			// Determine the tile layer to load, setting the default but which can be overridden if a cookie was previously set
-			var tileLayerId = defaultTileLayer;
+			let tileLayerId = defaultTileLayer;
 			if (Cookies.get ('mapstyle')) {
-				var tileLayerId = Cookies.get ('mapstyle');
+				tileLayerId = Cookies.get ('mapstyle');
 			}
 			
 			// Create the map in the 'map' div, set the view to a given place and zoom
@@ -1929,7 +1921,7 @@ var layerviewer = (function ($) {
 		defineRasterTilesLayer: function (tileLayerAttributes, id)
 		{
 			// Determine if this is a TMS (i.e. {-y}) tilesource; see: https://docs.mapbox.com/mapbox-gl-js/style-spec/#sources-raster-scheme
-			var scheme = 'xyz';
+			let scheme = 'xyz';
 			if (tileLayerAttributes.tiles.indexOf('{-y}') != -1) {
 				tileLayerAttributes.tiles = tileLayerAttributes.tiles.replace ('{-y}', '{y}');
 				scheme = 'tms';
@@ -1952,7 +1944,7 @@ var layerviewer = (function ($) {
 			}
 			
 			// Register the definition
-			var sources = {};
+			const sources = {};
 			sources[id] = {
 				type: 'raster',
 				scheme: scheme,
@@ -1960,7 +1952,7 @@ var layerviewer = (function ($) {
 				tileSize: (tileLayerAttributes.tileSize ? tileLayerAttributes.tileSize : 256),	// NB Mapbox GL default is 512
 				attribution: tileLayerAttributes.attribution
 			};
-			var layerDefinition = {
+			const layerDefinition = {
 				version: 8,
 				sources: sources,	// Defined separately so that the id can be specified as a key
 				layers: [{
@@ -1979,18 +1971,18 @@ var layerviewer = (function ($) {
 		// Buildings layer; see: https://www.mapbox.com/mapbox-gl-js/example/3d-buildings/
 		addBuildings: function ()
 		{
-			// The 'building' layer in the mapbox-streets vector source contains building-height data from OpenStreetMap.
-			_map.on('style.load', function() {
+			// The 'building' layer in the mapbox-streets vector source contains building-height data from OpenStreetMap
+			_map.on ('style.load', function() {
 				
 				// Get the layers in the source style
-				var layers = _map.getStyle().layers;
+				const layers = _map.getStyle().layers;
 				
 				// Ensure the layer has buildings, or end
 				if (!layerviewer.styleHasLayer (layers, 'building')) {return;}
 				
 				// Insert the layer beneath any symbol layer.
-				var labelLayerId;
-				var i;
+				let labelLayerId;
+				let i;
 				for (i = 0; i < layers.length; i++) {
 					if (layers[i].type === 'symbol' && layers[i].layout['text-field']) {
 						labelLayerId = layers[i].id;
@@ -2031,7 +2023,7 @@ var layerviewer = (function ($) {
 		styleHasLayer: function (layers, layerName)
 		{
 			// Ensure the layer has buildings, or end
-			var i;
+			let i;
 			for (i = 0; i < layers.length; i++) {
 				if (layers[i].id == layerName) {
 					return true;
@@ -2146,7 +2138,7 @@ var layerviewer = (function ($) {
 			if (_customPanningIndicatorAction){
 				_customPanningIndicatorAction (_panningEnabled);
 			} else {
-				var text = (_panningEnabled ? 'Panning: enabled' : 'Panning: disabled');
+				const text = (_panningEnabled ? 'Panning: enabled' : 'Panning: disabled');
 				$('#panning').text (text);
 			}
 		},
@@ -2163,7 +2155,7 @@ var layerviewer = (function ($) {
 			layerviewer.monitorDragging();
 			
 			// Obtain a new *world-oriented* Full Tilt JS DeviceOrientation Promise
-			var promise = FULLTILT.getDeviceOrientation ({ 'type': 'world' });
+			const promise = FULLTILT.getDeviceOrientation ({ 'type': 'world' });
 			
 			// Wait for Promise result
 			promise.then (function (deviceOrientation) { // Device Orientation Events are supported
@@ -2176,10 +2168,10 @@ var layerviewer = (function ($) {
 					if (_panningEnabled) {
 						
 						// Get the current *screen-adjusted* device orientation angles
-						var currentOrientation = deviceOrientation.getScreenAdjustedEuler ();
+						const currentOrientation = deviceOrientation.getScreenAdjustedEuler ();
 						
 						// Calculate the current compass heading that the user is 'looking at' (in degrees)
-						var compassHeading = 360 - currentOrientation.alpha;
+						const compassHeading = 360 - currentOrientation.alpha;
 						
 						// Set the bearing and pitch
 						_map.setBearing (compassHeading);
@@ -2195,8 +2187,8 @@ var layerviewer = (function ($) {
 
 		// Deactivate FULLTILT when map is being dragged, as it blocks panning otherwise
 		monitorDragging: function () {
-			var isDragging = false;
-			var panningWasEnabled = false;
+			let isDragging = false;
+			let panningWasEnabled = false;
 
 			$('#map')
 				.tapstart(function () {
@@ -2216,7 +2208,7 @@ var layerviewer = (function ($) {
 				.tapend(function () {
 					if (panningWasEnabled) {
 						panningWasEnabled = false;
-						var wasDragging = isDragging;
+						const wasDragging = isDragging;
 						isDragging = false;
 						if (wasDragging) {
 							_panningEnabled = true;
@@ -2228,13 +2220,15 @@ var layerviewer = (function ($) {
 
 
 		// Set geolocation availability
-		setGeolocationAvailability: function (boolean) {
+		setGeolocationAvailability: function (boolean)
+		{
 			_geolocationAvailable = boolean;
 		},
 
 
 		// Get geolocation availability
-		getGeolocationAvailability: function () {
+		getGeolocationAvailability: function ()
+		{
 			return _geolocationAvailable;
 		},
 		
@@ -2250,7 +2244,7 @@ var layerviewer = (function ($) {
 			// On startup, check the geolocation status of the browser
 			function getLocation () 
 			{
-				var options = {
+				const options = {
 					enableHighAccuracy: false,
 					timeout: 2000,
 					maximumAge: Infinity
@@ -2349,7 +2343,7 @@ var layerviewer = (function ($) {
 				layerviewer.setPanningIndicator ();
 			});
 			*/
-
+			
 			// Click handler for new geolocation element
 			if (geolocationElementId) {
 				$('#' + geolocationElementId).on ('click', function (e){
@@ -2409,26 +2403,24 @@ var layerviewer = (function ($) {
 		styleSwitcher: function ()
 		{
 			// Add style switcher UI, unless creating a graphical container in a defined container
+			let containerId;
 			if (!_settings.styleSwitcherGraphical) {
-				var containerId = 'styleswitcher';
+				containerId = 'styleswitcher';
 				layerviewer.createControl (containerId, 'bottom-left', 'expandable');
 			}
 			
 			// Determine the container path
-			var container = _settings.styleSwitcherGraphical || '#' + containerId;
+			const container = _settings.styleSwitcherGraphical || '#' + containerId;
 			
 			// Construct HTML for style switcher
-			var styleSwitcherHtml = '<ul>';
-			var name;
-			var description;
-			var image;
-			var labelContent;
+			let styleSwitcherHtml = '<ul>';
 			$.each (_backgroundMapStyles, function (styleId, style) {
-				var unprefixedStyleId = styleId.replace (_backgroundStylesInternalPrefix, '');
-				name = (_settings.tileUrls[unprefixedStyleId].label ? _settings.tileUrls[unprefixedStyleId].label : layerviewer.ucfirst (unprefixedStyleId));
-				description = (_settings.tileUrls[unprefixedStyleId].description ? _settings.tileUrls[unprefixedStyleId].description : '');
+				const unprefixedStyleId = styleId.replace (_backgroundStylesInternalPrefix, '');
+				const name = (_settings.tileUrls[unprefixedStyleId].label ? _settings.tileUrls[unprefixedStyleId].label : layerviewer.ucfirst (unprefixedStyleId));
+				const description = (_settings.tileUrls[unprefixedStyleId].description ? _settings.tileUrls[unprefixedStyleId].description : '');
+				let labelContent;
 				if (_settings.styleSwitcherGraphical) {
-					image = '/images/mapstyle/' + unprefixedStyleId + '.png';
+					const image = '/images/mapstyle/' + unprefixedStyleId + '.png';
 					labelContent  = '<img src="' + image + '" alt="' + name + '" />';
 					labelContent += '<h3>' + name + '</h3>';
 					labelContent += '<p>' + description + '</p>';
@@ -2442,10 +2434,10 @@ var layerviewer = (function ($) {
 			$(container).append (styleSwitcherHtml);
 			
 			// Switch to selected style
-			function switchStyle (style)
+			const switchStyle = function (e)
 			{
-				var tileLayerId = style.target.id.replace (_backgroundStylesInternalPrefix, '');
-				var style = _backgroundMapStyles[_backgroundStylesInternalPrefix + tileLayerId];
+				const tileLayerId = e.target.id.replace (_backgroundStylesInternalPrefix, '');
+				const style = _backgroundMapStyles[_backgroundStylesInternalPrefix + tileLayerId];
 				_map.setStyle (style);
 				
 				// Set manual attribution if required
@@ -2459,9 +2451,9 @@ var layerviewer = (function ($) {
 				
 				// Fire an event; see: https://javascript.info/dispatch-events
 				layerviewer.styleChanged ();
-			}
-			var inputs = $(container + ' ul input');
-			var i;
+			};
+			const inputs = $(container + ' ul input');
+			let i;
 			for (i = 0; i < inputs.length; i++) {
 				inputs[i].onclick = switchStyle;
 			}
@@ -2482,8 +2474,8 @@ var layerviewer = (function ($) {
 			}
 			
 			// Fire a custom event that client code can pick up when the style is changed
-			var body = document.getElementsByTagName ('body')[0];
-			var myEvent = new Event ('style-changed', {'bubbles': true});
+			const body = document.getElementsByTagName ('body')[0];
+			const myEvent = new Event ('style-changed', {'bubbles': true});
 			body.dispatchEvent (myEvent);
 		},
 		
@@ -2521,20 +2513,19 @@ var layerviewer = (function ($) {
 		geocoder: function ()
 		{
 			// End if control not present on the page
-			var geocoderSelector = '.geocoder input';
+			const geocoderSelector = '.geocoder input';
 			if (!$(geocoderSelector).length) {return;}
 			
 			// Geocoder URL; re-use of settings values is supported, represented as placeholders {%apiBaseUrl}, {%apiKey}, {%autocompleteBbox}
-			var geocoderApiUrl = layerviewer.settingsPlaceholderSubstitution (_settings.geocoderApiUrl, ['apiBaseUrl', 'apiKey', 'autocompleteBbox']);
+			const geocoderApiUrl = layerviewer.settingsPlaceholderSubstitution (_settings.geocoderApiUrl, ['apiBaseUrl', 'apiKey', 'autocompleteBbox']);
 			
 			// Attach the autocomplete library behaviour to the location control
 			autocomplete.addTo (geocoderSelector, {
 				sourceUrl: geocoderApiUrl,
 				select: function (event, ui) {
-					var bbox = ui.item.feature.properties.bbox.split(',');	// W,S,E,N
-					_map.fitBounds(bbox, {maxZoom: 16, duration: 1500});
-					
-					event.preventDefault();
+					const bbox = ui.item.feature.properties.bbox.split(',');	// W,S,E,N
+					_map.fitBounds (bbox, {maxZoom: 16, duration: 1500});
+					event.preventDefault ();
 				}
 			});
 		},
@@ -2544,10 +2535,9 @@ var layerviewer = (function ($) {
 		settingsPlaceholderSubstitution: function (string, supportedPlaceholders)
 		{
 			// Substitute each placeholder
-			var placeholder;
 			$.each (supportedPlaceholders, function (index, field) {
-				placeholder = '{%' + field + '}';
-				string = string.replace(placeholder, _settings[field]);
+				const placeholder = '{%' + field + '}';
+				string = string.replace (placeholder, _settings[field]);
 			});
 			
 			// Return the modified string
@@ -2607,7 +2597,7 @@ var layerviewer = (function ($) {
 			layerviewer.addLocateFeedbackHandler (layerId);
 			
 			// GeoJSON layer, which is the default type
-			var isGeojsonLayer = (!_layerConfig[layerId].heatmap && !_layerConfig[layerId].vector && !_layerConfig[layerId].tileLayer);
+			const isGeojsonLayer = (!_layerConfig[layerId].heatmap && !_layerConfig[layerId].vector && !_layerConfig[layerId].tileLayer);
 			if (isGeojsonLayer) {
 				layerviewer.addGeojsonLayer (layerId);
 				layerviewer.layersOrderResetTop ();
@@ -2638,8 +2628,8 @@ var layerviewer = (function ($) {
 			}
 			
 			// Reload the data for this layer, using a rescan of the form parameters for the layer, when any change is made
-			var rescanPathBase = layerviewer.parseSettingSelector ('formRescanPath', layerId);
-			var rescanPath = rescanPathBase + ' :input';
+			const rescanPathBase = layerviewer.parseSettingSelector ('formRescanPath', layerId);
+			let rescanPath = rescanPathBase + ' :input';
 			
 			// Also scan drawing area if enabled
 			if (_settings.enableDrawing) {
@@ -2673,10 +2663,10 @@ var layerviewer = (function ($) {
 		{
 			// Read the variables to obtain section and ID
 			// #!# This should eventually loop through each section and get all IDs
-			var layerId = urlParameters.sections[0];
+			const layerId = urlParameters.sections[0];
 			if (!layerId) {return;}
 			
-			var id = urlParameters.id;
+			const id = urlParameters.id;
 
 			// Do not run if no definition of the functionality
 			if (!_layerConfig[layerId].hasOwnProperty ('apiCallId')) {return;}
@@ -2685,11 +2675,11 @@ var layerviewer = (function ($) {
 			if (!urlParameters.hasOwnProperty ('id')) {return;}
 			
 			// Start API data parameters and add in the ID
-			var apiData = layerviewer.assembleBaseApiData (layerId, true);
+			const apiData = layerviewer.assembleBaseApiData (layerId, true);
 			apiData.id = id;
 
 			// Determine the API URL to use
-			var apiUrl = _layerConfig[layerId].apiCallId.apiCall;
+			let apiUrl = _layerConfig[layerId].apiCallId.apiCall;
 			if (! (/https?:\/\//).test (apiUrl)) {
 				apiUrl = _settings.apiBaseUrl + apiUrl;
 			}
@@ -2712,8 +2702,8 @@ var layerviewer = (function ($) {
 					if (_layerConfig[layerId].hasOwnProperty ('popupCallback')) {
 						
 						// Generate popupHTML
-						var template = _layerConfig[layerId].popupHtml;
-						var popupContentHtml = layerviewer.renderDetailsHtml (response.features[0], template, layerId);
+						const template = _layerConfig[layerId].popupHtml;
+						const popupContentHtml = layerviewer.renderDetailsHtml (response.features[0], template, layerId);
 
 						// Display the popup using the callback
 						_layerConfig[layerId].popupCallback (popupContentHtml, _layerConfig[layerId].apiCallId.popupAnimation);
@@ -2733,33 +2723,33 @@ var layerviewer = (function ($) {
 			if (!_layerConfig[layerId].setMarker) {return;}
 			
 			// Determine the input field
-			var inputField = _layerConfig[layerId].setMarker;
-			var inputFieldSelector = 'nav #' + layerId + " input[name='" + inputField + "']";
+			const inputField = _layerConfig[layerId].setMarker;
+			const inputFieldSelector = 'nav #' + layerId + " input[name='" + inputField + "']";
 			
 			// Get any intial value
-			var initialValue = $(inputFieldSelector).val ();
-			var lonLat;
+			const initialValue = $(inputFieldSelector).val ();
+			let lonLat;
 			if (initialValue) {
-				var position = initialValue.split (',');
+				const position = initialValue.split (',');
 				lonLat = {lng: parseFloat(position[0]), lat: parseFloat(position[1])};
 			} else {
 				lonLat = _map.getCenter ();
 			}
 			
 			// Create the icon
-			var iconUrl = layerviewer.getIconUrl (layerId, null);
-			var iconSize = layerviewer.getIconSize (layerId, null);
-			var icon = layerviewer.createIconDom (iconUrl, iconSize);
+			const iconUrl = layerviewer.getIconUrl (layerId, null);
+			const iconSize = layerviewer.getIconSize (layerId, null);
+			const icon = layerviewer.createIconDom (iconUrl, iconSize);
 			
 			// Add the marker to the map, setting it as draggable
-			var marker = new mapboxgl.Marker (icon, {draggable: true})
+			const marker = new mapboxgl.Marker (icon, {draggable: true})
 				.setLngLat (lonLat)
 				.addTo (_map);
 			
 			// If the marker is dragged or set to a different location, update the input value
 			marker.on ('dragend', function (e) {
-				var lngLat = marker.getLngLat ();
-				var value = lngLat.lng.toFixed(5) + ',' + lngLat.lat.toFixed(5);
+				const lngLat = marker.getLngLat ();
+				const value = lngLat.lng.toFixed(5) + ',' + lngLat.lat.toFixed(5);
 				$(inputFieldSelector)
 					.attr ('value', value)		// Using this rather than .val() ensures the console representation is also correct
 					.trigger('change');			// Ensure that form rescan gets triggered
@@ -2779,10 +2769,11 @@ var layerviewer = (function ($) {
 			
 			// Show or hide the message
 			if (_map.getZoom () < _layerConfig[layerId].fullZoom) {
+				let message;
 				if (_layerConfig[layerId].fullZoomMessage) {
-					var message = _layerConfig[layerId].fullZoomMessage;
+					message = _layerConfig[layerId].fullZoomMessage;
 				} else {
-					var message = 'Zoom in to show all ' + layerviewer.layerNameFromId (layerId).toLowerCase() + ' markers - only a selection may be shown due to the volume.';
+					message = 'Zoom in to show all ' + layerviewer.layerNameFromId (layerId).toLowerCase() + ' markers - only a selection may be shown due to the volume.';
 				}
 				_message.show (message);
 				$(_settings.selector + ' li.' + layerId + ' p.total').hide();
@@ -2797,25 +2788,23 @@ var layerviewer = (function ($) {
 		parseFormValues: function (layerId)
 		{
 			// Start a list of parameters that have a value
-			var parameters = {};
+			let parameters = {};
 			
 			// Define the delimiter used for combining groups
-			var delimiter = ',';	// Should match the delimiter defined by the API
+			const delimiter = ',';	// Should match the delimiter defined by the API
 			
 			// Loop through list of inputs (e.g. checkboxes, select, etc.) for the selected layer
-			var processing = {};
-			var processingStrategy;
-			
-			var rescanPathBase = layerviewer.parseSettingSelector ('formRescanPath', layerId);
+			const processing = {};
+			const rescanPathBase = layerviewer.parseSettingSelector ('formRescanPath', layerId);
 			$(rescanPathBase + ' :input').each(function() {
 				
 				// Determine the input type
-				var tagName = this.tagName.toLowerCase();	// Examples: 'input', 'select'
-				var type = $(this).prop('type');			// Examples: 'text', 'checkbox', 'select-one'
+				const tagName = this.tagName.toLowerCase();	// Examples: 'input', 'select'
+				const type = $(this).prop('type');			// Examples: 'text', 'checkbox', 'select-one'
 				
 				// Obtain the element name and value
-				var name = $(this).attr('name');
-				var value = $(this).val();
+				let name = $(this).attr('name');
+				const value = $(this).val();
 				
 				// For checkboxes, degroup them by creating/adding a value that is checked, split by the delimiter
 				if (tagName == 'input' && type == 'checkbox') {
@@ -2825,7 +2814,7 @@ var layerviewer = (function ($) {
 						name = name.replace(/\[\]$/g, '');
 						
 						// Determine if there is a post-processing instruction
-						processingStrategy = $(this).parent().attr('data-processing');
+						const processingStrategy = $(this).parent().attr('data-processing');
 						if (processingStrategy) {
 							processing[name] = processingStrategy;
 						}
@@ -2846,7 +2835,7 @@ var layerviewer = (function ($) {
 				// For range, look for an associated datalist and look up the data values in that
 				if (tagName == 'input' && type == 'range') {
 					if (this.list) {
-						var datalistValue = $('option[value="' + value + '"]', this.list).attr('data-value');
+						const datalistValue = $('option[value="' + value + '"]', this.list).attr('data-value');
 						if (datalistValue) {
 							parameters[name] = datalistValue;
 							return;	// Continue to next input
@@ -2873,7 +2862,7 @@ var layerviewer = (function ($) {
 			
 			// If the layer requires that query fields are prefixed with a namespace, prefix each fieldname
 			if (_layerConfig[layerId].parameterNamespace) {
-				var parametersNamespaced = {};
+				const parametersNamespaced = {};
 				$.each(parameters, function (field, value) {
 					field = _layerConfig[layerId].parameterNamespace + field;
 					parametersNamespaced[field] = value;
@@ -2883,8 +2872,8 @@ var layerviewer = (function ($) {
 			
 			// Add in boundary data if drawn; this will override bbox (added later)
 			if (_settings.enableDrawing) {
-				//var boundary = $('form#data #drawing :input').val();
-				var boundary = $('form #drawing :input').val();
+				//const boundary = $('form#data #drawing :input').val();
+				const boundary = $('form #drawing :input').val();
 				if (boundary) {
 					parameters.boundary = boundary;
 				}
@@ -2914,7 +2903,7 @@ var layerviewer = (function ($) {
 			}
 			
 			// Start API data parameters
-			var apiData = layerviewer.assembleBaseApiData (layerId);
+			const apiData = layerviewer.assembleBaseApiData (layerId);
 			
 			// If required for this layer, reformat a drawn boundary, leaving it unchanged for other layers
 			if (parameters.boundary) {
@@ -2924,24 +2913,24 @@ var layerviewer = (function ($) {
 			}
 			
 			// Determine which retrieval strategy is needed - bbox (default) or lat/lon or none
-			var retrievalStrategy = _layerConfig[layerId].retrievalStrategy || 'bbox';
+			const retrievalStrategy = _layerConfig[layerId].retrievalStrategy || 'bbox';
 			
 			// Unless a boundary is drawn in, supply a bbox or lat/lon
 			if (!parameters.boundary) {
 				
 				// For bbox, get the bbox, and reduce the co-ordinate accuracy to avoid over-long URLs
 				if (retrievalStrategy == 'bbox') {
-					var bbox = _map.getBounds();
+					const bbox = _map.getBounds();
 					parameters.bbox = bbox.getWest() + ',' + bbox.getSouth() + ',' + bbox.getEast() + ',' + bbox.getNorth();
 					parameters.bbox = layerviewer.reduceBboxAccuracy (parameters.bbox);
 				}
 				
 				// For poly, convert map extents to a boundary listing
 				if (retrievalStrategy == 'polygon') {	// As lat1,lon1:lat2,lon2:...
-					var sw = _map.getBounds().getSouthWest();
-					var se = _map.getBounds().getSouthEast();
-					var ne = _map.getBounds().getNorthEast();
-					var nw = _map.getBounds().getNorthWest();
+					const sw = _map.getBounds().getSouthWest();
+					const se = _map.getBounds().getSouthEast();
+					const ne = _map.getBounds().getNorthEast();
+					const nw = _map.getBounds().getNorthWest();
 					parameters.boundary = sw.lat + ',' + sw.lng + ':' + se.lat + ',' + se.lng + ':' + ne.lat + ',' + ne.lng + ':' + nw.lat + ',' + nw.lng + ':' + sw.lat + ',' + sw.lng;
 				}
 				
@@ -2952,14 +2941,14 @@ var layerviewer = (function ($) {
 			// If required, rename the boundary field, as some APIs use a different fieldname to 'boundary'
 			if (parameters.boundary) {
 				if (_layerConfig[layerId].apiBoundaryField) {
-					var apiBoundaryField = _layerConfig[layerId].apiBoundaryField;
+					const apiBoundaryField = _layerConfig[layerId].apiBoundaryField;
 					parameters[apiBoundaryField] = parameters.boundary;
 					delete parameters.boundary;
 				}
 			}
 			
 			// Send zoom if required
-			var sendZoom = layerviewer.glocalVariable ('sendZoom', layerId);
+			const sendZoom = layerviewer.glocalVariable ('sendZoom', layerId);
 			if (sendZoom) {
 				apiData.zoom = parseInt (_map.getZoom ());
 			}
@@ -2975,7 +2964,7 @@ var layerviewer = (function ($) {
 			}
 			
 			// Determine the API URL to use
-			var apiUrl = _layerConfig[layerId].apiCall;
+			let apiUrl = _layerConfig[layerId].apiCall;
 			if (! (/https?:\/\//).test (apiUrl)) {
 				apiUrl = _settings.apiBaseUrl + apiUrl;
 			}
@@ -2983,22 +2972,21 @@ var layerviewer = (function ($) {
 			// If there is a region selected in the dropdown, and there is a space for a token in the apiUrl, swap it out
 			if (_settings.regionsSubstitutionToken) {
 				if (apiUrl.includes (_settings.regionsSubstitutionToken)) {
-					var selectedOption = $('#regionswitcher option:selected').val();
+					let selectedOption = $('#regionswitcher option:selected').val();
 					if (!selectedOption) {
 						selectedOption = $($('#regionswitcher option')[1]).val();
 					}
-					var region = (selectedOption == null ? $('#regionswitcher option').first().val() : selectedOption);
+					const region = (selectedOption == null ? $('#regionswitcher option').first().val() : selectedOption);
 					apiUrl = apiUrl.replace (_settings.regionsSubstitutionToken, region);
 				}
 			}
 			
 			// If the URL has placeholders that match form parameters, substitute those instead of treating them as query string parameters
-			var placeholdersRegexp = /{%([^}]+)}/g;
-			var urlPlaceholders = apiUrl.match (placeholdersRegexp);
-			var field;
+			const placeholdersRegexp = /{%([^}]+)}/g;
+			const urlPlaceholders = apiUrl.match (placeholdersRegexp);
 			if (urlPlaceholders) {
 				$.each (urlPlaceholders, function (index, urlPlaceholder) {
-					field = urlPlaceholder.replace (/{%([^}]+)}/, '$1');
+					const c = urlPlaceholder.replace (/{%([^}]+)}/, '$1');
 					apiUrl = apiUrl.replace (urlPlaceholder, apiData[field]);	// It is assumed that all will be present
 					delete apiData[field];
 				});
@@ -3006,7 +2994,7 @@ var layerviewer = (function ($) {
 			
 			// If no change (e.g. map move while boundary set, and no other changes), avoid re-requesting data
 			// This also means that KML and other static datasets will not get re-requested
-			var requestSerialised = apiUrl + (!$.isEmptyObject (apiData) ? '?' + $.param (apiData) : '');		// Note that the apiUrl is included, as this could have had placeholder replacement
+			const requestSerialised = apiUrl + (!$.isEmptyObject (apiData) ? '?' + $.param (apiData) : '');		// Note that the apiUrl is included, as this could have had placeholder replacement
 			if (_requestCache.hasOwnProperty (layerId)) {
 				if (requestSerialised == _requestCache[layerId]) {
 					return;
@@ -3024,11 +3012,11 @@ var layerviewer = (function ($) {
 			}
 			
 			// Start data loading spinner for this layer
-			var dataLoadingSpinnerSelector = layerviewer.parseSettingSelector ('dataLoadingSpinnerSelector', layerId);
+			const dataLoadingSpinnerSelector = layerviewer.parseSettingSelector ('dataLoadingSpinnerSelector', layerId);
 			$(dataLoadingSpinnerSelector).show();
 			
 			// Set the data type
-			var dataType = (_layerConfig[layerId].dataType ? _layerConfig[layerId].dataType : (layerviewer.browserSupportsCors () ? 'json' : 'jsonp'));		// Fall back to JSON-P for IE9
+			let dataType = (_layerConfig[layerId].dataType ? _layerConfig[layerId].dataType : (layerviewer.browserSupportsCors () ? 'json' : 'jsonp'));		// Fall back to JSON-P for IE9
 			
 			// KML: use XML for data type
 			if (_layerConfig[layerId].dataType && _layerConfig[layerId].dataType == 'kml') {
@@ -3060,7 +3048,7 @@ var layerviewer = (function ($) {
 					// Show error, unless deliberately aborted
 					if (jqXHR.statusText != 'abort') {
 						if (typeof jqXHR.responseText === 'string') {
-							var data = $.parseJSON (jqXHR.responseText);
+							const data = $.parseJSON (jqXHR.responseText);
 							vex.dialog.alert ('Error: ' + data.error);
 						}
 					}
@@ -3074,13 +3062,13 @@ var layerviewer = (function ($) {
 					$(dataLoadingSpinnerSelector).hide();
 					
 					// Determine error handling UI mode
-					var errorNonModalDialog = layerviewer.glocalVariable ('errorNonModalDialog', layerId);
+					const errorNonModalDialog = layerviewer.glocalVariable ('errorNonModalDialog', layerId);
 					
 					// Show API-level error if one occured
 					// #!# This is done here because the API still returns Status code 200
 					if (data.error) {
 						layerviewer.removeLayer (layerId);
-						var errorMessage = (_layerConfig[layerId].name ? _layerConfig[layerId].name : layerId) + ' layer: ' + data.error;
+						const errorMessage = (_layerConfig[layerId].name ? _layerConfig[layerId].name : layerId) + ' layer: ' + data.error;
 						if (errorNonModalDialog) {
 							_message.show (errorMessage);
 						} else {
@@ -3104,10 +3092,10 @@ var layerviewer = (function ($) {
 		// @param apiCallId: boolean. The function will attempt to use apiCallId properties instead
 		assembleBaseApiData: function (layerId, apiCallId = false)
 		{
-			var apiData = {};
+			const apiData = {};
 	
 			// Add the key, unless disabled
-			var sendApiKey = (_layerConfig[layerId].hasOwnProperty ('apiKey') ? _layerConfig[layerId].apiKey : true);
+			const sendApiKey = (_layerConfig[layerId].hasOwnProperty ('apiKey') ? _layerConfig[layerId].apiKey : true);
 			if (sendApiKey) {
 				apiData.key = _settings.apiKey;
 			}
@@ -3147,10 +3135,9 @@ var layerviewer = (function ($) {
 			layerviewer.addFeatureTypeLayerSet (layerId);
 			
 			// Enable popups if required, for each of the three geometry types
-			var popupHtmlTemplate = layerviewer.sublayerableConfig ('popupHtml', layerId);
-			var layerVariantId;
+			const popupHtmlTemplate = layerviewer.sublayerableConfig ('popupHtml', layerId);
 			$.each (_opengisTypes, function (index, geometryType) {
-				layerVariantId = layerviewer.layerVariantId (layerId, geometryType);
+				const layerVariantId = layerviewer.layerVariantId (layerId, geometryType);
 				layerviewer.createPopups (layerId, layerVariantId, geometryType, popupHtmlTemplate);
 			});
 			
@@ -3166,9 +3153,9 @@ var layerviewer = (function ($) {
 		addGeojsonSource: function (layerId)
 		{
 			// Define the initial GeoJSON state
-			var data = {type: 'FeatureCollection', 'features': []};	// Empty GeoJSON; see: https://github.com/mapbox/mapbox-gl-js/issues/5986
+			let data = {type: 'FeatureCollection', 'features': []};	// Empty GeoJSON; see: https://github.com/mapbox/mapbox-gl-js/issues/5986
 			if (_layerConfig[layerId].hasOwnProperty ('data') && _layerConfig[layerId].data !== false) {
-				var data = _layerConfig[layerId].data;
+				data = _layerConfig[layerId].data;
 			}
 			
 			// Define the data source
@@ -3184,22 +3171,20 @@ var layerviewer = (function ($) {
 		addFeatureTypeLayerSet: function (layerId)
 		{
 			// Assemble the styles definition
-			var styles = layerviewer.layerSettingsStyles (layerId, true);
+			const styles = layerviewer.layerSettingsStyles (layerId, true);
 			
 			// Add renderers for each different feature type; see: https://docs.mapbox.com/mapbox-gl-js/example/multiple-geometries/
-			var layer;
-			var layerVariantId;
 			$.each (styles, function (geometryType, style) {
 				
 				// Determine if there is an icon; if so, the marker has been rendered already, so a render icon is not needed
 				if (geometryType == 'Point') {
-					var iconUrl = layerviewer.getIconUrl (layerId, null);
+					const iconUrl = layerviewer.getIconUrl (layerId, null);
 					if (iconUrl) {return;}
 				}
 				
 				// Add the layer
-				layerVariantId = layerviewer.layerVariantId (layerId, geometryType);
-				layer = {
+				const layerVariantId = layerviewer.layerVariantId (layerId, geometryType);
+				const layer = {
 					id: layerVariantId,
 					source: layerId,
 					type: style.type,
@@ -3224,7 +3209,7 @@ var layerviewer = (function ($) {
 			layerviewer.addGeojsonSource (layerId);
 			
 			// Add the layer
-			var layer = {
+			const layer = {
 				id: layerviewer.layerVariantId (layerId, 'heatmap'),	// E.g. mydata_heatmap
 				source: layerId,
 				type: 'heatmap',
@@ -3254,17 +3239,17 @@ var layerviewer = (function ($) {
 			// - If there are layer settings -defined styles, e.g. (e.g. polygonColourField, polygonColourValues, etc.) they will then override specific styles; currently only paint is supported
 			
 			// If no style defined in the vector definition, i.e. no paint and no layout, use default styles
-			var useDefaultStyles = (!vectorLayerAttributes.layer.hasOwnProperty ('paint') && !vectorLayerAttributes.layer.hasOwnProperty ('layout'));
-			var layerType = vectorLayerAttributes.layer.type;	// I.e. circle/line/fill
+			const useDefaultStyles = (!vectorLayerAttributes.layer.hasOwnProperty ('paint') && !vectorLayerAttributes.layer.hasOwnProperty ('layout'));
+			const layerType = vectorLayerAttributes.layer.type;	// I.e. circle/line/fill
 			if (useDefaultStyles) {
-				var defaultStylesByType = layerviewer.stylesBySymboliserType (_defaultStyles);
+				const defaultStylesByType = layerviewer.stylesBySymboliserType (_defaultStyles);
 				vectorLayerAttributes.layer.paint  = defaultStylesByType[layerType].paint;
 				vectorLayerAttributes.layer.layout = defaultStylesByType[layerType].layout;
 			}
 			
 			// Override any styles with layer settings -defined styles (e.g. polygonColourField, polygonColourValues, etc); currently only paint is supported
-			var layerSettingsStyles = layerviewer.layerSettingsStyles (layerId, false);
-			var layerSettingsStylesByType = layerviewer.stylesBySymboliserType (layerSettingsStyles);
+			const layerSettingsStyles = layerviewer.layerSettingsStyles (layerId, false);
+			const layerSettingsStylesByType = layerviewer.stylesBySymboliserType (layerSettingsStyles);
 			if (!$.isEmptyObject (layerSettingsStylesByType[layerType].paint)) {
 				vectorLayerAttributes.layer.paint  = layerSettingsStylesByType[layerType].paint;
 			}
@@ -3274,7 +3259,7 @@ var layerviewer = (function ($) {
 			_map.addLayer (vectorLayerAttributes.layer);			// layer will contain {id: ..., type: 'circle', source: ..., 'source-layer': ..., 'paint': {...}}
 			
 			// Enable popups if required
-			var popupHtmlTemplate = layerviewer.sublayerableConfig ('popupHtml', layerId);
+			const popupHtmlTemplate = layerviewer.sublayerableConfig ('popupHtml', layerId);
 			layerviewer.createPopups (layerId, layerId, false, popupHtmlTemplate);
 			
 			// Register a dialog box handler for showing additional popup details if required
@@ -3288,7 +3273,7 @@ var layerviewer = (function ($) {
 		// Function to arrange default styles by symboliser type, e.g. indexed by 'line' rather than OpenGIS type LineString
 		stylesBySymboliserType: function (stylesByOpengisType)
 		{
-			var defaultStylesByType = {};
+			const defaultStylesByType = {};
 			$.each (stylesByOpengisType, function (opengisType, style) {
 				defaultStylesByType[style.type] = style;
 			});
@@ -3304,15 +3289,14 @@ var layerviewer = (function ($) {
 			
 			// Substitute placeholder values, e.g. style switcher
 			if (parameters) {
-				var placeholder;
 				$.each (parameters, function (field, value) {
-					placeholder = '{%' + field + '}';
+					const placeholder = '{%' + field + '}';
 					tileLayerAttributes.tiles = tileLayerAttributes.tiles.replace (placeholder, value);
 				});
 			}
 			
 			// Construct the ID, incorporating any parameters to ensure uniqueness
-			var id = layerId + '-' + jQuery.param (parameters);	// E.g. abc-style=blue
+			const id = layerId + '-' + jQuery.param (parameters);	// E.g. abc-style=blue
 			
 			// Leave current setup in place if already present, with the same style options
 			if (_tileOverlayLayer == id) {
@@ -3328,7 +3312,7 @@ var layerviewer = (function ($) {
 			_tileOverlayLayer = id;
 			
 			// Add to the map
-			var layer = layerviewer.defineRasterTilesLayer (tileLayerAttributes, id);
+			const layer = layerviewer.defineRasterTilesLayer (tileLayerAttributes, id);
 			_map.addSource (id, layer.sources[id]);
 			_map.addLayer (layer.layers[0]);
 			// #!# Max zoom on layer doesn't actually seem to work
@@ -3363,7 +3347,7 @@ var layerviewer = (function ($) {
 		glocalVariable: function (variableName, layerId)
 		{
 			// Default to global value
-			var value = _settings[variableName];
+			let value = _settings[variableName];
 			
 			// Layer-specific setting can override global
 			if (_layerConfig[layerId].hasOwnProperty (variableName)) {
@@ -3385,18 +3369,18 @@ var layerviewer = (function ($) {
 			$('#map').on('click', triggerElement, function (e) {
 				
 				// Load the data, using the specified data-id attribute set in the popup HTML dynamically
-				var apiUrl = $(this).attr('data-url') + '&key=' + _settings.apiKey;
+				const apiUrl = $(this).attr('data-url') + '&key=' + _settings.apiKey;
 				$.get(apiUrl, function (data) {
 					
 					// Access the data
-					var feature = data.features[0];
+					const feature = data.features[0];
 					
 					// Render the data into the overlay template
-					var template = (_layerConfig[layerId].overlayHtml ? _layerConfig[layerId].overlayHtml : false);
-					var html = layerviewer.renderDetailsHtml (feature, template, layerId);
+					const template = (_layerConfig[layerId].overlayHtml ? _layerConfig[layerId].overlayHtml : false);
+					let html = layerviewer.renderDetailsHtml (feature, template, layerId);
 					
 					// Create the dialog box and its contents
-					var divId = layerId + 'details';
+					const divId = layerId + 'details';
 					html = '<div id="' + divId + '">' + html + '</div>';
 					vex.dialog.buttons.YES.text = 'Close';
 					vex.dialog.alert ({unsafeMessage: html, showCloseButton: true, className: 'vex vex-theme-plain wider'});
@@ -3418,7 +3402,7 @@ var layerviewer = (function ($) {
 		reduceBboxAccuracy: function (bbox)
 		{
 			// Split by comma
-			var coordinates = bbox.split(',');
+			let coordinates = bbox.split (',');
 			
 			// Reduce accuracy of each coordinate
 			coordinates = layerviewer.reduceCoordinateAccuracy (coordinates);
@@ -3434,13 +3418,13 @@ var layerviewer = (function ($) {
 		// Function to reduce co-ordinate accuracy to avoid pointlessly long URLs
 		reduceCoordinateAccuracy: function (coordinates)
 		{
-			// Set 0.1m accuracy; see: https://en.wikipedia.org/wiki/Decimal_degrees
-			var accuracy = 6;
+			// Set ~0.1m accuracy; see: https://en.wikipedia.org/wiki/Decimal_degrees
+			const accuracy = 6;
 			
 			// Reduce each value
-			var i;
+			let i;
 			for (i = 0; i < coordinates.length; i++) {
-				coordinates[i] = +parseFloat(coordinates[i]).toFixed(accuracy);
+				coordinates[i] = +parseFloat (coordinates[i]).toFixed (accuracy);
 			}
 			
 			// Return the modified set
@@ -3453,13 +3437,13 @@ var layerviewer = (function ($) {
 		{
 			// For latlon-comma-colons format, order as lat,lon pairs, separated by colons
 			if (format == 'latlon-comma-colons') {
-				var boundaryUnpacked = JSON.parse(boundary);
-				var boundaryPoints = [];
-				var i;
+				const boundaryUnpacked = JSON.parse(boundary);
+				const boundaryPoints = [];
+				let i;
 				for (i = 0; i < boundaryUnpacked.length; i++) {
 					boundaryPoints[i] = boundaryUnpacked[i][1] + ',' + boundaryUnpacked[i][0];	// lat,lon
 				}
-				boundary = boundaryPoints.join(':');
+				boundary = boundaryPoints.join (':');
 				return boundary;
 			}
 		},
@@ -3492,22 +3476,19 @@ var layerviewer = (function ($) {
 			
 			// Default fields
 			// #!# This should really be done at the layer initialisation
-			var fieldColumn = _layerConfig[layerId].fieldLabelsCsvField || 'field';
-			var titleColumn = _layerConfig[layerId].fieldLabelsCsvTitle || 'title';
-			var descriptionColumn = _layerConfig[layerId].fieldLabelsCsvDescription || 'description';
+			const fieldColumn = _layerConfig[layerId].fieldLabelsCsvField || 'field';
+			const titleColumn = _layerConfig[layerId].fieldLabelsCsvTitle || 'title';
+			const descriptionColumn = _layerConfig[layerId].fieldLabelsCsvDescription || 'description';
 			
 			// Stream and parse the CSV file
 			Papa.parse (_layerConfig[layerId].fieldLabelsCsv, {
 				header: true,
 				download: true,
 				complete: function (fields) {
-					var key;
-					var title;
-					var description;
 					$.each (fields.data, function (index, fieldLabels) {
-						key = fieldLabels[fieldColumn];
-						title = fieldLabels[titleColumn];
-						description = fieldLabels[descriptionColumn];
+						const key = fieldLabels[fieldColumn];
+						const title = fieldLabels[titleColumn];
+						const description = fieldLabels[descriptionColumn];
 						_layerConfig[layerId].popupLabels[key] = title;
 						_layerConfig[layerId].popupDescriptions[key] = description;
 					});
@@ -3525,7 +3506,7 @@ var layerviewer = (function ($) {
 			}
 			
 			// Use a template if this has been defined in the layer config
-			var html;
+			let html;
 			if (template) {
 				
 				// Define a path parser, so that the template can define properties.foo which would obtain feature.properties.foo; see: https://stackoverflow.com/a/22129960
@@ -3537,20 +3518,18 @@ var layerviewer = (function ($) {
 
 				// Convert data-src into src
 				if (template.indexOf ('data-src') >= 0) {
-					var templateElement = $.parseHTML (template);
-					var dataSrcElements = $('[data-src]', templateElement);
+					const templateElement = $.parseHTML (template);
+					const dataSrcElements = $('[data-src]', templateElement);
 					
-					var elementOriginalStr;
-					var templatisedString;
 					$.each (dataSrcElements, function (indexInArray, element) { 
 						// Make a copy of the string of the original element
-						elementOriginalStr = $(element)[0].outerHTML;
+						const elementOriginalStr = $(element)[0].outerHTML;
 						
 						// Using jQuery to convert the string into a element, replace the src with data-src
 						$(element).prop ('src', $(element).data ('src'));
 						
 						// Convert this element into a string
-						templatisedString = $(element)[0].outerHTML;
+						const templatisedString = $(element)[0].outerHTML;
 						
 						// Find the original string in the template, and replace it with the templatised string
 						template = template.replace(elementOriginalStr, templatisedString);
@@ -3565,9 +3544,9 @@ var layerviewer = (function ($) {
 				// Convert map position macro
 				// #!# Ideally this would be the exact located/clicked position, but that adds quite a bit more complexity
 				if (template.indexOf ('{%mapposition}') >= 0) {
-					var centre = _map.getCenter ();
-					var zoom = _map.getZoom ();
-					var mapPosition = zoom.toFixed(1) + '/' + centre.lat.toFixed(5) + '/' + centre.lng.toFixed(5);		// Should be the same as the hash, if the hash exists
+					const centre = _map.getCenter ();
+					const zoom = _map.getZoom ();
+					const mapPosition = zoom.toFixed(1) + '/' + centre.lat.toFixed(5) + '/' + centre.lng.toFixed(5);		// Should be the same as the hash, if the hash exists
 					template = template.replace ('{%mapposition}', mapPosition);
 				}
 				
@@ -3580,15 +3559,15 @@ var layerviewer = (function ($) {
 				
 				// Convert OSM edit link macro
 				if (template.indexOf ('{%osmeditlink}') >= 0) {
-					var centroid = layerviewer.polygonCentroid (feature);
-					var zoom = 19;	// #!# Need equivalent of getBoundsZoom, to replace this fixed value
-					var osmEditUrl = 'https://www.openstreetmap.org/edit#map=' + zoom + '/' + centroid.lat.toFixed(5) + '/' + centroid.lng.toFixed(5);
+					const centroid = layerviewer.polygonCentroid (feature);
+					const zoom = 19;	// #!# Need equivalent of getBoundsZoom, to replace this fixed value
+					const osmEditUrl = 'https://www.openstreetmap.org/edit#map=' + zoom + '/' + centroid.lat.toFixed(5) + '/' + centroid.lng.toFixed(5);
 					template = template.replace (/{%osmeditlink}/g, '<a class="edit" target="_blank" href="' + osmEditUrl + '">Add in OSM</a>');
 				}
 				
 				// Replace template placeholders; see: https://stackoverflow.com/a/378000
 				template = template.replace (/\{[^{}]+\}/g, function (path){
-					var resolvedPlaceholderText = Object.resolve (path.replace(/[{}]+/g, '') , feature);
+					const resolvedPlaceholderText = Object.resolve (path.replace(/[{}]+/g, '') , feature);
 					if (resolvedPlaceholderText == undefined && _layerConfig[layerId].hasOwnProperty ('emptyPlaceholderText')) {
 						return _layerConfig[layerId].emptyPlaceholderText;
 					} else {
@@ -3599,7 +3578,7 @@ var layerviewer = (function ($) {
 				html = template;
 				
 				// Support 'yearstable' macro, which generates a table of fields for each year, with parameters: first year, last year, fieldslist split by semicolon, labels for each field split by semicolon
-				var matches = html.match (/\[macro:yearstable\((.+), (.+), (.+), (.+)\)\]/);
+				const matches = html.match (/\[macro:yearstable\((.+), (.+), (.+), (.+)\)\]/);
 				if (matches) {
 					html = html.replace (matches[0], layerviewer.macroYearstable (matches, feature));
 				}
@@ -3608,11 +3587,9 @@ var layerviewer = (function ($) {
 			} else {
 				
 				// Determine rounding decimal places in popups
-				var popupsRoundingDP = layerviewer.glocalVariable ('popupsRoundingDP', layerId);
+				const popupsRoundingDP = layerviewer.glocalVariable ('popupsRoundingDP', layerId);
 				
 				html = '<table>';
-				var fieldLabel;
-				var fieldDescription;
 				$.each (feature.properties, function (key, value) {
 					
 					// Skip if value is an array/object
@@ -3625,7 +3602,7 @@ var layerviewer = (function ($) {
 					}
 					
 					// Key
-					fieldLabel = key;
+					let fieldLabel = key;
 					if (_layerConfig[layerId].popupLabels) {
 						if (_layerConfig[layerId].popupLabels.hasOwnProperty (key)) {
 							fieldLabel = _layerConfig[layerId].popupLabels[key];
@@ -3633,7 +3610,7 @@ var layerviewer = (function ($) {
 					}
 					
 					// Description (i.e. <abbr> tag contents)
-					fieldDescription = false;
+					let fieldDescription = false;
 					if (_layerConfig[layerId].popupDescriptions) {
 						if (_layerConfig[layerId].popupDescriptions[key]) {
 							fieldDescription = _layerConfig[layerId].popupDescriptions[key];
@@ -3673,7 +3650,7 @@ var layerviewer = (function ($) {
 				
 				// Add images if enabled
 				if (_layerConfig[layerId].popupImagesField) {
-					var popupImagesField = _layerConfig[layerId].popupImagesField;
+					const popupImagesField = _layerConfig[layerId].popupImagesField;
 					if (feature.properties[popupImagesField]) {
 						$.each (feature.properties[popupImagesField], function (index, imageUrl) {
 							html += '<a href="' + imageUrl + '" target="_blank"><img src="' + imageUrl + '" width="140" /> ';
@@ -3688,7 +3665,7 @@ var layerviewer = (function ($) {
 			}
 			
 			// Prepend feedback button if required
-			var feedbackButton = layerviewer.addPopupFeedbackButton (layerId, feature);
+			const feedbackButton = layerviewer.addPopupFeedbackButton (layerId, feature);
 			html = feedbackButton + html;
 			
 			// Return the content
@@ -3700,7 +3677,7 @@ var layerviewer = (function ($) {
 		streetViewTemplate: function (feature)
 		{
 			// Determine the centroid
-			var centre = layerviewer.getCentre (feature.geometry);
+			const centre = layerviewer.getCentre (feature.geometry);
 			
 			// Assemble and return the HTML
 			return '<iframe id="streetview" src="/streetview.html?latitude=' + centre.lat + '&longitude=' + centre.lon + '">Street View loading &hellip;</iframe>';
@@ -3711,16 +3688,16 @@ var layerviewer = (function ($) {
 		macroYearstable: function (matches, feature)
 		{
 			// Extract the matches
-			var minYear = matches[1];
-			var maxYear = matches[2];
-			var fields = matches[3].split (';');
-			var labels = matches[4].split (';');
+			const minYear = matches[1];
+			const maxYear = matches[2];
+			const fields = matches[3].split (';');
+			const labels = matches[4].split (';');
 			
 			// Create a year range
-			var years = layerviewer.range (parseInt(minYear), parseInt(maxYear));
+			const years = layerviewer.range (parseInt(minYear), parseInt(maxYear));
 			
 			// Build the table, starting with the headings, representing the years
-			var html = '<table>';
+			let html = '<table>';
 			html += '<tr>';
 			html += '<th>Year:</th>';
 			$.each (fields, function (fieldIndex, field) {
@@ -3729,7 +3706,7 @@ var layerviewer = (function ($) {
 			html += '</tr>';
 			
 			// Index the fields by field then year index
-			var fieldsByYear = [];
+			const fieldsByYear = [];
 			$.each (fields, function (fieldIndex, field) {
 				fieldsByYear[field] = feature.properties[field].split(',');
 			});
@@ -3739,7 +3716,7 @@ var layerviewer = (function ($) {
 				html += '<tr>';
 				html += '<td><strong>' + year + ':</strong></td>';
 				$.each (fields, function (fieldIndex, field) {
-					var value = fieldsByYear[field][yearIndex];
+					const value = fieldsByYear[field][yearIndex];
 					html += '<td>' + (layerviewer.isNumeric (value) ? Number(value).toLocaleString() : value) + '</td>';
 				});
 				html += '</tr>';
@@ -3755,8 +3732,8 @@ var layerviewer = (function ($) {
 		range: function (start, end)
 		{
 			if (start > end) {return [];}	// Prevent accidental infinite iteration
-			var i;
-			var range = [];
+			const range = [];
+			let i;
 			for (i = start; i <= end; i++) {
 				range.push(i);
 			}
@@ -3792,8 +3769,8 @@ var layerviewer = (function ($) {
 			}
 			
 			// Fix up data
-			var lineColourField = layerviewer.sublayerableConfig ('lineColourField', layerId);
-			var lineWidthField = layerviewer.sublayerableConfig ('lineWidthField', layerId);
+			const lineColourField = layerviewer.sublayerableConfig ('lineColourField', layerId);
+			const lineWidthField = layerviewer.sublayerableConfig ('lineWidthField', layerId);
 			$.each (data.features, function (index, feature) {
 				
 				// Ensure data is numeric for the line colour field, to enable correct comparison
@@ -3819,8 +3796,8 @@ var layerviewer = (function ($) {
 			
 			// Perform initial fit of map extent, if required
 			if (_fitInitial[layerId]) {
-				var geojsonBounds = geojsonExtent (data);
-				var fitInitialPadding = (_layerConfig[layerId].hasOwnProperty ? _layerConfig[layerId].fitInitialPadding : 20);
+				const geojsonBounds = geojsonExtent (data);
+				const fitInitialPadding = (_layerConfig[layerId].hasOwnProperty ? _layerConfig[layerId].fitInitialPadding : 20);
 				_map.fitBounds (geojsonBounds, {padding: fitInitialPadding});
 				_fitInitial[layerId] = false;		// Disable for further map pannings; renabling the layer will reset
 			}
@@ -3834,7 +3811,7 @@ var layerviewer = (function ($) {
 			_map.getSource (layerId).setData (data);
 			
 			// Show icons, where Points present
-			var popupHtmlTemplate = layerviewer.sublayerableConfig ('popupHtml', layerId);
+			const popupHtmlTemplate = layerviewer.sublayerableConfig ('popupHtml', layerId);
 			layerviewer.drawManualDomIcons (data, layerId, popupHtmlTemplate);
 		},
 		
@@ -3851,7 +3828,7 @@ var layerviewer = (function ($) {
 		updateTotals: function (features, layerId, requestSerialised)
 		{
 			// Determine the total number of items in the data
-			var totalItems = Object.keys(features).length;
+			const totalItems = Object.keys(features).length;
 			
 			// Update the total count in the menu
 			$(_settings.selector + ' li.' + layerId + ' p.total').html(totalItems);
@@ -3865,8 +3842,8 @@ var layerviewer = (function ($) {
 			}
 			
 			// Enable/update CSV/GeoJSON export link(s), if there are items, and show the count
-			var exportUrlCsv = requestSerialised + '&format=csv&export=csv';	// Both parameter types supported (format=csv, export=csv)
-			var exportUrlGeojson = requestSerialised.replace (/.json($|\?)/, '.geojson$1');
+			const exportUrlCsv = requestSerialised + '&format=csv&export=csv';	// Both parameter types supported (format=csv, export=csv)
+			const exportUrlGeojson = requestSerialised.replace (/.json($|\?)/, '.geojson$1');
 			$('#sections #' + layerId + ' div.export p span').text ('(' + totalItems + ')');
 			$('#sections #' + layerId + ' div.export .csv').parent('a').attr('href', exportUrlCsv);
 			$('#sections #' + layerId + ' div.export .geojson').parent('a').attr('href', exportUrlGeojson);
@@ -3887,11 +3864,11 @@ var layerviewer = (function ($) {
 			layerviewer.removeMarkers (layerId);
 			
 			// Determine the field in the feature.properties data that specifies the icon to use
-			var iconField = _layerConfig[layerId].iconField;
+			const iconField = _layerConfig[layerId].iconField;
 			
 			// If marker importance is defined, define the zIndex offset values for each marker type, to be based on the iconField
+			const markerZindexOffsets = [];
 			if (_layerConfig[layerId].markerImportance) {
-				var markerZindexOffsets = [];
 				$.each (_layerConfig[layerId].markerImportance, function (index, iconFieldValue) {
 					markerZindexOffsets[iconFieldValue] = 0 + (1 * index);	// NB Need to check for overlap with layer switcher
 				});
@@ -3904,46 +3881,44 @@ var layerviewer = (function ($) {
 				if (feature.geometry.type == 'Point') {
 					
 					// Generate popupHTML
-					var popupContentHtml = layerviewer.renderDetailsHtml (feature, popupHtmlTemplate, layerId);
+					const popupContentHtml = layerviewer.renderDetailsHtml (feature, popupHtmlTemplate, layerId);
 					
 					// Initiate the popup
-					var popup = new mapboxgl.Popup ({className: layerId})
+					const popup = new mapboxgl.Popup ({className: layerId})
 						.setHTML (popupContentHtml);
 					
 					// Register the popup so it can be removed on redraw
 					_popups[layerId].push (popup);
 					
 					// Determine whether to use a local fixed icon, a local icon set, or an icon field in the data, or no marker at all (if no iconUrl)
-					var iconUrl = layerviewer.getIconUrl (layerId, feature);
+					const iconUrl = layerviewer.getIconUrl (layerId, feature);
 					
 					// End if no icon
 					if (!iconUrl) {return false;}	/* i.e. break */
 					
 					// Determine icon size
-					var iconSize = layerviewer.getIconSize (layerId, feature);
+					const iconSize = layerviewer.getIconSize (layerId, feature);
 					
 					// Construct the icon
-					var marker = layerviewer.createIconDom (iconUrl, iconSize);
+					const icon = layerviewer.createIconDom (iconUrl, iconSize);
 					
 					// Set the icon zIndexOffset if required
 					if (_layerConfig[layerId].markerImportance) {
-						var fieldValue = feature.properties[iconField];
-						marker.style.zIndex = markerZindexOffsets[fieldValue];
+						const fieldValue = feature.properties[iconField];
+						icon.style.zIndex = markerZindexOffsets[fieldValue];
 					}
 					
 					// Add the marker to the map
-					if (marker) {
-						marker = new mapboxgl.Marker (marker)
-							.setLngLat (feature.geometry.coordinates)
-							.setPopup (popup)
-							.addTo (_map);
-					}
+					const marker = new mapboxgl.Marker (icon)
+						.setLngLat (feature.geometry.coordinates)
+						.setPopup (popup)
+						.addTo (_map);
 					
 					// If we have a callback, store each marker's popupHtml
 					if (_layerConfig[layerId].hasOwnProperty ('popupCallback')) {
 						
 						// Create a marker property __popupHTML, unofficially overloading the published data structure
-						var template = _layerConfig[layerId].popupHtml;
+						const template = _layerConfig[layerId].popupHtml;
 						marker.__popupHtml = layerviewer.renderDetailsHtml (feature, template, layerId);
 
 						// Add a custom click listener, which will ignore the default popup action
@@ -3971,7 +3946,7 @@ var layerviewer = (function ($) {
 			}
 			
 			// Obtain the field in the feature.properties data that specifies the icon to use
-			var iconField = _layerConfig[layerId].iconField;
+			const iconField = _layerConfig[layerId].iconField;
 			
 			// If there is a feature, use iconField
 			if (feature) {
@@ -4002,7 +3977,7 @@ var layerviewer = (function ($) {
 		getIconSize: function (layerId, feature /* may be set to null if checking layer-only definitions */)
 		{
 			// Use the global setting by default
-			var iconSize = _settings.iconSize;
+			let iconSize = _settings.iconSize;
 			
 			// If a layer-specific value is set, use that
 			if (_layerConfig[layerId].iconSize) {
@@ -4012,7 +3987,7 @@ var layerviewer = (function ($) {
 			// Dynamic icon size based on feature properties
 			if (feature) {
 				if (_layerConfig[layerId].iconSizeField && !$.isEmptyObject (_layerConfig[layerId].iconSizes)) {
-					var dataValue = feature.properties[_layerConfig[layerId].iconSizeField];
+					const dataValue = feature.properties[_layerConfig[layerId].iconSizeField];
 					if (_layerConfig[layerId].iconSizes.hasOwnProperty (dataValue)) {
 						iconSize = _layerConfig[layerId].iconSizes[dataValue];
 					}	// Otherwise default to the above, e.g. if property not present or not in the list
@@ -4030,7 +4005,7 @@ var layerviewer = (function ($) {
 		createIconDom: function (iconUrl, iconSize)
 		{
 			// Create the marker
-			var marker = document.createElement ('img');
+			const marker = document.createElement ('img');
 			marker.setAttribute ('src', iconUrl);
 			marker.className = 'marker';
 			marker.style.width = iconSize[0] + 'px';
@@ -4047,17 +4022,17 @@ var layerviewer = (function ($) {
 		{
 			// Determine definitions
 			// #!# This merge-style operation should be dealt with generically at top-level
-			var lineColourField = layerviewer.sublayerableConfig ('lineColourField', layerId);
-			var lineColourStops = layerviewer.sublayerableConfig ('lineColourStops', layerId);
-			var lineColourValues = layerviewer.sublayerableConfig ('lineColourValues', layerId);
-			var lineWidthField = layerviewer.sublayerableConfig ('lineWidthField', layerId);
-			var lineWidthStops = layerviewer.sublayerableConfig ('lineWidthStops', layerId);
-			var lineWidthValues = layerviewer.sublayerableConfig ('lineWidthValues', layerId);
-			var polygonColourField = layerviewer.sublayerableConfig ('polygonColourField', layerId);
-			var polygonColourValues = layerviewer.sublayerableConfig ('polygonColourValues', layerId);
+			const lineColourField = layerviewer.sublayerableConfig ('lineColourField', layerId);
+			const lineColourStops = layerviewer.sublayerableConfig ('lineColourStops', layerId);
+			const lineColourValues = layerviewer.sublayerableConfig ('lineColourValues', layerId);
+			const lineWidthField = layerviewer.sublayerableConfig ('lineWidthField', layerId);
+			const lineWidthStops = layerviewer.sublayerableConfig ('lineWidthStops', layerId);
+			const lineWidthValues = layerviewer.sublayerableConfig ('lineWidthValues', layerId);
+			const polygonColourField = layerviewer.sublayerableConfig ('polygonColourField', layerId);
+			const polygonColourValues = layerviewer.sublayerableConfig ('polygonColourValues', layerId);
 			
 			// Initialise empty styles structure
-			var styles = {
+			let styles = {
 				'Point':      { type: 'circle', layout: {}, paint: {} },
 				'LineString': { type: 'line',   layout: {}, paint: {} },
 				'Polygon':    { type: 'fill',   layout: {}, paint: {} }
@@ -4201,21 +4176,21 @@ var layerviewer = (function ($) {
 		createPopups: function (layerId, layerVariantId, geometryType, popupHtmlTemplate)
 		{
 			// Determine whether to have popups, ending if not required
-			var popups = layerviewer.glocalVariable ('popups', layerId);
+			const popups = layerviewer.glocalVariable ('popups', layerId);
 			if (!popups) {return;}
 			
 			// Set up handlers to give a cursor pointer over each feature; see: https://docs.mapbox.com/mapbox-gl-js/example/hover-styles/
 			layerviewer.cursorPointerHandlers (layerVariantId);
 			
 			// Initialise the popup handle
-			var popup = null;
+			let popup = null;
 			
 			// Initialise the feature ID handle
-			var popupFeatureId = null;
+			let popupFeatureId = null;
 			
 			// Define a popup click handler for this layer; this is registered to a property so that it can be disabled using map.off()/map.on(); see: https://stackoverflow.com/a/45665068/180733
 			_popupClickHandlers[layerVariantId] = function (e) {
-				var feature = e.features[0];
+				const feature = e.features[0];
 				
 				// Remove the popup if already opened and clicked again (implied close)
 				if (popupFeatureId) {
@@ -4231,7 +4206,7 @@ var layerviewer = (function ($) {
 				layerviewer.removePopups (layerId);
 				
 				// Set the location of the click; for a point, look up the feature's actual location
-				var coordinates = e.lngLat;	// Actual lat/lon clicked on
+				let coordinates = e.lngLat;	// Actual lat/lon clicked on
 				if (geometryType == 'Point') {
 					coordinates = feature.geometry.coordinates.slice ();	// https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/
 				}
@@ -4260,12 +4235,12 @@ var layerviewer = (function ($) {
 				// Workaround to deal with nested images property; see: https://github.com/mapbox/mapbox-gl-js/issues/2434
 				// The array has become serialised to a string that looks like an array; this parses out the string back to an array
 				if (_layerConfig[layerId].popupImagesField) {
-					var popupImagesField = _layerConfig[layerId].popupImagesField;
+					const popupImagesField = _layerConfig[layerId].popupImagesField;
 					feature.properties[popupImagesField] = JSON.parse (feature.properties[popupImagesField]);
 				}
 				
 				// Create the popup
-				var popupContentHtml = layerviewer.renderDetailsHtml (feature, popupHtmlTemplate, layerId);
+				const popupContentHtml = layerviewer.renderDetailsHtml (feature, popupHtmlTemplate, layerId);
 				popup = new mapboxgl.Popup ({className: layerId})
 					.setLngLat (coordinates)
 					.setHTML (popupContentHtml)
@@ -4298,8 +4273,8 @@ var layerviewer = (function ($) {
 		removeMarkers: function (layerId)
 		{
 			if (_markers[layerId]) {
-				var totalMarkers = _markers[layerId].length;
-				var i;
+				const totalMarkers = _markers[layerId].length;
+				let i;
 				for (i = 0; i < totalMarkers; i++) {
 					_markers[layerId][i].remove ();		// Remove the actual item, not a copy
 				}
@@ -4312,8 +4287,8 @@ var layerviewer = (function ($) {
 		removePopups: function (layerId)
 		{
 			if (_popups[layerId]) {
-				var totalPopups = _popups[layerId].length;
-				var i;
+				const totalPopups = _popups[layerId].length;
+				let i;
 				for (i = 0; i < totalPopups; i++) {
 					_popups[layerId][i].remove ();		// Remove the actual item, not a copy
 				}
@@ -4326,7 +4301,7 @@ var layerviewer = (function ($) {
 		stopsExpression: function (property, stops, supportNullTransparent, stepMode)
 		{
 			// Start the expression
-			var expression = [
+			let expression = [
 				'interpolate',
 				['linear'],
 				['get', property]
@@ -4365,7 +4340,7 @@ var layerviewer = (function ($) {
 		valuesExpression: function (property, values, fallback)
 		{
 			// Start the expression
-			var expression = [];
+			const expression = [];
 			expression.push ('case');
 			
 			// Loop through each value
@@ -4439,7 +4414,7 @@ var layerviewer = (function ($) {
 			if (!_layerConfig[layerId][layerConfigField]) {return false;}
 			
 			// For clarity, create a local variable for the config definition for the current config field of the current layer
-			var configDefinition = _layerConfig[layerId][layerConfigField];
+			let configDefinition = _layerConfig[layerId][layerConfigField];
 			
 			// If sublayering not enabled, i.e. is not dependent on a form value within the layer, pass through unchanged
 			if (!_layerConfig[layerId].sublayerParameter) {
@@ -4454,7 +4429,7 @@ var layerviewer = (function ($) {
 			// If a wildcard '*' is used, dynamically determine the field, i.e. map directly
 			// The form value then maps directly to the chosen field; this is useful for a styling dropdown where each field has its own values, e.g. form value 'foo' sets the parameter to be 'foo', hence looking at field 'foo' in data
 			if (_layerConfig[layerId][layerConfigField] == '*') {
-				var formParameter = _layerConfig[layerId].sublayerParameter;
+				const formParameter = _layerConfig[layerId].sublayerParameter;
 				return _parameters[layerId][formParameter];
 			}
 			
@@ -4462,8 +4437,8 @@ var layerviewer = (function ($) {
 			configDefinition = layerviewer.expandListKeys (configDefinition);
 			
 			// Now that we have confirmed that sublayer parameterisation is enabled, i.e. layer style is dependent on a form value, obtain the layer value, then look up the config definition value
-			var sublayerValue = _sublayerValues[layerId];
-			var configSubdefinition = configDefinition[sublayerValue];
+			const sublayerValue = _sublayerValues[layerId];
+			const configSubdefinition = configDefinition[sublayerValue];
 			
 			// Return the config sub-definition
 			return configSubdefinition;
@@ -4476,7 +4451,7 @@ var layerviewer = (function ($) {
 			// Split where required
 			$.each (configDefinition, function (key, value) {
 				if (key.indexOf (',') !== -1) {		// I.e. contains comma
-					var newKeys = key.split (',');
+					const newKeys = key.split (',');
 					$.each (newKeys, function (index, newKey) {
 						configDefinition[newKey] = value;
 					});
@@ -4532,9 +4507,9 @@ var layerviewer = (function ($) {
 			}
 			
 			// Remove the layer(s), checking first to ensure each exists
-			var geometryTypes = ['point', 'linestring', 'polygon', 'heatmap'];
+			const geometryTypes = ['point', 'linestring', 'polygon', 'heatmap'];
 			$.each (geometryTypes, function (index, geometryType) {
-				var geometryTypeId = layerId + '_' + geometryType;
+				const geometryTypeId = layerId + '_' + geometryType;
 				if (_map.getLayer (geometryTypeId)) {
 					_map.removeLayer (geometryTypeId);
 				}
@@ -4581,7 +4556,7 @@ var layerviewer = (function ($) {
 			if (_isTouchDevice) {return;}
 			
 			// Define drawing styles; based on https://github.com/NYCPlanning/labs-factfinder/blob/a617955c652b05dd81308e8d4158cfd76c01d1e2/app/layers/draw-styles.js
-			var styles = [
+			const styles = [
 				// Polygon outline stroke
 				{
 					id: 'gl-draw-polygon-stroke-active',
@@ -4639,64 +4614,15 @@ var layerviewer = (function ($) {
 			});
 			_map.addControl (_draw);
 			
-			// Register handlers for data creation/update
-			_map.on ('draw.create', updateArea);
-			_map.on ('draw.update', updateArea);
-			
-			// Add default value if supplied; see: https://github.com/mapbox/mapbox-gl-draw/blob/master/docs/API.md#addgeojson-object--arraystring
-			if (defaultValueString) {	// E.g. '[[-0.106355,51.510595],[-0.106709,51.51082],[-0.105666,51.511347],[-0.106355,51.510595]]'
-				
-				// Convert the string to an array of lat,lon values
-				var featurePoints = JSON.parse (defaultValueString);
-				
-				// Construct the feature
-				var defaultFeature = {type: geometryType, coordinates: [featurePoints]};
-				
-				// Add the polygon
-				_draw.add (defaultFeature);
-			}
-			
-			// Enable polygon/line drawing when the button is clicked
-			$('body').on ('click', '.draw.area, .draw.line', function () {
-				// Clear any existing features - allow only a single feature at present
-				// #!# Remove this when the server-side allows multiple polygons
-				_draw.deleteAll ();
-				
-				// Move the drawing layer (actually sublayers) to the top
-				layerviewer.layersOrderResetTop ();
-				
-				// Set state
-				_drawing.happening = true;
-				layerviewer.disablePopupHandlers ();
-
-				// Start drawing
-				var drawMode = (geometryType == 'Polygon' ? 'draw_polygon' : 'draw_line_string');	// See: https://github.com/mapbox/mapbox-gl-draw/blob/main/docs/API.md#modes
-				_draw.changeMode (drawMode);
-			});
-
-			// Enable point drawing when the button is clicked
-			$('body').on('click', '.draw.point', function () {
-				// Clear any existing features - allow only a single feature at present
-				_draw.deleteAll ();
-
-				// Set state
-				_drawing.happening = true;
-				layerviewer.disablePopupHandlers ();
-
-				// Start drawing
-				_draw.changeMode ('draw_point');
-			});
-
-			
 			// Handle created features
-			function updateArea (e) {
+			const updateArea = function (e) {
 				
 				// Capture the data, which will be GeoJSON
-				var geojsonValue = _draw.getAll ();
+				let geojsonValue = _draw.getAll ();
 				
 				// Reduce coordinate accuracy to 6dp (c. 1m) to avoid over-long URLs
-				var coordinates;
-				var i;
+				let coordinates;
+				let i;
 				switch (geometryType) {
 					case 'Polygon':
 						coordinates = geojsonValue.features[0].geometry.coordinates[0];		// Single ring
@@ -4729,8 +4655,56 @@ var layerviewer = (function ($) {
 				// Set state
 				_drawing.happening = false;
 				layerviewer.reenablePopupHandlers ();
+			};
+			
+			// Register handlers for data creation/update
+			_map.on ('draw.create', updateArea);
+			_map.on ('draw.update', updateArea);
+			
+			// Add default value if supplied; see: https://github.com/mapbox/mapbox-gl-draw/blob/master/docs/API.md#addgeojson-object--arraystring
+			if (defaultValueString) {	// E.g. '[[-0.106355,51.510595],[-0.106709,51.51082],[-0.105666,51.511347],[-0.106355,51.510595]]'
+				
+				// Convert the string to an array of lat,lon values
+				const featurePoints = JSON.parse (defaultValueString);
+				
+				// Construct the feature
+				const defaultFeature = {type: geometryType, coordinates: [featurePoints]};
+				
+				// Add the polygon
+				_draw.add (defaultFeature);
 			}
 			
+			// Enable polygon/line drawing when the button is clicked
+			$('body').on ('click', '.draw.area, .draw.line', function () {
+				// Clear any existing features - allow only a single feature at present
+				// #!# Remove this when the server-side allows multiple polygons
+				_draw.deleteAll ();
+				
+				// Move the drawing layer (actually sublayers) to the top
+				layerviewer.layersOrderResetTop ();
+				
+				// Set state
+				_drawing.happening = true;
+				layerviewer.disablePopupHandlers ();
+
+				// Start drawing
+				const drawMode = (geometryType == 'Polygon' ? 'draw_polygon' : 'draw_line_string');	// See: https://github.com/mapbox/mapbox-gl-draw/blob/main/docs/API.md#modes
+				_draw.changeMode (drawMode);
+			});
+
+			// Enable point drawing when the button is clicked
+			$('body').on('click', '.draw.point', function () {
+				// Clear any existing features - allow only a single feature at present
+				_draw.deleteAll ();
+
+				// Set state
+				_drawing.happening = true;
+				layerviewer.disablePopupHandlers ();
+
+				// Start drawing
+				_draw.changeMode ('draw_point');
+			});
+
 			// Cancel button clears drawn feature and clears the form value
 			$('.edit-clear').click (function () {
 				if (_settings.stopDrawingWhenClearingLine) {
@@ -4818,7 +4792,6 @@ var layerviewer = (function ($) {
 			});
 			
 			// Disable the popup click handler for each variant layer
-			var layerVariantId;
 			$.each (_layers, function (layerId, layerEnabled) {
 				
 				// Direct layer IDs, e.g. vector layers, e.g. 'foo'
@@ -4828,7 +4801,7 @@ var layerviewer = (function ($) {
 				
 				// Variant layers, e.g. GeoJSON layers, e.g. 'foo_point', 'foo_linestring', 'foo_polygon'
 				$.each (_opengisTypes, function (index, geometryType) {
-					layerVariantId = layerviewer.layerVariantId (layerId, geometryType);
+					const layerVariantId = layerviewer.layerVariantId (layerId, geometryType);
 					if (_popupClickHandlers.hasOwnProperty (layerVariantId)) {
 						_map.off ('click', layerVariantId, _popupClickHandlers[layerVariantId]);
 					}
@@ -4846,7 +4819,6 @@ var layerviewer = (function ($) {
 			setTimeout (function () {
 				
 				// Re-enable the popup click handler for each variant layer
-				var layerVariantId;
 				$.each (_layers, function (layerId, layerEnabled) {
 					
 					// Direct layer IDs, e.g. vector layers, e.g. 'foo'
@@ -4856,7 +4828,7 @@ var layerviewer = (function ($) {
 					
 					// Variant layers, e.g. GeoJSON layers, e.g. 'foo_point', 'foo_linestring', 'foo_polygon'
 					$.each (_opengisTypes, function (index, geometryType) {
-						layerVariantId = layerviewer.layerVariantId (layerId, geometryType);
+						const layerVariantId = layerviewer.layerVariantId (layerId, geometryType);
 						if (_popupClickHandlers.hasOwnProperty (layerVariantId)) {
 							_map.on ('click', layerVariantId, _popupClickHandlers[layerVariantId]);
 						}
@@ -4885,10 +4857,10 @@ var layerviewer = (function ($) {
 				success: function (data, textStatus, jqXHR) {
 					
 					// Parse the areas to centre-points, and extract the names
-					var regions = layerviewer.regionsToList (data);
+					const regions = layerviewer.regionsToList (data);
 					
 					// Create a droplist
-					var html = '<select>';
+					let html = '<select>';
 					html += '<option value="">' + _settings.regionSwitcherNullText + ':</option>';
 					$.each (regions, function (index, region) {
 						html += '<option value="' + layerviewer.htmlspecialchars (region.key) + '">' + layerviewer.htmlspecialchars (region.name) + '</option>';
@@ -4910,7 +4882,7 @@ var layerviewer = (function ($) {
 							
 							// Fit bounds
 							_selectedRegion = this.value;
-							var options = {};
+							const options = {};
 							if (_settings.regionSwitcherMaxZoom) {
 								options.maxZoom = _settings.regionSwitcherMaxZoom;
 							}
@@ -4938,7 +4910,7 @@ var layerviewer = (function ($) {
 					});
 					
 					// Start default region determination
-					var defaultRegion = false;
+					let defaultRegion = false;
 					
 					// If we have a default region stored in the settings, set it as the default
 					if (_settings.regionSwitcherDefaultRegion) {
@@ -4946,8 +4918,8 @@ var layerviewer = (function ($) {
 					}
 					
 					// If we have a cookie saved with a region, set it as the default
-					var regionKeys = Object.keys (_regionBounds);
-					var selectedRegion = Cookies.get ('selectedRegion');
+					const regionKeys = Object.keys (_regionBounds);
+					const selectedRegion = Cookies.get ('selectedRegion');
 					if (regionKeys.includes (selectedRegion)) {
 						defaultRegion = selectedRegion;
 					}
@@ -4973,7 +4945,7 @@ var layerviewer = (function ($) {
 		/* private */ regionsToList: function (data)
 		{
 			// Start an ordered array of regions
-			var regions = [];
+			const regions = [];
 			
 			// Ensure basic GeoJSON structure
 			if (!data.type) {return regions;}
@@ -4981,20 +4953,17 @@ var layerviewer = (function ($) {
 			if (!data.features) {return regions;}
 			
 			// Parse each feature for key, name and location
-			var key;
-			var name;
-			var bounds;
 			$.each (data.features, function (index, feature) {
 				
 				// Get the key, or skip if not present in this feature
 				if (!feature.properties[_settings.regionsField]) {return false;}
-				key = feature.properties[_settings.regionsField];
+				const key = feature.properties[_settings.regionsField];
 				
 				// Get the name
-				var name = (_settings.regionsNameField ? feature.properties[_settings.regionsNameField] : layerviewer.ucfirst (key));
+				const name = (_settings.regionsNameField ? feature.properties[_settings.regionsNameField] : layerviewer.ucfirst (key));
 				
 				// Get location; see: https://github.com/mapbox/geojson-extent
-				bounds = geojsonExtent (feature);
+				const bounds = geojsonExtent (feature);
 				
 				// Register region
 				regions.push ({
@@ -5005,7 +4974,7 @@ var layerviewer = (function ($) {
 			});
 			
 			// Reorder by name
-			var sortBy = 'name';
+			const sortBy = 'name';
 			regions.sort (function (a, b) {
 				return a[sortBy].localeCompare (b[sortBy]);
 			});
@@ -5044,13 +5013,13 @@ var layerviewer = (function ($) {
 		{			
 			$('.wizard.feedback .action.forward').click (function () {
 				// Feedback URL; re-use of settings values is supported, represented as placeholders {%apiBaseUrl}, {%apiKey}
-				var feedbackApiUrl = layerviewer.settingsPlaceholderSubstitution (_settings.feedbackApiUrl, ['apiBaseUrl', 'apiKey']);
+				const feedbackApiUrl = layerviewer.settingsPlaceholderSubstitution (_settings.feedbackApiUrl, ['apiBaseUrl', 'apiKey']);
 				
 				// Locate the form
-				var form = $('.feedback form');
+				const form = $('.feedback form');
 
 				// Send the feedback via AJAX
-				$.ajax({
+				$.ajax ({
 					url: feedbackApiUrl,
 					type: form.attr('method'),
 					data: form.serialize()
@@ -5083,15 +5052,15 @@ var layerviewer = (function ($) {
 			$('a.embed').click (function (e) {
 				
 				// Construct the embed URL
-				var url  = window.location.href;
+				let url  = window.location.href;
 				url = url.replace ('/#', '/embed/#');
 				url += '/' + _currentBackgroundMapStyleId;
 				
 				// Compile the iframe code
-				var iframeHtml = '<iframe src="' + url + '" width="100%" height="650" title="CycleStreets Bikedata map" frameborder="0"></iframe>';
+				const iframeHtml = '<iframe src="' + url + '" width="100%" height="650" title="CycleStreets Bikedata map" frameborder="0"></iframe>';
 				
 				// Compile the HTML
-				var html  = '<div id="embedbox">';
+				let html  = '<div id="embedbox">';
 				html += '<h2>Embed this map in your website</h2>';
 				html += '<p>To use this on your website, add the following code to any page:</p>';
 				html += '<p><tt>' + layerviewer.htmlspecialchars (iframeHtml) + '</tt></p>';
@@ -5111,7 +5080,7 @@ var layerviewer = (function ($) {
 		pageDialog: function (contentDivId)
 		{
 			// Read in the HTML
-			var html = $('#' + contentDivId).html();
+			const html = $('#' + contentDivId).html();
 			
 			// Create the handler to launch a dialog box
 			$('a[href="#' + contentDivId + '"]').click (function (event) {
@@ -5131,13 +5100,13 @@ var layerviewer = (function ($) {
 			
 			// Strip all characters but numerical ones
 			number = (number + '').replace(/[^0-9+\-Ee.]/g, '');
-			var n = !isFinite(+number) ? 0 : +number;
-			var prec = !isFinite(+decimals) ? 0 : Math.abs(decimals);
-			var sep = (typeof thousands_sep === 'undefined') ? ',' : thousands_sep;
-			var dec = (typeof dec_point === 'undefined') ? '.' : dec_point;
-			var s = '';
-			var toFixedFix = function (n, prec) {
-				var k = Math.pow(10, prec);
+			const n = !isFinite(+number) ? 0 : +number;
+			const prec = !isFinite(+decimals) ? 0 : Math.abs(decimals);
+			const sep = (typeof thousands_sep === 'undefined') ? ',' : thousands_sep;
+			const dec = (typeof dec_point === 'undefined') ? '.' : dec_point;
+			let s = '';
+			const toFixedFix = function (n, prec) {
+				const k = Math.pow(10, prec);
 				return '' + Math.round(n * k) / k;
 			};
 			// Fix for IE parseFloat(0.55).toFixed(0) = 0;
@@ -5157,17 +5126,14 @@ var layerviewer = (function ($) {
 		/* public */ populateMiniMaps: function (miniMapsLayers, selectedRegion)
 		{
 			// Create mini maps for each layer
-			var id;
-			var url;
-			var defaultType;
-			var regionWsen = _regionBounds[selectedRegion];
-			var regionCentre = [ (regionWsen[1] + regionWsen[3])/2, (regionWsen[0] + regionWsen[2])/2 ];	// lat,lon centre
+			const regionWsen = _regionBounds[selectedRegion];
+			const regionCentre = [ (regionWsen[1] + regionWsen[3])/2, (regionWsen[0] + regionWsen[2])/2 ];	// lat,lon centre
 			$.each (miniMapsLayers, function (index, layerId) {
-				id = 'map_' + layerId;
-				url = _layerConfig[layerId].apiCall;
+				const id = 'map_' + layerId;
+				let url = _layerConfig[layerId].apiCall;
 				url = url.replace ('{site_name}', selectedRegion);
 				if (url.indexOf ('{%type}') !== -1) {
-					defaultType = $('#data .selector li.' + layerId + ' select option[selected="selected"]')[0].value;
+					const defaultType = $('#data .selector li.' + layerId + ' select option[selected="selected"]')[0].value;
 					url = url.replace ('{%type}', defaultType);
 				}
 				layerviewer.miniMap (id, url, regionCentre, layerId);
@@ -5182,7 +5148,7 @@ var layerviewer = (function ($) {
 			if (!_miniMaps[id]) {
 				
 				// Define URL for raster basemap; available styles include: streets-v11, dark-v10
-				var mapboxUrl = 'https://api.mapbox.com/styles/v1/mapbox/light-v10/tiles/256/{z}/{x}/{y}?access_token=' + _settings.mapboxApiKey;
+				const mapboxUrl = 'https://api.mapbox.com/styles/v1/mapbox/light-v10/tiles/256/{z}/{x}/{y}?access_token=' + _settings.mapboxApiKey;
 				
 				// Create the map
 				_miniMaps[id] = L.map (id, {attributionControl: false, zoomControl: false}).setView (regionCentre, 9);
@@ -5203,11 +5169,11 @@ var layerviewer = (function ($) {
 			}
 			
 			// Define the styling/behaviour for the GeoJSON layer
-			var stylingBehaviour = {
+			const stylingBehaviour = {
 				style: function (feature) {
 					
 					// Default
-					var style = {
+					const style = {
 						color: '#888',
 						weight: 2
 					};
@@ -5250,8 +5216,8 @@ var layerviewer = (function ($) {
 			}
 			
 			// Loop through each style stop until found
-			var i;
-			var styleStop;
+			let styleStop;
+			let i;
 			for (i = 0; i < lookupTable.length; i++) {
 				styleStop = lookupTable[i];
 				if (typeof lookupTable[0][0] === 'string') {	// Fixed string values
@@ -5274,9 +5240,9 @@ var layerviewer = (function ($) {
 		getCentre: function (geometry)
 		{
 			// Determine the centre point
-			var centre = {};
-			var longitudes = [];
-			var latitudes = [];
+			let centre = {};
+			const longitudes = [];
+			const latitudes = [];
 			switch (geometry.type) {
 				
 				case 'Point':
@@ -5327,9 +5293,8 @@ var layerviewer = (function ($) {
 					break;
 					
 				case 'GeometryCollection':
-					var centre;
 					$.each (geometry.geometries, function (index, geometryItem) {
-						centre = layerviewer.getCentre (geometryItem);		// Iterate
+						const centre = layerviewer.getCentre (geometryItem);		// Iterate
 						longitudes.push (centre.lon);
 						latitudes.push (centre.lat);
 					});
@@ -5355,10 +5320,10 @@ var layerviewer = (function ($) {
 			if (!_layerConfig[layerId].popupFeedbackButton) {return '';}
 			
 			// Assemble the feature to an encoded string that can safely be passed into the data properties
-			var featureBase64 = window.btoa (JSON.stringify (feature));
+			const featureBase64 = window.btoa (JSON.stringify (feature));
 			
 			// Assemble the HTML
-			var html = '<p class="feedbackbutton">';
+			let html = '<p class="feedbackbutton">';
 			html += '<a href="#" data-feature="' + featureBase64 + '" title="Give feedback">';
 			html += _layerConfig[layerId].popupFeedbackButton;
 			html += '</a>';
@@ -5379,34 +5344,32 @@ var layerviewer = (function ($) {
 			$('body').on ('click', '.mapboxgl-popup.' + layerId + ' p.feedbackbutton', {layerId: layerId}, function (event) {
 				
 				// Create an overlay canvas
-				var overlayHtml = '<div id="feedbackoverlay"><a href="#" class="closebutton">x</a><div id="popupfeedbackoverlaycontent" class="overlaycontent"></div></div>';
+				const overlayHtml = '<div id="feedbackoverlay"><a href="#" class="closebutton">x</a><div id="popupfeedbackoverlaycontent" class="overlaycontent"></div></div>';
 				$(overlayHtml).hide ().appendTo ( $(this).closest ('.mapboxgl-popup-content') ).fadeIn (500, function () {
 					
 					// Get the layer
-					var layerId = event.data.layerId;
+					const layerId = event.data.layerId;
 					
 					// Add the HTML contents to the overlay
-					var popupFeedbackOverlayContent = $('#popupfeedback' + layerId).children ().clone ();	// .children() ensures the container itself isn't copied
+					const popupFeedbackOverlayContent = $('#popupfeedback' + layerId).children ().clone ();	// .children() ensures the container itself isn't copied
 					popupFeedbackOverlayContent.appendTo ('#popupfeedbackoverlaycontent');
 					
 					// Retrieve the feature properties
-					var featureBase64 = event.target.dataset.feature;
-					var feature = JSON.parse (window.atob (featureBase64));
+					const featureBase64 = event.target.dataset.feature;
+					const feature = JSON.parse (window.atob (featureBase64));
 					
 					// Define a function to resolve a path; see: https://stackoverflow.com/a/22129960/180733
-					var resolve = function (obj, path) {
-						var separator = '.';
-						var properties = (Array.isArray (path) ? path : path.split (separator));
+					const resolve = function (obj, path) {
+						const separator = '.';
+						const properties = (Array.isArray (path) ? path : path.split (separator));
 						return properties.reduce ((prev, curr) => prev && prev[curr], obj);
 					}
 					
 					// Populate any hidden fields from the feature
-					var path;
-					var value;
 					$('#popupfeedbackoverlaycontent input[type="hidden"]').each (function () {
 						if ($(this)[0].dataset.hasOwnProperty ('value')) {		// i.e. data-value is defined
-							path = $(this)[0].dataset.value;
-							value = resolve (feature, path);	// E.g. data-value="properties.foo" will look up that path in the feature
+							const path = $(this)[0].dataset.value;
+							const value = resolve (feature, path);	// E.g. data-value="properties.foo" will look up that path in the feature
 							$(this).val (value);
 						}
 					});
@@ -5431,9 +5394,9 @@ var layerviewer = (function ($) {
 			
 			// Capture the form submit, so that it goes via AJAX instead
 			$(containerDiv + ' form').submit (function () {
-				var form = $(this);
-				var resultHtml;
-				var errorHtml = '<p class="error">Sorry, an error occured while trying to save your feedback. Please try again later.</p>';
+				const form = $(this);
+				let resultHtml;
+				const errorHtml = '<p class="error">Sorry, an error occured while trying to save your feedback. Please try again later.</p>';
 				$.ajax ({
 					type: form.attr ('method'),
 					url: layerviewer.settingsPlaceholderSubstitution (form.attr ('action'), ['apiBaseUrl', 'apiKey']),
@@ -5481,11 +5444,11 @@ var layerviewer = (function ($) {
 			});
 			
 			// Create popup, which will be retained upon drag or new re-click
-			var overlayHtml = '<div id="locatefeedbackoverlaycontent" class="overlaycontent"></div>';
+			const overlayHtml = '<div id="locatefeedbackoverlaycontent" class="overlaycontent"></div>';
 			_locateHandlerMarker.setPopup (new mapboxgl.Popup ().setHTML (overlayHtml));
 			
 			// Define a function set the lat/lon values in the form fields
-			var setFormLocation = function (lngLat) {
+			const setFormLocation = function (lngLat) {
 				$('#locatefeedbackoverlaycontent form input[name="longitude"]').val (lngLat.lng);
 				$('#locatefeedbackoverlaycontent form input[name="latitude"]').val (lngLat.lat);
 			};
@@ -5500,7 +5463,7 @@ var layerviewer = (function ($) {
 				
 				// Add the HTML contents to the overlay, if not already present
 				if (!$('#locatefeedbackoverlaycontent form').length) {
-					var locateFeedbackOverlayContent = $('#locatefeedback' + layerId).children ().clone ();	// .children() ensures the container itself isn't copied
+					const locateFeedbackOverlayContent = $('#locatefeedback' + layerId).children ().clone ();	// .children() ensures the container itself isn't copied
 					$('#locatefeedbackoverlaycontent').html (locateFeedbackOverlayContent);		// .html() rather than .appendTo() to avoid additional
 				}
 				
@@ -5516,7 +5479,7 @@ var layerviewer = (function ($) {
 			
 			// Update the form location values if moved
 			_locateHandlerMarker.on ('dragend', function () {
-				var lngLat = _locateHandlerMarker.getLngLat ();
+				const lngLat = _locateHandlerMarker.getLngLat ();
 				setFormLocation (lngLat);
 			});
 		},
@@ -5574,11 +5537,10 @@ var layerviewer = (function ($) {
 			if (!_layerConfig[layerId]) {return;}
 			
 			// Leave the layer in place, but set the data to empty
-			var data = {type: 'FeatureCollection', 'features': []};
+			const data = {type: 'FeatureCollection', 'features': []};
 			layerviewer.showCurrentData (layerId, data, '_fixed');
 		}
 	};
 	
 } (jQuery));
-
 
