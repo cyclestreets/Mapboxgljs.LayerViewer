@@ -888,7 +888,7 @@ const layerviewer = (function ($) {
 			
 			// Split the path by slash; see: https://stackoverflow.com/a/8086637
 			let url = window.location.pathname;
-			url = url.substr (_settings.baseUrl.length);	// Remove baseUrl from start
+			url = url.substring (_settings.baseUrl.length);	// Remove baseUrl from start
 			const pathComponents = url.split ('/');
 			if (pathComponents) {
 				
