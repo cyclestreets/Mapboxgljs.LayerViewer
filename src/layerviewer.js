@@ -88,8 +88,8 @@ const layerviewer = (function ($) {
 		// Use existing geolocation button instead of Mapbox's
 		geolocationElementId: false,
 		
-		// Display a dot that tracks user location (usual design language on mobile)
-		trackUser: true,
+		// Determine whether the geolocation tracks the user constantly; set to false for a one-shot control
+		geolocationTrackUserLocation: false,
 		
 		// Whether to enable popups
 		popups: true,		// NB Not yet implemented for point-based layers
@@ -1852,7 +1852,7 @@ const layerviewer = (function ($) {
 			layerviewer.enableTilt ();
 			
 			// Add a geolocation control
-			layerviewer.geolocation (_settings.geolocationElementId, _settings.trackUser);
+			layerviewer.geolocation (_settings.geolocationElementId, _settings.geolocationTrackUserLocation);
 			
 			// Add geocoder control
 			layerviewer.geocoder ();
@@ -2318,7 +2318,7 @@ const layerviewer = (function ($) {
 		// Function to add a geolocation control and associated events
 		// https://www.mapbox.com/mapbox-gl-js/example/locate-user/
 		// https://github.com/mapbox/mapbox-gl-js/issues/5464
-		geolocation: function (geolocationElementId = false, trackUser = false)
+		geolocation: function (geolocationElementId = false, trackUserLocation = false)
 		{
 			// Exit if don't want a geolocation element
 			if (!_settings.geolocationPosition) {
@@ -2334,7 +2334,7 @@ const layerviewer = (function ($) {
 					maxZoom: _settings.geolocationMaxZoom,
 					duration: 1500
 				},
-				trackUserLocation: trackUser
+				trackUserLocation: trackUserLocation
 			});
 			
 			// Add to the map
