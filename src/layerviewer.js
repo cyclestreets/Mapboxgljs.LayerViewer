@@ -81,7 +81,10 @@ const layerviewer = (function ($) {
 		
 		// Geolocation position, or false for no geolocation element
 		geolocationPosition: 'top-right',
-
+		
+		// Geolocation max zoom, to avoid an overly close result
+		geolocationMaxZoom: 16.5,
+		
 		// Use existing geolocation button instead of Mapbox's
 		geolocationElementId: false,
 		
@@ -2328,6 +2331,7 @@ const layerviewer = (function ($) {
 					enableHighAccuracy: true
 				},
 				fitBoundsOptions: {
+					maxZoom: _settings.geolocationMaxZoom,
 					duration: 1500
 				},
 				trackUserLocation: trackUser
@@ -2366,7 +2370,7 @@ const layerviewer = (function ($) {
 			// Listener for setting geolocation availability and setting map bounds
 			_map.on ('locationfound', function(e) {
 				layerviewer.setGeolocationAvailability (true);
-				_map.fitBounds (e.bounds, {duration: 1500});
+				_map.fitBounds (e.bounds, {maxZoom: _settings.geolocationMaxZoom, duration: 1500});
 			});
 		},
 		
