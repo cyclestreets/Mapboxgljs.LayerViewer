@@ -3913,7 +3913,7 @@ const layerviewer = (function ($) {
 					}
 					
 					// Add the marker to the map
-					const marker = new mapboxgl.Marker (icon)
+					const marker = new mapboxgl.Marker (icon, {anchor: 'bottom'})
 						.setLngLat (feature.geometry.coordinates)
 						.setPopup (popup)
 						.addTo (_map);
